@@ -4,11 +4,12 @@
 //
 //  Created by Almahdi Morris on 05/20/24.
 //
-
 import SwiftUI
 import AVFoundation
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import UniformTypeIdentifiers
+import AppKit
 
 class VideoPlayerViewModel: ObservableObject {
     @Published var brightness: Float = 0 {
@@ -42,29 +43,51 @@ class VideoPlayerViewModel: ObservableObject {
         }
     }
     
+    @Published var ciImage: CIImage? = nil
     let player = AVPlayer()
     private let context = CIContext()
     private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+    private var timer: Timer?
     
     func setupPlayer() {
-        guard let url = Bundle.main.url(forResource: "sample", withExtension: "mp4") else { return }
-        let playerItem = AVPlayerItem(url: url)
-        playerItem.add(videoOutput)
-        player.replaceCurrentItem(with: playerItem)
-        player.play()
+        // Initial setup can be left empty if we plan to open files dynamically
     }
     
-    private func applyFilter() {
-        guard let currentItem = player.currentItem else { return }
+    func openFilePicker() {
+        let dialog = NSOpenPanel()
+        dialog.title = "Choose a video or image file"
+        dialog.allowedContentTypes = [UTType.movie, UTType.image]
+        dialog.allowsMultipleSelection = false
+        dialog.canChooseDirectories = false
+        dialog.canCreateDirectories = false
         
-        videoOutput.requestNotificationOfMediaDataChange(withAdvanceInterval: 0.03)
-        
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemTimeJumped, object: player.currentItem, queue: .main) { _ in
-            self.updateVideoFrame()
+        if dialog.runModal() == .OK, let result = dialog.url {
+            loadFile(url: result)
         }
     }
     
-    private func updateVideoFrame() {
+    private func loadFile(url: URL) {
+        ciImage = nil
+        if url.pathExtension == "mp4" || url.pathExtension == "mov" {
+            let playerItem = AVPlayerItem(url: url)
+            playerItem.add(videoOutput)
+            player.replaceCurrentItem(with: playerItem)
+            player.play()
+            setupTimer()
+        } else if url.pathExtension == "jpg" || url.pathExtension == "png" {
+            if let image = CIImage(contentsOf: url) {
+                ciImage = image
+                applyImageFilter()
+            }
+        }
+    }
+    
+    private func setupTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(timeInterval: 1.0 / 30.0, target: self, selector: #selector(updateVideoFrame), userInfo: nil, repeats: true)
+    }
+    
+    @objc private func updateVideoFrame() {
         guard let currentItem = player.currentItem else { return }
         let currentTime = currentItem.currentTime()
         
@@ -85,10 +108,39 @@ class VideoPlayerViewModel: ObservableObject {
             "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 1)
         ])
         
-        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
-            DispatchQueue.main.async {
-                // You can update the UI with the filtered image if necessary
-            }
+        DispatchQueue.main.async {
+            self.ciImage = ciImage
+        }
+    }
+    
+    private func applyFilter() {
+        if let _ = ciImage {
+            applyImageFilter()
+        } else {
+            updateVideoFrame()
+        }
+    }
+    
+    private func applyImageFilter() {
+        guard let ciImage = ciImage else { return }
+        
+        var filteredImage = ciImage
+        
+        filteredImage = filteredImage.applyingFilter("CIColorControls", parameters: [
+            kCIInputBrightnessKey: brightness,
+            kCIInputContrastKey: contrast,
+            kCIInputSaturationKey: saturation
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIColorMatrix", parameters: [
+            "inputRVector": CIVector(x: CGFloat(red), y: 0, z: 0, w: 0),
+            "inputGVector": CIVector(x: 0, y: CGFloat(green), z: 0, w: 0),
+            "inputBVector": CIVector(x: 0, y: 0, z: CGFloat(blue), w: 0),
+            "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 1)
+        ])
+        
+        DispatchQueue.main.async {
+            self.ciImage = filteredImage
         }
     }
 }

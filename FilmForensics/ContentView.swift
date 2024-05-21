@@ -14,11 +14,14 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            VideoPlayerView(player: videoPlayerViewModel.player)
+            VideoImageView(player: videoPlayerViewModel.player, ciImage: $videoPlayerViewModel.ciImage)
                 .onAppear {
                     videoPlayerViewModel.setupPlayer()
                 }
             FilterControlsView(viewModel: videoPlayerViewModel)
+            Button("Open Video or Image") {
+                videoPlayerViewModel.openFilePicker()
+            }
         }
         .frame(minWidth: 800, minHeight: 600)
     }
@@ -52,17 +55,51 @@ struct FilterControlsView: View {
     }
 }
 
-struct VideoPlayerView: NSViewRepresentable {
+struct VideoImageView: NSViewRepresentable {
     let player: AVPlayer
+    @Binding var ciImage: CIImage?
     
-    func makeNSView(context: Context) -> AVPlayerView {
+    func makeNSView(context: Context) -> NSView {
+        let containerView = NSView()
+        
         let playerView = AVPlayerView()
         playerView.player = player
         playerView.showsFullScreenToggleButton = true
-        return playerView
+        playerView.autoresizingMask = [.width, .height]
+        playerView.translatesAutoresizingMaskIntoConstraints = true
+        playerView.frame = containerView.bounds
+        
+        containerView.addSubview(playerView)
+        
+        let imageView = NSImageView()
+        imageView.autoresizingMask = [.width, .height]
+        imageView.translatesAutoresizingMaskIntoConstraints = true
+        imageView.imageScaling = .scaleAxesIndependently
+        imageView.frame = containerView.bounds
+        
+        containerView.addSubview(imageView)
+        context.coordinator.imageView = imageView
+        
+        return containerView
     }
     
-    func updateNSView(_ nsView: AVPlayerView, context: Context) {
-        // No updates needed
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if let ciImage = ciImage {
+            let rep = NSCIImageRep(ciImage: ciImage)
+            let nsImage = NSImage(size: rep.size)
+            nsImage.addRepresentation(rep)
+            context.coordinator.imageView?.image = nsImage
+            context.coordinator.imageView?.isHidden = false
+        } else {
+            context.coordinator.imageView?.isHidden = true
+        }
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        return Coordinator()
+    }
+    
+    class Coordinator: NSObject {
+        var imageView: NSImageView?
     }
 }
