@@ -42,8 +42,24 @@ class VideoPlayerViewModel: ObservableObject {
             applyFilter()
         }
     }
+    @Published var gamma: Float = 1 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var hue: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var vibrance: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
     
     @Published var ciImage: CIImage? = nil
+    @Published var isPlaying: Bool = false
     let player = AVPlayer()
     private let context = CIContext()
     private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
@@ -73,6 +89,7 @@ class VideoPlayerViewModel: ObservableObject {
             playerItem.add(videoOutput)
             player.replaceCurrentItem(with: playerItem)
             player.play()
+            isPlaying = true
             setupTimer()
         } else if url.pathExtension == "jpg" || url.pathExtension == "png" {
             if let image = CIImage(contentsOf: url) {
@@ -117,6 +134,18 @@ class VideoPlayerViewModel: ObservableObject {
             "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 1)
         ])
         
+        filteredImage = filteredImage.applyingFilter("CIGammaAdjust", parameters: [
+            "inputPower": gamma
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIHueAdjust", parameters: [
+            "inputAngle": hue
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIVibrance", parameters: [
+            "inputAmount": vibrance
+        ])
+        
         return filteredImage
     }
     
@@ -126,5 +155,30 @@ class VideoPlayerViewModel: ObservableObject {
         } else {
             updateVideoFrame()
         }
+    }
+    
+    func playPause() {
+        if player.rate == 0 {
+            player.play()
+            isPlaying = true
+        } else {
+            player.pause()
+            isPlaying = false
+        }
+    }
+    
+    func loopVideo() {
+        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+            self.player.seek(to: CMTime.zero)
+            self.player.play()
+        }
+    }
+    
+    func stepFrame(by count: Int) {
+        guard let currentItem = player.currentItem else { return }
+        let currentTime = currentItem.currentTime()
+        let frameDuration = CMTimeMake(value: 1, timescale: 30)
+        let newTime = count > 0 ? CMTimeAdd(currentTime, frameDuration) : CMTimeSubtract(currentTime, frameDuration)
+        player.seek(to: newTime)
     }
 }

@@ -21,13 +21,19 @@ struct ContentView: View {
             TabView {
                 FilterControlsView(viewModel: videoPlayerViewModel)
                     .tabItem {
-                        Label("Basic Filters", systemImage: "slider.horizontal.3")
+                        Label("Favorite", systemImage: "star")
                     }
-                CoreImageFilterControlsView(viewModel: videoPlayerViewModel)
+                BlurFiltersView(viewModel: videoPlayerViewModel)
                     .tabItem {
-                        Label("Advanced Filters", systemImage: "wand.and.stars")
+                        Label("Blur Filters", systemImage: "drop.fill")
                     }
+                ColorAdjustmentFiltersView(viewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Color Adjustment", systemImage: "paintbrush")
+                    }
+                // Add more categories here
             }
+            VideoControlsView(viewModel: videoPlayerViewModel)
             Button("Open Video or Image") {
                 videoPlayerViewModel.openFilePicker()
             }
@@ -41,22 +47,40 @@ struct FilterControlsView: View {
     
     var body: some View {
         VStack {
-            AdjustableSlider(label: "Brightness", value: $viewModel.brightness, range: -1...1)
-            AdjustableSlider(label: "Contrast", value: $viewModel.contrast, range: 0...2)
-            AdjustableSlider(label: "Saturation", value: $viewModel.saturation, range: 0...2)
+            HStack {
+                AdjustableSlider(label: "Brightness", value: $viewModel.brightness, range: -1...1)
+                AdjustableSlider(label: "Contrast", value: $viewModel.contrast, range: 0...2)
+            }
+            HStack {
+                AdjustableSlider(label: "Saturation", value: $viewModel.saturation, range: 0...2)
+                AdjustableSlider(label: "Hue", value: $viewModel.hue, range: -Float(Double.pi)...Float(Double.pi))
+            }
         }
         .padding()
     }
 }
 
-struct CoreImageFilterControlsView: View {
+struct BlurFiltersView: View {
     @ObservedObject var viewModel: VideoPlayerViewModel
     
     var body: some View {
         VStack {
-            AdjustableSlider(label: "Red", value: $viewModel.red, range: 0...2)
-            AdjustableSlider(label: "Green", value: $viewModel.green, range: 0...2)
-            AdjustableSlider(label: "Blue", value: $viewModel.blue, range: 0...2)
+            // Add sliders for blur filters here
+        }
+        .padding()
+    }
+}
+
+struct ColorAdjustmentFiltersView: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        VStack {
+            HStack {
+                AdjustableSlider(label: "Gamma", value: $viewModel.gamma, range: 0...3)
+                AdjustableSlider(label: "Vibrance", value: $viewModel.vibrance, range: -1...1)
+            }
+            // Add more sliders for color adjustment filters here
         }
         .padding()
     }
@@ -68,24 +92,22 @@ struct AdjustableSlider: View {
     let range: ClosedRange<Float>
     
     var body: some View {
-        HStack {
+        VStack {
             Text(label)
-            Slider(value: $value, in: range)
+            Slider(value: $value, in: range) { _ in
+                valueChanged()
+            }
+            .onChange(of: value) { _ in
+                valueChanged()
+            }
             Text("\(Int(value * 100))%")
         }
         .padding()
         .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
-        .focusable()
-        .onMoveCommand { direction in
-            switch direction {
-            case .left:
-                value = max(value - 0.01, range.lowerBound)
-            case .right:
-                value = min(value + 0.01, range.upperBound)
-            default:
-                break
-            }
-        }
+    }
+    
+    func valueChanged() {
+        // This function will be called continuously as the slider is dragged
     }
 }
 
@@ -135,5 +157,43 @@ struct VideoImageView: NSViewRepresentable {
     
     class Coordinator: NSObject {
         var imageView: NSImageView?
+    }
+}
+
+struct VideoControlsView: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        HStack {
+            Button(action: {
+                viewModel.playPause()
+            }) {
+                Image(systemName: viewModel.isPlaying ? "pause.circle" : "play.circle")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            }
+            Button(action: {
+                viewModel.loopVideo()
+            }) {
+                Image(systemName: "repeat.circle")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            }
+            Button(action: {
+                viewModel.stepFrame(by: -1)
+            }) {
+                Image(systemName: "backward.frame")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            }
+            Button(action: {
+                viewModel.stepFrame(by: 1)
+            }) {
+                Image(systemName: "forward.frame")
+                    .resizable()
+                    .frame(width: 40, height: 40)
+            }
+        }
+        .padding()
     }
 }
