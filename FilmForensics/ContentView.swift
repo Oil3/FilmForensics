@@ -18,7 +18,16 @@ struct ContentView: View {
                 .onAppear {
                     videoPlayerViewModel.setupPlayer()
                 }
-            FilterControlsView(viewModel: videoPlayerViewModel)
+            TabView {
+                FilterControlsView(viewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Basic Filters", systemImage: "slider.horizontal.3")
+                    }
+                CoreImageFilterControlsView(viewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Advanced Filters", systemImage: "wand.and.stars")
+                    }
+            }
             Button("Open Video or Image") {
                 videoPlayerViewModel.openFilePicker()
             }
@@ -32,26 +41,51 @@ struct FilterControlsView: View {
     
     var body: some View {
         VStack {
-            Slider(value: $viewModel.brightness, in: -1...1) {
-                Text("Brightness")
-            }
-            Slider(value: $viewModel.contrast, in: 0...2) {
-                Text("Contrast")
-            }
-            Slider(value: $viewModel.saturation, in: 0...2) {
-                Text("Saturation")
-            }
-            Slider(value: $viewModel.red, in: 0...2) {
-                Text("Red")
-            }
-            Slider(value: $viewModel.green, in: 0...2) {
-                Text("Green")
-            }
-            Slider(value: $viewModel.blue, in: 0...2) {
-                Text("Blue")
-            }
+            AdjustableSlider(label: "Brightness", value: $viewModel.brightness, range: -1...1)
+            AdjustableSlider(label: "Contrast", value: $viewModel.contrast, range: 0...2)
+            AdjustableSlider(label: "Saturation", value: $viewModel.saturation, range: 0...2)
         }
         .padding()
+    }
+}
+
+struct CoreImageFilterControlsView: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        VStack {
+            AdjustableSlider(label: "Red", value: $viewModel.red, range: 0...2)
+            AdjustableSlider(label: "Green", value: $viewModel.green, range: 0...2)
+            AdjustableSlider(label: "Blue", value: $viewModel.blue, range: 0...2)
+        }
+        .padding()
+    }
+}
+
+struct AdjustableSlider: View {
+    let label: String
+    @Binding var value: Float
+    let range: ClosedRange<Float>
+    
+    var body: some View {
+        HStack {
+            Text(label)
+            Slider(value: $value, in: range)
+            Text("\(Int(value * 100))%")
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.gray.opacity(0.2)))
+        .focusable()
+        .onMoveCommand { direction in
+            switch direction {
+            case .left:
+                value = max(value - 0.01, range.lowerBound)
+            case .right:
+                value = min(value + 0.01, range.upperBound)
+            default:
+                break
+            }
+        }
     }
 }
 

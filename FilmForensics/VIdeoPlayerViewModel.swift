@@ -77,7 +77,7 @@ class VideoPlayerViewModel: ObservableObject {
         } else if url.pathExtension == "jpg" || url.pathExtension == "png" {
             if let image = CIImage(contentsOf: url) {
                 ciImage = image
-                applyImageFilter()
+                applyFilter()
             }
         }
     }
@@ -94,37 +94,15 @@ class VideoPlayerViewModel: ObservableObject {
         guard let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) else { return }
         
         var ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        
-        ciImage = ciImage.applyingFilter("CIColorControls", parameters: [
-            kCIInputBrightnessKey: brightness,
-            kCIInputContrastKey: contrast,
-            kCIInputSaturationKey: saturation
-        ])
-        
-        ciImage = ciImage.applyingFilter("CIColorMatrix", parameters: [
-            "inputRVector": CIVector(x: CGFloat(red), y: 0, z: 0, w: 0),
-            "inputGVector": CIVector(x: 0, y: CGFloat(green), z: 0, w: 0),
-            "inputBVector": CIVector(x: 0, y: 0, z: CGFloat(blue), w: 0),
-            "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 1)
-        ])
+        ciImage = applyFilters(to: ciImage)
         
         DispatchQueue.main.async {
             self.ciImage = ciImage
         }
     }
     
-    private func applyFilter() {
-        if let _ = ciImage {
-            applyImageFilter()
-        } else {
-            updateVideoFrame()
-        }
-    }
-    
-    private func applyImageFilter() {
-        guard let ciImage = ciImage else { return }
-        
-        var filteredImage = ciImage
+    private func applyFilters(to image: CIImage) -> CIImage {
+        var filteredImage = image
         
         filteredImage = filteredImage.applyingFilter("CIColorControls", parameters: [
             kCIInputBrightnessKey: brightness,
@@ -139,8 +117,14 @@ class VideoPlayerViewModel: ObservableObject {
             "inputAVector": CIVector(x: 0, y: 0, z: 0, w: 1)
         ])
         
-        DispatchQueue.main.async {
-            self.ciImage = filteredImage
+        return filteredImage
+    }
+    
+    private func applyFilter() {
+        if let ciImage = ciImage {
+            self.ciImage = applyFilters(to: ciImage)
+        } else {
+            updateVideoFrame()
         }
     }
 }
