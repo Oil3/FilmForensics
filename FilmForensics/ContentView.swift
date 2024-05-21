@@ -1,9 +1,9 @@
-//
-//  ContentView.swift
-//  FilmForensics
-//
-//  Created by Almahdi Morris on 05/20/24.
-//
+  //
+  //  ContentView.swift
+  //  FilmForensics
+  //
+  //  Created by Almahdi Morris on 05/20/24.
+  //
 
 import SwiftUI
 import AVKit
@@ -19,7 +19,7 @@ struct ContentView: View {
                     videoPlayerViewModel.setupPlayer()
                 }
             TabView {
-                FilterControlsView(viewModel: videoPlayerViewModel)
+                FavoriteFiltersView(viewModel: videoPlayerViewModel)
                     .tabItem {
                         Label("Favorite", systemImage: "star")
                     }
@@ -31,8 +31,16 @@ struct ContentView: View {
                     .tabItem {
                         Label("Color Adjustment", systemImage: "paintbrush")
                     }
-                // Add more categories here
+                ColorEffectFiltersView(viewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Color Effects", systemImage: "sparkles")
+                    }
+                ReductionFiltersView(viewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Reduction Filters", systemImage: "chart.bar.xaxis")
+                    }
             }
+            FilterControls(viewModel: videoPlayerViewModel)
             VideoControlsView(viewModel: videoPlayerViewModel)
             Button("Open Video or Image") {
                 videoPlayerViewModel.openFilePicker()
@@ -42,7 +50,7 @@ struct ContentView: View {
     }
 }
 
-struct FilterControlsView: View {
+struct FavoriteFiltersView: View {
     @ObservedObject var viewModel: VideoPlayerViewModel
     
     var body: some View {
@@ -65,7 +73,16 @@ struct BlurFiltersView: View {
     
     var body: some View {
         VStack {
-            // Add sliders for blur filters here
+            Text("Apply blurs, simulate motion and zoom effects, reduce noise, and erode and dilate image regions.")
+                .padding()
+            HStack {
+                AdjustableSlider(label: "Gaussian Blur", value: $viewModel.gaussianBlur, range: 0...10)
+                AdjustableSlider(label: "Motion Blur", value: $viewModel.motionBlur, range: 0...10)
+            }
+            HStack {
+                AdjustableSlider(label: "Zoom Blur", value: $viewModel.zoomBlur, range: 0...10)
+                AdjustableSlider(label: "Noise Reduction", value: $viewModel.noiseReduction, range: 0...10)
+            }
         }
         .padding()
     }
@@ -76,11 +93,48 @@ struct ColorAdjustmentFiltersView: View {
     
     var body: some View {
         VStack {
+            Text("Apply color transformations, including exposure, hue, and tint adjustments.")
+                .padding()
             HStack {
                 AdjustableSlider(label: "Gamma", value: $viewModel.gamma, range: 0...3)
                 AdjustableSlider(label: "Vibrance", value: $viewModel.vibrance, range: -1...1)
             }
-            // Add more sliders for color adjustment filters here
+            HStack {
+                AdjustableSlider(label: "Exposure", value: $viewModel.exposure, range: -2...2)
+                AdjustableSlider(label: "Temperature", value: $viewModel.temperature, range: 2000...10000)
+            }
+        }
+        .padding()
+    }
+}
+
+struct ColorEffectFiltersView: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        VStack {
+            Text("Apply color effects, including photo effects, dithering, and color maps.")
+                .padding()
+            HStack {
+                AdjustableSlider(label: "Sepia Tone", value: $viewModel.sepiaTone, range: 0...1)
+                AdjustableSlider(label: "Color Invert", value: $viewModel.colorInvert, range: 0...1)
+            }
+        }
+        .padding()
+    }
+}
+
+struct ReductionFiltersView: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        VStack {
+            Text("Create statistical information about an image.")
+                .padding()
+            HStack {
+                AdjustableSlider(label: "Area Average", value: $viewModel.areaAverage, range: 0...1)
+                AdjustableSlider(label: "Histogram", value: $viewModel.histogram, range: 0...1)
+            }
         }
         .padding()
     }
@@ -94,12 +148,9 @@ struct AdjustableSlider: View {
     var body: some View {
         VStack {
             Text(label)
-            Slider(value: $value, in: range) { _ in
+            Slider(value: $value, in: range, onEditingChanged: { _ in
                 valueChanged()
-            }
-            .onChange(of: value) { _ in
-                valueChanged()
-            }
+            })
             Text("\(Int(value * 100))%")
         }
         .padding()
@@ -192,6 +243,39 @@ struct VideoControlsView: View {
                 Image(systemName: "forward.frame")
                     .resizable()
                     .frame(width: 40, height: 40)
+            }
+        }
+        .padding()
+    }
+}
+
+struct FilterControls: View {
+    @ObservedObject var viewModel: VideoPlayerViewModel
+    
+    var body: some View {
+        HStack {
+            Button("Reset") {
+                viewModel.resetFilters()
+            }
+            .padding()
+            
+            Button("Save Preset") {
+                viewModel.savePreset()
+            }
+            .padding()
+            
+            if let presets = viewModel.presets {
+                Picker("Load Preset", selection: $viewModel.selectedPreset) {
+                    ForEach(presets, id: \.self) { preset in
+                        Text(preset.name).tag(preset)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .onChange(of: viewModel.selectedPreset) { newValue in
+                    if let newValue = newValue {
+                        viewModel.loadPreset(preset: newValue)
+                    }
+                }
             }
         }
         .padding()
