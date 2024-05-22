@@ -57,17 +57,7 @@ class VideoPlayerViewModel: ObservableObject {
             applyFilter()
         }
     }
-    @Published var colorInvert: Float = 0 {
-        didSet {
-            applyFilter()
-        }
-    }
-    @Published var areaAverage: Float = 0 {
-        didSet {
-            applyFilter()
-        }
-    }
-    @Published var histogram: Float = 0 {
+    @Published var colorInvert: Bool = false {
         didSet {
             applyFilter()
         }
@@ -92,11 +82,57 @@ class VideoPlayerViewModel: ObservableObject {
             applyFilter()
         }
     }
+    @Published var sharpenLuminance: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var unsharpMask: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var additionCompositing: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var multiplyCompositing: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var convolution3X3: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
+    @Published var convolution5X5: Float = 0 {
+        didSet {
+            applyFilter()
+        }
+    }
     
     @Published var ciImage: CIImage? = nil
     @Published var isPlaying: Bool = false
     @Published var presets: [FilterPreset]? = []
     @Published var selectedPreset: FilterPreset?
+    @Published var showBoundingBoxes: Bool = false
+    @Published var image: NSImage? {
+        didSet {
+            if let image = image {
+                self.ciImage = CIImage(data: image.tiffRepresentation!)
+                applyFilter()
+            }
+        }
+    }
+    @Published var videoURL: URL? {
+        didSet {
+            if let url = videoURL {
+                loadFile(url: url)
+            }
+        }
+    }
     
     let player = AVPlayer()
     private let context = CIContext()
@@ -115,40 +151,35 @@ class VideoPlayerViewModel: ObservableObject {
             "temperature": 6500,
             "sepiaTone": 0,
             "colorInvert": 0,
-            "areaAverage": 0,
-            "histogram": 0,
             "gaussianBlur": 0,
             "motionBlur": 0,
             "zoomBlur": 0,
-            "noiseReduction": 0
+            "noiseReduction": 0,
+            "sharpenLuminance": 0,
+            "unsharpMask": 0,
+            "additionCompositing": 0,
+            "multiplyCompositing": 0,
+            "convolution3X3": 0,
+            "convolution5X5": 0
         ]
+    }
+    
+    init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(applyFilter), name: .sliderValueChanged, object: nil)
     }
     
     func setupPlayer() {
         // Initial setup can be left empty if we plan to open files dynamically
     }
     
-    func openFilePicker() {
-        let dialog = NSOpenPanel()
-        dialog.title = "Choose a video or image file"
-        dialog.allowedContentTypes = [UTType.movie, UTType.image]
-        dialog.allowsMultipleSelection = false
-        dialog.canChooseDirectories = false
-        dialog.canCreateDirectories = false
-        
-        if dialog.runModal() == .OK, let result = dialog.url {
-            loadFile(url: result)
-        }
-    }
-    
     private func loadFile(url: URL) {
+        player.pause()
         ciImage = nil
         if url.pathExtension == "mp4" || url.pathExtension == "mov" {
             let playerItem = AVPlayerItem(url: url)
             playerItem.add(videoOutput)
             player.replaceCurrentItem(with: playerItem)
-            player.play()
-            isPlaying = true
+            isPlaying = false
             setupTimer()
         } else if url.pathExtension == "jpg" || url.pathExtension == "png" {
             if let image = CIImage(contentsOf: url) {
@@ -210,7 +241,7 @@ class VideoPlayerViewModel: ObservableObject {
             kCIInputIntensityKey: sepiaTone
         ])
         
-        if colorInvert != 0 {
+        if colorInvert {
             filteredImage = filteredImage.applyingFilter("CIColorInvert")
         }
         
@@ -232,40 +263,42 @@ class VideoPlayerViewModel: ObservableObject {
             "inputSharpness": 0.4
         ])
         
+        filteredImage = filteredImage.applyingFilter("CISharpenLuminance", parameters: [
+            kCIInputSharpnessKey: sharpenLuminance
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIUnsharpMask", parameters: [
+            kCIInputRadiusKey: unsharpMask,
+            kCIInputIntensityKey: 1.0
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIAdditionCompositing", parameters: [
+            kCIInputBackgroundImageKey: filteredImage
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIMultiplyCompositing", parameters: [
+            kCIInputBackgroundImageKey: filteredImage
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIConvolution3X3", parameters: [
+            "inputWeights": CIVector(values: [0, 1, 0, 1, -4, 1, 0, 1, 0], count: 9),
+            kCIInputBiasKey: convolution3X3
+        ])
+        
+        filteredImage = filteredImage.applyingFilter("CIConvolution5X5", parameters: [
+            "inputWeights": CIVector(values: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], count: 25),
+            kCIInputBiasKey: convolution5X5
+        ])
+        
         return filteredImage
     }
     
-    private func applyFilter() {
+    @objc private func applyFilter() {
         if let ciImage = ciImage {
             self.ciImage = applyFilters(to: ciImage)
         } else {
             updateVideoFrame()
         }
-    }
-    
-    func playPause() {
-        if player.rate == 0 {
-            player.play()
-            isPlaying = true
-        } else {
-            player.pause()
-            isPlaying = false
-        }
-    }
-    
-    func loopVideo() {
-        NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
-            self.player.seek(to: CMTime.zero)
-            self.player.play()
-        }
-    }
-    
-    func stepFrame(by count: Int) {
-        guard let currentItem = player.currentItem else { return }
-        let currentTime = currentItem.currentTime()
-        let frameDuration = CMTimeMake(value: 1, timescale: 30)
-        let newTime = count > 0 ? CMTimeAdd(currentTime, frameDuration) : CMTimeSubtract(currentTime, frameDuration)
-        player.seek(to: newTime)
     }
     
     func resetFilters() {
@@ -278,13 +311,17 @@ class VideoPlayerViewModel: ObservableObject {
         exposure = defaultSettings["exposure"]!
         temperature = defaultSettings["temperature"]!
         sepiaTone = defaultSettings["sepiaTone"]!
-        colorInvert = defaultSettings["colorInvert"]!
-        areaAverage = defaultSettings["areaAverage"]!
-        histogram = defaultSettings["histogram"]!
+        colorInvert = false
         gaussianBlur = defaultSettings["gaussianBlur"]!
         motionBlur = defaultSettings["motionBlur"]!
         zoomBlur = defaultSettings["zoomBlur"]!
         noiseReduction = defaultSettings["noiseReduction"]!
+        sharpenLuminance = defaultSettings["sharpenLuminance"]!
+        unsharpMask = defaultSettings["unsharpMask"]!
+        additionCompositing = defaultSettings["additionCompositing"]!
+        multiplyCompositing = defaultSettings["multiplyCompositing"]!
+        convolution3X3 = defaultSettings["convolution3X3"]!
+        convolution5X5 = defaultSettings["convolution5X5"]!
     }
     
     func savePreset() {
@@ -298,13 +335,17 @@ class VideoPlayerViewModel: ObservableObject {
             exposure: exposure,
             temperature: temperature,
             sepiaTone: sepiaTone,
-            colorInvert: colorInvert,
-            areaAverage: areaAverage,
-            histogram: histogram,
+            colorInvert: colorInvert ? 1 : 0,
             gaussianBlur: gaussianBlur,
             motionBlur: motionBlur,
             zoomBlur: zoomBlur,
-            noiseReduction: noiseReduction
+            noiseReduction: noiseReduction,
+            sharpenLuminance: sharpenLuminance,
+            unsharpMask: unsharpMask,
+            additionCompositing: additionCompositing,
+            multiplyCompositing: multiplyCompositing,
+            convolution3X3: convolution3X3,
+            convolution5X5: convolution5X5
         )
         
         presets?.append(preset)
@@ -321,13 +362,17 @@ class VideoPlayerViewModel: ObservableObject {
         exposure = preset.exposure
         temperature = preset.temperature
         sepiaTone = preset.sepiaTone
-        colorInvert = preset.colorInvert
-        areaAverage = preset.areaAverage
-        histogram = preset.histogram
+        colorInvert = preset.colorInvert == 1
         gaussianBlur = preset.gaussianBlur
         motionBlur = preset.motionBlur
         zoomBlur = preset.zoomBlur
         noiseReduction = preset.noiseReduction
+        sharpenLuminance = preset.sharpenLuminance
+        unsharpMask = preset.unsharpMask
+        additionCompositing = preset.additionCompositing
+        multiplyCompositing = preset.multiplyCompositing
+        convolution3X3 = preset.convolution3X3
+        convolution5X5 = preset.convolution5X5
     }
     
     private func savePresets() {
@@ -351,12 +396,16 @@ struct FilterPreset: Identifiable, Hashable, Equatable {
     let temperature: Float
     let sepiaTone: Float
     let colorInvert: Float
-    let areaAverage: Float
-    let histogram: Float
     let gaussianBlur: Float
     let motionBlur: Float
     let zoomBlur: Float
     let noiseReduction: Float
+    let sharpenLuminance: Float
+    let unsharpMask: Float
+    let additionCompositing: Float
+    let multiplyCompositing: Float
+    let convolution3X3: Float
+    let convolution5X5: Float
     
     var name: String {
         return "Preset \(id.uuidString.prefix(4))"
