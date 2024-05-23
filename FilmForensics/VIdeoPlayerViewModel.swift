@@ -114,7 +114,7 @@ class VideoPlayerViewModel: ObservableObject {
         }
     }
     
-    @Published var ciImage: CIImage? //= nil
+    @Published var ciImage: CIImage? = nil
     @Published var isPlaying: Bool = false
     @Published var presets: [FilterPreset]? = []
     @Published var selectedPreset: FilterPreset?
@@ -183,7 +183,7 @@ class VideoPlayerViewModel: ObservableObject {
     
     func loadVideo(url: URL) {
         player.pause()
-       // ciImage = nil
+        ciImage = nil
         let playerItem = AVPlayerItem(url: url)
         playerItem.add(videoOutput)
         player.replaceCurrentItem(with: playerItem)
@@ -215,85 +215,119 @@ class VideoPlayerViewModel: ObservableObject {
     private func applyFilters(to image: CIImage) -> CIImage {
         var filteredImage = image
         
-        filteredImage = filteredImage.applyingFilter("CIColorControls", parameters: [
-            kCIInputBrightnessKey: brightness,
-            kCIInputContrastKey: contrast,
-            kCIInputSaturationKey: saturation
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIHueAdjust", parameters: [
-            "inputAngle": hue
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIGammaAdjust", parameters: [
-            "inputPower": gamma
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIVibrance", parameters: [
-            "inputAmount": vibrance
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIExposureAdjust", parameters: [
-            kCIInputEVKey: exposure
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CITemperatureAndTint", parameters: [
-            "inputNeutral": CIVector(x: CGFloat(temperature), y: 0)
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CISepiaTone", parameters: [
-            kCIInputIntensityKey: sepiaTone
-        ])
-        
+        if brightness != 0 {
+            filteredImage = filteredImage.applyingFilter("CIColorControls", parameters: [
+                kCIInputBrightnessKey: brightness,
+                kCIInputContrastKey: contrast,
+                kCIInputSaturationKey: saturation
+            ])
+        }
+
+        if hue != 0 {
+            filteredImage = filteredImage.applyingFilter("CIHueAdjust", parameters: [
+                "inputAngle": hue
+            ])
+        }
+
+        if gamma != 1 {
+            filteredImage = filteredImage.applyingFilter("CIGammaAdjust", parameters: [
+                "inputPower": gamma
+            ])
+        }
+
+        if vibrance != 0 {
+            filteredImage = filteredImage.applyingFilter("CIVibrance", parameters: [
+                "inputAmount": vibrance
+            ])
+        }
+
+        if exposure != 0 {
+            filteredImage = filteredImage.applyingFilter("CIExposureAdjust", parameters: [
+                kCIInputEVKey: exposure
+            ])
+        }
+
+        if temperature != 6500 {
+            filteredImage = filteredImage.applyingFilter("CITemperatureAndTint", parameters: [
+                "inputNeutral": CIVector(x: CGFloat(temperature), y: 0)
+            ])
+        }
+
+        if sepiaTone != 0 {
+            filteredImage = filteredImage.applyingFilter("CISepiaTone", parameters: [
+                kCIInputIntensityKey: sepiaTone
+            ])
+        }
+
         if colorInvert {
             filteredImage = filteredImage.applyingFilter("CIColorInvert")
         }
-        
-        filteredImage = filteredImage.applyingFilter("CIGaussianBlur", parameters: [
-            kCIInputRadiusKey: gaussianBlur
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIMotionBlur", parameters: [
-            kCIInputRadiusKey: motionBlur,
-            kCIInputAngleKey: 0
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIZoomBlur", parameters: [
-            kCIInputAmountKey: zoomBlur
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CINoiseReduction", parameters: [
-            "inputNoiseLevel": noiseReduction,
-            "inputSharpness": 0.4
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CISharpenLuminance", parameters: [
-            kCIInputSharpnessKey: sharpenLuminance
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIUnsharpMask", parameters: [
-            kCIInputRadiusKey: unsharpMask,
-            kCIInputIntensityKey: 1.0
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIAdditionCompositing", parameters: [
-            kCIInputBackgroundImageKey: filteredImage
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIMultiplyCompositing", parameters: [
-            kCIInputBackgroundImageKey: filteredImage
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIConvolution3X3", parameters: [
-            "inputWeights": CIVector(values: [0, 1, 0, 1, -4, 1, 0, 1, 0], count: 9),
-            kCIInputBiasKey: convolution3X3
-        ])
-        
-        filteredImage = filteredImage.applyingFilter("CIConvolution5X5", parameters: [
-            "inputWeights": CIVector(values: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], count: 25),
-            kCIInputBiasKey: convolution5X5
-        ])
-        
+
+        if gaussianBlur != 0 {
+            filteredImage = filteredImage.applyingFilter("CIGaussianBlur", parameters: [
+                kCIInputRadiusKey: gaussianBlur
+            ])
+        }
+
+        if motionBlur != 0 {
+            filteredImage = filteredImage.applyingFilter("CIMotionBlur", parameters: [
+                kCIInputRadiusKey: motionBlur,
+                kCIInputAngleKey: 0
+            ])
+        }
+
+        if zoomBlur != 0 {
+            filteredImage = filteredImage.applyingFilter("CIZoomBlur", parameters: [
+                kCIInputAmountKey: zoomBlur
+            ])
+        }
+
+        if noiseReduction != 0 {
+            filteredImage = filteredImage.applyingFilter("CINoiseReduction", parameters: [
+                "inputNoiseLevel": noiseReduction,
+                "inputSharpness": 0.4
+            ])
+        }
+
+        if sharpenLuminance != 0 {
+            filteredImage = filteredImage.applyingFilter("CISharpenLuminance", parameters: [
+                kCIInputSharpnessKey: sharpenLuminance
+            ])
+        }
+
+        if unsharpMask != 0 {
+            filteredImage = filteredImage.applyingFilter("CIUnsharpMask", parameters: [
+                kCIInputRadiusKey: unsharpMask,
+                kCIInputIntensityKey: 1.0
+            ])
+        }
+
+        if additionCompositing != 0 {
+            filteredImage = filteredImage.applyingFilter("CIAdditionCompositing", parameters: [
+                kCIInputBackgroundImageKey: filteredImage
+            ])
+        }
+
+        if multiplyCompositing != 0 {
+            filteredImage = filteredImage.applyingFilter("CIMultiplyCompositing", parameters: [
+                kCIInputBackgroundImageKey: filteredImage
+            ])
+        }
+
+        if convolution3X3 != 0 {
+            filteredImage = filteredImage.applyingFilter("CIConvolution3X3", parameters: [
+                "inputWeights": CIVector(values: [0, 1, 0, 1, -4, 1, 0, 1, 0], count: 9),
+                kCIInputBiasKey: convolution3X3
+            ])
+        }
+
+        if convolution5X5 != 0 {
+            filteredImage = filteredImage.applyingFilter("CIConvolution5X5", parameters: [
+                "inputWeights": CIVector(values: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], count: 25),
+                kCIInputBiasKey: convolution5X5
+            ])
+        }
+
         return filteredImage
     }
     

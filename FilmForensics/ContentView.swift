@@ -9,6 +9,10 @@ import AVKit
 import AVFoundation
 import CoreImage
 
+import SwiftUI
+import AVKit
+import AVFoundation
+
 struct ContentView: View {
     @StateObject private var videoPlayerViewModel = VideoPlayerViewModel()
     @State private var showPicker = false
@@ -78,15 +82,14 @@ struct ImageView: View {
                 Image(nsImage: ciImage.toNSImage())
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    //.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
-                    //.overlay(Rectangle().stroke(Color.clear, lineWidth: 0)) // Ensure image is in front
+                    .overlay(Rectangle().stroke(Color.clear, lineWidth: 0)) // Ensure image is in front
             }
             FilterControls(videoPlayerViewModel: videoPlayerViewModel)
         }
     }
 }
-
 
 struct FilterPane: View {
     @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
