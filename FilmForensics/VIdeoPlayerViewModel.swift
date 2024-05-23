@@ -10,6 +10,7 @@ import CoreImage
 import CoreImage.CIFilterBuiltins
 import UniformTypeIdentifiers
 import AppKit
+import Vision
 
 class VideoPlayerViewModel: ObservableObject {
     @Published var brightness: Float = 0 {
@@ -118,6 +119,7 @@ class VideoPlayerViewModel: ObservableObject {
     @Published var presets: [FilterPreset]? = []
     @Published var selectedPreset: FilterPreset?
     @Published var showBoundingBoxes: Bool = false
+    @Published var boundingBoxes: [CGRect] = []
     @Published var image: NSImage? {
         didSet {
             if let image = image {
@@ -129,7 +131,7 @@ class VideoPlayerViewModel: ObservableObject {
     @Published var videoURL: URL? {
         didSet {
             if let url = videoURL {
-                loadFile(url: url)
+                loadVideo(url: url)
             }
         }
     }
@@ -172,26 +174,28 @@ class VideoPlayerViewModel: ObservableObject {
         // Initial setup can be left empty if we plan to open files dynamically
     }
     
-    private func loadFile(url: URL) {
+    func loadImage(url: URL) {
+        if let image = CIImage(contentsOf: url) {
+            ciImage = image
+            applyFilter()
+        }
+    }
+    
+    func loadVideo(url: URL) {
         player.pause()
         ciImage = nil
-        if url.pathExtension == "mp4" || url.pathExtension == "mov" {
-            let playerItem = AVPlayerItem(url: url)
-            playerItem.add(videoOutput)
-            player.replaceCurrentItem(with: playerItem)
-            isPlaying = false
-            setupTimer()
-        } else if url.pathExtension == "jpg" || url.pathExtension == "png" {
-            if let image = CIImage(contentsOf: url) {
-                ciImage = image
-                applyFilter()
-            }
-        }
+        let playerItem = AVPlayerItem(url: url)
+        playerItem.add(videoOutput)
+        player.replaceCurrentItem(with: playerItem)
+        isPlaying = false
+        setupTimer()
     }
     
     private func setupTimer() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(timeInterval: 1.0 / 30.0, target: self, selector: #selector(updateVideoFrame), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 30.0, repeats: true) { _ in
+            self.updateVideoFrame()
+        }
     }
     
     @objc private func updateVideoFrame() {
@@ -381,6 +385,19 @@ class VideoPlayerViewModel: ObservableObject {
     
     private func loadPresets() {
         // Code to load presets from disk
+    }
+
+    func detectObjects(in image: CIImage) {
+        guard let model = try? VNCoreMLModel(for: MLcopycontrol25k().model) else { return }
+
+        let request = VNCoreMLRequest(model: model) { [weak self] request, error in
+            if let results = request.results as? [VNRecognizedObjectObservation] {
+                self?.boundingBoxes = results.map { $0.boundingBox }
+            }
+        }
+        
+        let handler = VNImageRequestHandler(ciImage: image, options: [:])
+        try? handler.perform([request])
     }
 }
 

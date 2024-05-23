@@ -11,6 +11,7 @@
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
 		3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C54B2BFDCF9000E70B0F /* MLDetection.swift */; };
+		3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3494C54D2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel */; };
 		34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */; };
 		34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB72BFC2A88004685AC /* ContentView.swift */; };
 		34A99DBA2BFC2A89004685AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34A99DB92BFC2A89004685AC /* Assets.xcassets */; };
@@ -23,6 +24,7 @@
 		3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		3494C5492BFDCF3900E70B0F /* VideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPicker.swift; sourceTree = "<group>"; };
 		3494C54B2BFDCF9000E70B0F /* MLDetection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLDetection.swift; sourceTree = "<group>"; };
+		3494C54D2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MLcopycontrol25k.mlmodel; sourceTree = "<group>"; };
 		34A99DB22BFC2A88004685AC /* FilmForensics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmForensics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmForensicsApp.swift; sourceTree = "<group>"; };
 		34A99DB72BFC2A88004685AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 				3494C54B2BFDCF9000E70B0F /* MLDetection.swift */,
 				3494C5492BFDCF3900E70B0F /* VideoPicker.swift */,
 				34A99DB92BFC2A89004685AC /* Assets.xcassets */,
+				3494C54D2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel */,
 				34A99DBB2BFC2A89004685AC /* Preview Content */,
 			);
 			path = FilmForensics;
@@ -154,6 +157,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */,
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
 				34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */,

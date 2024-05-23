@@ -24,12 +24,3 @@ struct VideoPlayerView: NSViewRepresentable {
         }
     }
 }
-
-extension CIImage {
-    func toNSImage() -> NSImage {
-        let rep = NSCIImageRep(ciImage: self)
-        let nsImage = NSImage(size: rep.size)
-        nsImage.addRepresentation(rep)
-        return nsImage
-    }
-}

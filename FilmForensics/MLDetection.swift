@@ -4,12 +4,11 @@
 //
 //  Created by Almahdi Morris on 05/22/24.
 //
-
 import SwiftUI
 import CoreML
 import Vision
 
-class MLDetectionViewModel: ObservableObject {
+class YoloDetectionViewModel: ObservableObject {
     @Published var boundingBoxes: [CGRect] = []
     @Published var ciImage: CIImage? = nil
     
@@ -20,7 +19,7 @@ class MLDetectionViewModel: ObservableObject {
     }
     
     private func setupModel() {
-        if let model = try? VNCoreMLModel(for: YOLOv5().model) {
+        if let model = try? VNCoreMLModel(for: MLcopycontrol25k().model) {
             self.yoloModel = model
         }
     }
@@ -39,8 +38,8 @@ class MLDetectionViewModel: ObservableObject {
     }
 }
 
-struct MLDetectionView: View {
-    @StateObject private var viewModel = MLDetectionViewModel()
+struct YoloDetectionView: View {
+    @StateObject private var viewModel = YoloDetectionViewModel()
     @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
 
     var body: some View {
@@ -56,7 +55,8 @@ struct MLDetectionView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                     if videoPlayerViewModel.showBoundingBoxes {
-                        ForEach(viewModel.boundingBoxes, id: \.self) { box in
+                        ForEach(viewModel.boundingBoxes.indices, id: \.self) { index in
+                            let box = viewModel.boundingBoxes[index]
                             Rectangle()
                                 .stroke(Color.red, lineWidth: 2)
                                 .frame(width: box.width * ciImage.extent.width, height: box.height * ciImage.extent.height)

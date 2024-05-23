@@ -4,35 +4,39 @@
 //
 //  Created by Almahdi Morris on 05/22/24.
 //
-
 import SwiftUI
 import AVKit
 import UniformTypeIdentifiers
 
-struct VideoPicker: UIViewControllerRepresentable {
+struct VideoPicker: NSViewControllerRepresentable {
     @Binding var videoURL: URL?
-
-    func makeUIViewController(context: Context) -> UIDocumentPickerViewController {
-        let picker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.movie])
-        picker.delegate = context.coordinator
-        return picker
-    }
-
-    func updateUIViewController(_ uiViewController: UIDocumentPickerViewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
 
-    class Coordinator: NSObject, UIDocumentPickerDelegate {
+    func makeNSViewController(context: Context) -> NSViewController {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedFileTypes = [UTType.movie.identifier]
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                self.videoURL = url
+            }
+            context.environment.presentationMode.wrappedValue.dismiss()
+        }
+        return NSViewController()
+    }
+
+    func updateNSViewController(_ nsViewController: NSViewController, context: Context) {}
+
+    class Coordinator: NSObject, NSOpenSavePanelDelegate {
         let parent: VideoPicker
 
         init(parent: VideoPicker) {
             self.parent = parent
-        }
-
-        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            parent.videoURL = urls.first
         }
     }
 }
