@@ -40,3 +40,4 @@ struct VideoPicker: NSViewControllerRepresentable {
         }
     }
 }
+

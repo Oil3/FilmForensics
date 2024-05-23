@@ -4,10 +4,10 @@
   //
   //  Created by Almahdi Morris on 05/20/24.
   //
-
 import SwiftUI
 import AVKit
 import AVFoundation
+import CoreImage
 
 struct ContentView: View {
     @StateObject private var videoPlayerViewModel = VideoPlayerViewModel()
@@ -16,48 +16,6 @@ struct ContentView: View {
 
     var body: some View {
         VStack {
-            ZStack {
-                VideoPlayerView(player: videoPlayerViewModel.player)
-                    .onAppear {
-                        videoPlayerViewModel.setupPlayer()
-                    }
-                if let ciImage = videoPlayerViewModel.ciImage {
-                    Image(nsImage: ciImage.toNSImage())
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                }
-            }
-            TabView {
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Favorite Filters")
-                    .tabItem {
-                        Label("Favorite", systemImage: "star")
-                    }
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Blur & Sharpen")
-                    .tabItem {
-                        Label("Blur & Sharpen", systemImage: "drop.fill")
-                    }
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Color Adjustment")
-                    .tabItem {
-                        Label("Color Adjustment", systemImage: "paintbrush")
-                    }
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Color Effects")
-                    .tabItem {
-                        Label("Color Effects", systemImage: "sparkles")
-                    }
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Composite")
-                    .tabItem {
-                        Label("Composite", systemImage: "rectangle.stack")
-                    }
-                FilterPane(videoPlayerViewModel: videoPlayerViewModel, title: "Convolution")
-                    .tabItem {
-                        Label("Convolution", systemImage: "wand.and.rays")
-                    }
-                YoloDetectionView(videoPlayerViewModel: videoPlayerViewModel)
-                    .tabItem {
-                        Label("YOLO Detection", systemImage: "square.stack.3d.up")
-                    }
-            }
-            FilterControls(videoPlayerViewModel: videoPlayerViewModel)
             HStack {
                 Button("Open Video") {
                     isImagePicker = false
@@ -68,22 +26,67 @@ struct ContentView: View {
                     showPicker = true
                 }
             }
+            .padding()
+
+            TabView {
+                VideoView(videoPlayerViewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Video", systemImage: "video")
+                    }
+                ImageView(videoPlayerViewModel: videoPlayerViewModel)
+                    .tabItem {
+                        Label("Image", systemImage: "photo")
+                    }
+            }
+            .fileImporter(isPresented: $showPicker, allowedContentTypes: isImagePicker ? [.image] : [.movie]) { result in
+                switch result {
+                case .success(let url):
+                    if isImagePicker {
+                        videoPlayerViewModel.loadImage(url: url)
+                    } else {
+                        videoPlayerViewModel.loadVideo(url: url)
+                    }
+                case .failure(let error):
+                    print("Failed to load file: \(error.localizedDescription)")
+                }
+            }
         }
         .frame(minWidth: 800, minHeight: 600)
-        .fileImporter(isPresented: $showPicker, allowedContentTypes: isImagePicker ? [.image] : [.movie]) { result in
-            switch result {
-            case .success(let url):
-                if isImagePicker {
-                    videoPlayerViewModel.loadImage(url: url)
-                } else {
-                    videoPlayerViewModel.loadVideo(url: url)
+    }
+}
+
+struct VideoView: View {
+    @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
+
+    var body: some View {
+        VStack {
+            VideoPlayerView(player: videoPlayerViewModel.player)
+                .onAppear {
+                    videoPlayerViewModel.setupPlayer()
                 }
-            case .failure(let error):
-                print("Failed to load file: \(error.localizedDescription)")
-            }
+            FilterControls(videoPlayerViewModel: videoPlayerViewModel)
         }
     }
 }
+
+struct ImageView: View {
+    @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
+
+    var body: some View {
+        VStack {
+            if let ciImage = videoPlayerViewModel.ciImage {
+                Image(nsImage: ciImage.toNSImage())
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    //.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .clipped()
+                    //.overlay(Rectangle().stroke(Color.clear, lineWidth: 0)) // Ensure image is in front
+            }
+            FilterControls(videoPlayerViewModel: videoPlayerViewModel)
+        }
+    }
+}
+
 
 struct FilterPane: View {
     @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
@@ -94,7 +97,19 @@ struct FilterPane: View {
             Text(title)
                 .font(.headline)
                 .padding()
-            FilterControls(videoPlayerViewModel: videoPlayerViewModel)
+            AdjustableSlider(label: "Brightness", value: $videoPlayerViewModel.brightness, range: -1...1, tooltip: "Adjusts the brightness of the image.")
+            AdjustableSlider(label: "Contrast", value: $videoPlayerViewModel.contrast, range: 0...2, tooltip: "Adjusts the contrast of the image.")
+            AdjustableSlider(label: "Saturation", value: $videoPlayerViewModel.saturation, range: 0...2, tooltip: "Adjusts the saturation of the image.")
+            AdjustableSlider(label: "Hue", value: $videoPlayerViewModel.hue, range: -Float.pi...Float.pi, tooltip: "Adjusts the hue of the image.")
+            AdjustableSlider(label: "Gamma", value: $videoPlayerViewModel.gamma, range: 0...3, tooltip: "Alters an image’s transition between black and white.")
+            AdjustableSlider(label: "Vibrance", value: $videoPlayerViewModel.vibrance, range: -1...1, tooltip: "Adjusts an image’s vibrancy.")
+            AdjustableSlider(label: "Exposure", value: $videoPlayerViewModel.exposure, range: -2...2, tooltip: "Adjusts an image’s exposure.")
+            AdjustableSlider(label: "Temperature", value: $videoPlayerViewModel.temperature, range: 2000...10000, tooltip: "Alters an image’s temperature and tint.")
+            AdjustableSlider(label: "Sepia Tone", value: $videoPlayerViewModel.sepiaTone, range: 0...1, tooltip: "Adjusts an image’s colors to shades of brown.")
+            Toggle("Color Invert", isOn: $videoPlayerViewModel.colorInvert)
+                .toggleStyle(SwitchToggleStyle())
+                .padding()
+                .help("Inverts an image’s colors.")
         }
         .padding()
     }

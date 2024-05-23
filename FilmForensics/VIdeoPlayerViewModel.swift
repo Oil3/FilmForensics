@@ -114,7 +114,7 @@ class VideoPlayerViewModel: ObservableObject {
         }
     }
     
-    @Published var ciImage: CIImage? = nil
+    @Published var ciImage: CIImage? //= nil
     @Published var isPlaying: Bool = false
     @Published var presets: [FilterPreset]? = []
     @Published var selectedPreset: FilterPreset?
@@ -183,7 +183,7 @@ class VideoPlayerViewModel: ObservableObject {
     
     func loadVideo(url: URL) {
         player.pause()
-        ciImage = nil
+       // ciImage = nil
         let playerItem = AVPlayerItem(url: url)
         playerItem.add(videoOutput)
         player.replaceCurrentItem(with: playerItem)
