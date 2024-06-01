@@ -14,7 +14,7 @@ struct VideoPlayerView: NSViewRepresentable {
         let playerView = AVPlayerView()
         playerView.player = player
         playerView.showsFullScreenToggleButton = true
-        playerView.controlsStyle = .none
+        playerView.controlsStyle = .inline
         return playerView
     }
     
