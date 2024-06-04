@@ -33,6 +33,7 @@ struct ImagePicker: NSViewControllerRepresentable {
         panel.begin { response in
             if response == .OK, let url = panel.url {
                 self.selectedImage = NSImage(contentsOf: url)
+                print("Selected image: \(String(describing: self.selectedImage))") // Debug print
             }
             self.presentationMode.wrappedValue.dismiss()
         }

@@ -10,6 +10,7 @@ import AVFoundation
 
 struct ContentView: View {
     @StateObject private var videoPlayerViewModel = VideoPlayerViewModel()
+    @StateObject private var imageViewerModel = ImageViewerModel()
     @State private var showPicker = false
     @State private var isImagePicker = false
 
@@ -49,7 +50,7 @@ struct ContentView: View {
                     .tabItem {
                         Label("Video", systemImage: "video")
                     }
-                ImageView(videoPlayerViewModel: videoPlayerViewModel)
+                ImageView(imageViewerModel: imageViewerModel)
                     .tabItem {
                         Label("Image", systemImage: "photo")
                     }
@@ -58,7 +59,7 @@ struct ContentView: View {
                 switch result {
                 case .success(let url):
                     if isImagePicker {
-                        videoPlayerViewModel.loadImage(url: url)
+                        imageViewerModel.loadImage(url: url)
                     } else {
                         videoPlayerViewModel.loadVideo(url: url)
                     }
@@ -70,6 +71,8 @@ struct ContentView: View {
             FilterControlsView(videoPlayerViewModel: videoPlayerViewModel)
                 .frame(minWidth: 300)
                 .padding()
+                ImageView(imageViewerModel: imageViewerModel)
+
         }
         .frame(minWidth: 800, minHeight: 600)
     }
@@ -87,10 +90,10 @@ struct VideoView: View {
 }
 
 struct ImageView: View {
-    @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
+    @ObservedObject var imageViewerModel: ImageViewerModel
 
     var body: some View {
-        if let ciImage = videoPlayerViewModel.ciImage {
+        if let ciImage = imageViewerModel.ciImage {
             Image(nsImage: ciImage.toNSImage())
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -103,3 +106,4 @@ struct ImageView: View {
         }
     }
 }
+ 

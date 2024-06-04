@@ -1,15 +1,16 @@
 //
-//  VideoViewController.swift
-//  Machine Security System
+//  VideoController.swift
+//  V
 //
-//  Created by Almahdi Morris on 05/05/24.
+//  Created by Almahdi Morris on 4/6/24.
 //
+
 import UIKit
 import AVFoundation
 import Vision
 import CoreML
 
-class VideoViewController: UIViewController, AVPlayerItemOutputPullDelegate {
+class Videoontroller: UIViewController, AVPlayerItemOutputPullDelegate {
     private var player: AVPlayer?
     private var playerItem: AVPlayerItem?
     private var playerItemOutput: AVPlayerItemVideoOutput?
@@ -18,12 +19,15 @@ class VideoViewController: UIViewController, AVPlayerItemOutputPullDelegate {
     private var detectionOverlay: CALayer! = nil
     private var metalProcessor: MetalVideoProcessor!
     private var videoURL: URL?
+    private var shouldPlayVideoInFaceBox = true // Default to play video
+    private var faceVideoLayer: AVPlayerLayer?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupDetectionOverlay()
         loadModel()
         metalProcessor = MetalVideoProcessor()
+        setupPlayButton() // Add this line
     }
 
     func loadVideo(url: URL) {
@@ -143,6 +147,10 @@ class VideoViewController: UIViewController, AVPlayerItemOutputPullDelegate {
                 let boundingBoxLayer = self.createBoundingBoxLayer(frame: convertedRect, color: UIColor.systemBlue)
                 self.detectionOverlay.addSublayer(boundingBoxLayer)
                 
+                if self.shouldPlayVideoInFaceBox {
+                    self.playVideoInFaceBox(rect: convertedRect)
+                }
+
                 self.logFaceDetection(observation)
             }
         }
@@ -217,4 +225,28 @@ class VideoViewController: UIViewController, AVPlayerItemOutputPullDelegate {
             appendToLogFile(logMessage, filename: videoURL.deletingPathExtension().lastPathComponent)
         }
     }
+
+private func setupPlayButton() {
+    let playButton = UIButton(type: .system)
+    playButton.setTitle("Toggle Video in Face Box", for: .normal)
+    playButton.addTarget(self, action: #selector(toggleVideoInFaceBox), for: .touchUpInside)
+    playButton.frame = CGRect(x: 20, y: 40, width: 200, height: 40)
+    view.addSubview(playButton)
+}
+
+@objc private func toggleVideoInFaceBox() {
+    shouldPlayVideoInFaceBox.toggle()
+}
+private func playVideoInFaceBox(rect: CGRect) {
+    guard let videoURL = Bundle.main.url(forResource: "matrix", withExtension: "mov") else { return }
+
+    let player = AVPlayer(url: videoURL)
+    faceVideoLayer = AVPlayerLayer(player: player)
+    faceVideoLayer?.frame = rect
+    faceVideoLayer?.videoGravity = .resizeAspectFill
+    detectionOverlay.addSublayer(faceVideoLayer!)
+    player.play()
+}
+
+
 }

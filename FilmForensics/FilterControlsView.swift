@@ -42,7 +42,7 @@ struct FilterControlsView: View {
 
 struct FilterControls: View {
     @ObservedObject var videoPlayerViewModel: VideoPlayerViewModel
-
+    
     var body: some View {
         VStack(spacing: 10) {
             Text("Filters")
