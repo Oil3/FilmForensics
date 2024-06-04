@@ -16,7 +16,8 @@
 		344D22F22C0EF9F100C6966E /* MLcopycontrol25k.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3494C54D2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel */; };
 		344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22F52C0F046900C6966E /* MetalProcessor.swift */; };
 		344D22F82C0F04EA00C6966E /* VideoController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22F72C0F04EA00C6966E /* VideoController.swift */; };
-		344D22F92C0F075B00C6966E /* matrix.mov in Resources */ = {isa = PBXBuildFile; fileRef = 34B83A202C0E32E900A0E4BD /* matrix.mov */; };
+		344D22FB2C0F172B00C6966E /* VideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22FA2C0F172B00C6966E /* VideoView.swift */; };
+		344D22FD2C0F17E700C6966E /* matrix.mov in Resources */ = {isa = PBXBuildFile; fileRef = 344D22FC2C0F17E200C6966E /* matrix.mov */; };
 		3471ED402C0CF71900916598 /* detFX.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 3471ED062C0CF71800916598 /* detFX.m4a */; };
 		3471ED412C0CF71900916598 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED072C0CF71800916598 /* ImageViewer.swift */; };
 		3471ED422C0CF71900916598 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED082C0CF71800916598 /* VideoPreviewView.swift */; };
@@ -64,6 +65,13 @@
 		34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DC32BFC2ABF004685AC /* VIdeoPlayerViewModel.swift */; };
 		34B83A162C0D002000A0E4BD /* yolov8x2AAA.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34B83A152C0D002000A0E4BD /* yolov8x2AAA.mlpackage */; };
 		34B83A212C0E32E900A0E4BD /* matrix.mov in Resources */ = {isa = PBXBuildFile; fileRef = 34B83A202C0E32E900A0E4BD /* matrix.mov */; };
+		34C825A22C0F98E70006E453 /* CoreMLProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */; };
+		34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */; };
+		34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */; };
+		34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */; };
+		34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */; };
+		34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */; };
+		34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
 		34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
@@ -89,6 +97,8 @@
 		344D22F02C0EF8F600C6966E /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
 		344D22F52C0F046900C6966E /* MetalProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalProcessor.swift; sourceTree = "<group>"; };
 		344D22F72C0F04EA00C6966E /* VideoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoController.swift; path = V/VideoController.swift; sourceTree = SOURCE_ROOT; };
+		344D22FA2C0F172B00C6966E /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
+		344D22FC2C0F17E200C6966E /* matrix.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = matrix.mov; sourceTree = "<group>"; };
 		3471ED062C0CF71800916598 /* detFX.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = detFX.m4a; sourceTree = "<group>"; };
 		3471ED072C0CF71800916598 /* ImageViewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
 		3471ED082C0CF71800916598 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
@@ -141,6 +151,13 @@
 		34B83A142C0CFCB500A0E4BD /* MachineSystemSecurity.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MachineSystemSecurity.entitlements; sourceTree = "<group>"; };
 		34B83A152C0D002000A0E4BD /* yolov8x2AAA.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov8x2AAA.mlpackage; sourceTree = "<group>"; };
 		34B83A202C0E32E900A0E4BD /* matrix.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = matrix.mov; sourceTree = "<group>"; };
+		34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLProcessor.swift; sourceTree = "<group>"; };
+		34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLProcessView.swift; sourceTree = "<group>"; };
+		34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SyntaxHighlightingTextView.swift; sourceTree = "<group>"; };
+		34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoundingBoxView.swift; sourceTree = "<group>"; };
+		34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccontrol4.mlmodel; sourceTree = "<group>"; };
+		34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cctrack23090.mlmodel; sourceTree = "<group>"; };
+		34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccashier3.mlmodel; sourceTree = "<group>"; };
 		34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MachineSystemSecurity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E11DD62C0CA68200A7B857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -191,7 +208,9 @@
 		344D22E02C0EF86100C6966E /* V */ = {
 			isa = PBXGroup;
 			children = (
+				344D22FC2C0F17E200C6966E /* matrix.mov */,
 				344D22E12C0EF86100C6966E /* VApp.swift */,
+				344D22FA2C0F172B00C6966E /* VideoView.swift */,
 				344D22F02C0EF8F600C6966E /* DocumentPicker.swift */,
 				344D22E32C0EF86100C6966E /* ContentView.swift */,
 				344D22E52C0EF86200C6966E /* Assets.xcassets */,
@@ -199,6 +218,13 @@
 				344D22E72C0EF86200C6966E /* Preview Content */,
 				344D22EE2C0EF88A00C6966E /* VideoViewController.swift */,
 				344D22F52C0F046900C6966E /* MetalProcessor.swift */,
+				34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */,
+				34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */,
+				34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */,
+				34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */,
+				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
+				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
+				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
 			);
 			path = V;
 			sourceTree = "<group>";
@@ -451,9 +477,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				344D22F92C0F075B00C6966E /* matrix.mov in Resources */,
 				344D22E92C0EF86200C6966E /* Preview Assets.xcassets in Resources */,
 				344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */,
+				344D22FD2C0F17E700C6966E /* matrix.mov in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -490,11 +516,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
+				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
+				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
+				34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */,
+				34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */,
 				344D22F12C0EF8F600C6966E /* DocumentPicker.swift in Sources */,
 				344D22E42C0EF86100C6966E /* ContentView.swift in Sources */,
 				344D22F22C0EF9F100C6966E /* MLcopycontrol25k.mlmodel in Sources */,
+				344D22FB2C0F172B00C6966E /* VideoView.swift in Sources */,
+				34C825A22C0F98E70006E453 /* CoreMLProcessor.swift in Sources */,
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
+				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				344D22EF2C0EF88A00C6966E /* VideoViewController.swift in Sources */,
+				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
 				344D22F82C0F04EA00C6966E /* VideoController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

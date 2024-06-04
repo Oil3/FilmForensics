@@ -25,7 +25,7 @@ struct ContentView: View {
                 NavigationLink(destination: Text("Settings")) {
                     Label("Settings", systemImage: "gearshape")
                 }
-                NavigationLink(destination: Text("CoreML")) {
+                NavigationLink(destination: CoreMLProcessView()) {
                     Label("CoreML", systemImage: "brain")
                 }
             }
