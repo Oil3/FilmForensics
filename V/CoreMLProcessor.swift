@@ -18,11 +18,18 @@ class CoreMLProcessor: NSObject, ObservableObject {
     @Published var generalLog: [String] = []
     @Published var stats: String = ""
     @Published var currentObservations: [VNRecognizedObjectObservation] = []
-    
+
     var isProcessing = false
     var framesProcessed = 0
     var totalFrames = 0
+    var lastFrameCount = 0
+    var fpsCalculationStartTime: CFAbsoluteTime = CFAbsoluteTimeGetCurrent()
     var fileSelectionCompletionHandler: (([URL]) -> Void)?
+
+    private var logFileURL: URL {
+        let directory = FileManager.default.temporaryDirectory
+        return directory.appendingPathComponent("detection_log.txt")
+    }
 
     func selectModel(named modelName: String) {
         selectedModelName = modelName
@@ -38,9 +45,9 @@ class CoreMLProcessor: NSObject, ObservableObject {
     }
 
     func startProcessing(urls: [URL], confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
-        guard let model = loadModel(named: selectedModelName) else { 
+        guard let model = loadModel(named: selectedModelName) else {
             print("Failed to load model: \(selectedModelName)")
-            return 
+            return
         }
 
         isProcessing = true
@@ -64,9 +71,9 @@ class CoreMLProcessor: NSObject, ObservableObject {
     }
 
     private func loadModel(named modelName: String) -> MLModel? {
-        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else { 
+        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else {
             print("Model not found: \(modelName)")
-            return nil 
+            return nil
         }
         do {
             return try MLModel(contentsOf: modelURL)
@@ -80,15 +87,15 @@ class CoreMLProcessor: NSObject, ObservableObject {
         print("Processing video: \(url)")
         let asset = AVAsset(url: url)
         let reader = try! AVAssetReader(asset: asset)
-        
+
         guard let videoTrack = asset.tracks(withMediaType: .video).first else { return }
         let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
         reader.add(readerOutput)
         reader.startReading()
-        
+
         self.totalFrames = Int(videoTrack.nominalFrameRate) * Int(CMTimeGetSeconds(asset.duration))
         self.framesProcessed = 0
-        
+
         while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader.status == .reading {
             if !isProcessing { break }
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
@@ -99,9 +106,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
                     self?.currentObservations = results
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            let logEntry = "Detected object with confidence \(observation.confidence) at time \(CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer))) in video \(url.lastPathComponent)"
-                            self?.detailedLogs.append(logEntry)
-                            self?.currentFileLog.append(logEntry)
+                            self?.logDetection(observation)
                         }
                     }
                 }
@@ -109,7 +114,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
             try? handler.perform([request])
             self.framesProcessed += 1
-            self.updateStats()
+            if CFAbsoluteTimeGetCurrent() - self.fpsCalculationStartTime >= 5 {
+                self.updateStats()
+                self.fpsCalculationStartTime = CFAbsoluteTimeGetCurrent()
+                self.lastFrameCount = self.framesProcessed
+            }
         }
         reader.cancelReading()
 
@@ -128,9 +137,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
                     self?.currentObservations = results
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            let logEntry = "Detected object with confidence \(observation.confidence) in image \(url.lastPathComponent)"
-                            self?.detailedLogs.append(logEntry)
-                            self?.currentFileLog.append(logEntry)
+                            self?.logDetection(observation)
                         }
                     }
                 }
@@ -150,19 +157,17 @@ class CoreMLProcessor: NSObject, ObservableObject {
                     self?.currentObservations = results
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            let logEntry = "Detected object with confidence \(observation.confidence) in image \(url.lastPathComponent)"
-                            self?.detailedLogs.append(logEntry)
-                            self?.currentFileLog.append(logEntry)
+                            self?.logDetection(observation)
                         }
                     }
                 }
             }
         }
-        
+
         try? handler.perform([request])
         generateLog(for: url)
     }
-    
+
     private func resizeImage(image: CIImage, targetSize: CGSize) -> CIImage {
         let scale = CGAffineTransform(scaleX: targetSize.width / image.extent.width, y: targetSize.height / image.extent.height)
         return image.transformed(by: scale)
@@ -189,21 +194,55 @@ class CoreMLProcessor: NSObject, ObservableObject {
         do {
             let logText = detailedLogs.joined(separator: "\n")
             try logText.write(to: generalLogFileURL, atomically: true, encoding: .utf8)
-            generalLog.append(generalLogFileURL.path)
+            generalLog.append(logFileURL.path)
             detailedLogs.removeAll()
         } catch {
             print("Error writing general log: \(error)")
         }
     }
-    
+
     private func updateStats() {
         let memoryUsed = ProcessInfo.processInfo.physicalMemory / (1024 * 1024)
-        let fps = Double(framesProcessed) / (CFAbsoluteTimeGetCurrent() - ProcessInfo.processInfo.systemUptime)
+        let currentTime = CFAbsoluteTimeGetCurrent()
+        let elapsedTime = currentTime - fpsCalculationStartTime
+        let fps = Double(framesProcessed - lastFrameCount) / elapsedTime
         stats = """
         Memory used: \(memoryUsed) MB
         FPS: \(fps)
         Frames processed: \(framesProcessed) / \(totalFrames)
         """
+        fpsCalculationStartTime = currentTime
+        lastFrameCount = framesProcessed
+    }
+
+    private func logDetection(_ observation: VNRecognizedObjectObservation) {
+        let label = observation.labels.first?.identifier ?? "Unknown"
+        let boundingBox = observation.boundingBox
+        let logMessage = """
+        \(detailedLogs.count) Object detected: \(label) at (x: \(roundedString(boundingBox.origin.x)), y: \(roundedString(boundingBox.origin.y)), width: \(roundedString(boundingBox.width)), height: \(roundedString(boundingBox.height)))
+        """
+        appendToLogFile(logMessage)
+        detailedLogs.append(logMessage)
+    }
+
+    private func appendToLogFile(_ message: String) {
+        do {
+            let data = message.data(using: .utf8)!
+            if FileManager.default.fileExists(atPath: logFileURL.path) {
+                let fileHandle = try FileHandle(forWritingTo: logFileURL)
+                fileHandle.seekToEndOfFile()
+                fileHandle.write(data)
+                fileHandle.closeFile()
+            } else {
+                try data.write(to: logFileURL, options: .atomic)
+            }
+        } catch {
+            print("Failed to log detection: \(error)")
+        }
+    }
+
+    private func roundedString(_ value: CGFloat) -> String {
+        return String(format: "%.2f", value)
     }
 
     func loadLog(logPath: String) -> [String] {
