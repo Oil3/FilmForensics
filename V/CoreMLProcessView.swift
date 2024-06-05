@@ -12,7 +12,10 @@ struct CoreMLProcessView: View {
     @EnvironmentObject var processor: CoreMLProcessor
     @State private var processingFiles: [URL] = []
     @State private var selectedMediaItem: URL?
-    @State private var detectionFrames: [UIImage] = []
+    @State private var selectedDetectionFrames: Set<CoreMLProcessor.DetectionFrame> = []
+    @State private var isPreviewPresented: Bool = false
+    @State private var previewImage: UIImage?
+    @State private var previewVideo: URL?
 
     var body: some View {
         VStack {
@@ -50,58 +53,59 @@ struct CoreMLProcessView: View {
             }
 
             VStack {
-                Text("Selected Media Items")
-                    .font(.headline)
-                    .padding()
-
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(processingFiles, id: \.self) { fileURL in
-                            MediaItemView(url: fileURL, isSelected: fileURL == selectedMediaItem)
-                                .onTapGesture {
-                                    selectedMediaItem = fileURL
-                                }
-                        }
-                    }
-                }
-                .frame(height: 100)
-                .padding()
-            }
-
-            VStack {
                 Text("Detection Frames")
                     .font(.headline)
                     .padding()
 
-                ScrollView(.horizontal, showsIndicators: false) {
+                ScrollView(.horizontal, showsIndicators: true) {
                     HStack(spacing: 10) {
-                        ForEach(processor.detectionFrames, id: \.self) { frame in
-                            Image(uiImage: frame)
+                        ForEach(processor.detectionFrames) { frame in
+                            Image(uiImage: frame.image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 100, height: 100)
+                                .frame(width: 150, height: 150)
+                                .overlay(
+                                    Text("\(String(format: "%.2f", frame.timestamp))s")
+                                        .foregroundColor(.white)
+                                        .background(Color.black.opacity(0.7))
+                                        .padding(4),
+                                    alignment: .bottom
+                                )
+                                .border(selectedDetectionFrames.contains(frame) ? Color.blue : Color.clear, width: 3)
+                                .contextMenu {
+                                    Button("Copy", action: { copyFrame(frame) })
+                                    Button("Export", action: { exportFrame(frame) })
+                                    Button("Select All", action: { selectAllFrames() })
+                                    Button("Select All Before", action: { selectAllFrames(before: frame) })
+                                    Button("Select All After", action: { selectAllFrames(after: frame) })
+                                }
+                                .onTapGesture {
+                                    if selectedDetectionFrames.contains(frame) {
+                                        selectedDetectionFrames.remove(frame)
+                                    } else {
+                                        selectedDetectionFrames.insert(frame)
+                                    }
+                                }
+                                .onLongPressGesture {
+                                    previewImage = frame.image
+                                    isPreviewPresented = true
+                                }
                         }
                     }
                 }
-                .frame(height: 100)
+                .frame(height: 200)
                 .padding()
-            }
 
-            VStack {
-                Text("Current Logs")
-                    .font(.headline)
-                    .padding()
+                HStack {
+                    Button("Clear Frames", action: clearFrames)
+                        .padding()
 
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        ForEach(processor.detailedLogs, id: \.self) { log in
-                            Text(log)
-                                .font(.system(size: 12, weight: .regular, design: .monospaced))
-                        }
-                    }
+                    Button("Export Selected", action: exportSelectedFrames)
+                        .padding()
+
+                    Button("Export All", action: exportAllFrames)
+                        .padding()
                 }
-                .frame(maxHeight: 200)
-                .padding()
             }
 
             VStack {
@@ -131,77 +135,68 @@ struct CoreMLProcessView: View {
             }
         }
         .padding()
-    }
-}
-
-struct MediaItemView: View {
-    let url: URL
-    let isSelected: Bool
-    
-    var body: some View {
-        ZStack {
-            if url.pathExtension.lowercased() == "mp4" || url.pathExtension.lowercased() == "mov" {
-                VideoThumbnailView(url: url)
-                    .frame(width: 100, height: 100)
-            } else if let image = UIImage(contentsOfFile: url.path) {
+        .sheet(isPresented: $isPreviewPresented) {
+            if let image = previewImage {
                 Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
+                    .onTapGesture {
+                        isPreviewPresented = false
+                    }
+            } else if let videoURL = previewVideo {
+                VideoPlayer(player: AVPlayer(url: videoURL))
+                    .onTapGesture {
+                        isPreviewPresented = false
+                    }
             }
-            
-            if isSelected {
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.blue, lineWidth: 4)
-            }
+        }
+    }
+
+    private func clearFrames() {
+        processor.detectionFrames.removeAll()
+        selectedDetectionFrames.removeAll()
+    }
+
+    private func exportSelectedFrames() {
+        let selectedImages = selectedDetectionFrames.map { $0.image }
+        exportImages(selectedImages)
+    }
+
+    private func exportAllFrames() {
+        let allImages = processor.detectionFrames.map { $0.image }
+        exportImages(allImages)
+    }
+
+    private func copyFrame(_ frame: CoreMLProcessor.DetectionFrame) {
+        UIPasteboard.general.image = frame.image
+    }
+
+    private func exportFrame(_ frame: CoreMLProcessor.DetectionFrame) {
+        exportImages([frame.image])
+    }
+
+    private func exportImages(_ images: [UIImage]) {
+        guard !images.isEmpty else { return }
+        let activityViewController = UIActivityViewController(activityItems: images, applicationActivities: nil)
+        guard let window = UIApplication.shared.windows.first else { return }
+        window.rootViewController?.present(activityViewController, animated: true, completion: nil)
+    }
+
+    private func selectAllFrames() {
+        selectedDetectionFrames = Set(processor.detectionFrames)
+    }
+
+    private func selectAllFrames(before frame: CoreMLProcessor.DetectionFrame) {
+        if let index = processor.detectionFrames.firstIndex(of: frame) {
+            selectedDetectionFrames = Set(processor.detectionFrames.prefix(index))
+        }
+    }
+
+    private func selectAllFrames(after frame: CoreMLProcessor.DetectionFrame) {
+        if let index = processor.detectionFrames.firstIndex(of: frame) {
+            selectedDetectionFrames = Set(processor.detectionFrames.suffix(from: index))
         }
     }
 }
 
-struct VideoThumbnailView: View {
-    let url: URL
-    
-    var body: some View {
-        if let thumbnail = generateThumbnail(url: url) {
-            Image(uiImage: thumbnail)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        } else {
-            Image(systemName: "video")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-        }
-    }
-    
-    private func generateThumbnail(url: URL) -> UIImage? {
-        let asset = AVAsset(url: url)
-        let imageGenerator = AVAssetImageGenerator(asset: asset)
-        imageGenerator.appliesPreferredTrackTransform = true
-        let time = CMTime(seconds: 1, preferredTimescale: 60)
-        
-        do {
-            let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
-            return UIImage(cgImage: cgImage)
-        } catch {
-            print("Failed to generate thumbnail: \(error.localizedDescription)")
-            return nil
-        }
-    }
-}
 
-struct BoundingBoxViewWrapper: UIViewRepresentable {
-    @Binding var observations: [VNRecognizedObjectObservation]
-    var image: UIImage
-
-    func makeUIView(context: Context) -> BoundingBoxView {
-        let view = BoundingBoxView()
-        view.updateSize(for: image.size)
-        view.observations = observations
-        return view
-    }
-
-    func updateUIView(_ uiView: BoundingBoxView, context: Context) {
-        uiView.updateSize(for: image.size)
-        uiView.observations = observations
-    }
-}

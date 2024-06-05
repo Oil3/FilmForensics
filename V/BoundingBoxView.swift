@@ -68,3 +68,20 @@ class BoundingBoxView: UIView {
         addSubview(label)
     }
 }
+
+struct BoundingBoxViewWrapper: UIViewRepresentable {
+    @Binding var observations: [VNRecognizedObjectObservation]
+    var image: UIImage
+
+    func makeUIView(context: Context) -> BoundingBoxView {
+        let view = BoundingBoxView()
+        view.updateSize(for: image.size)
+        view.observations = observations
+        return view
+    }
+
+    func updateUIView(_ uiView: BoundingBoxView, context: Context) {
+        uiView.updateSize(for: image.size)
+        uiView.observations = observations
+    }
+}
