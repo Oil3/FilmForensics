@@ -1,9 +1,9 @@
-//
-//  CoreMLProcessor.swift
-//  V
-//
-//  Created by Almahdi Morris on 4/6/24.
-//
+  //
+  //  CoreMLProcessor.swift
+  //  V
+  //
+  //  Created by Almahdi Morris on 4/6/24.
+  //
 import SwiftUI
 import CoreML
 import Vision
@@ -18,23 +18,25 @@ class CoreMLProcessor: NSObject, ObservableObject {
     @Published var generalLog: [String] = []
     @Published var stats: String = ""
     @Published var currentObservations: [VNRecognizedObjectObservation] = []
-
+    @Published var selectedImage: UIImage?
+    @Published var selectedVideo: URL?
+    @Published var detectionFrames: [UIImage] = []
+    
     var isProcessing = false
     var framesProcessed = 0
     var totalFrames = 0
     var lastFrameCount = 0
     var fpsCalculationStartTime: CFAbsoluteTime = CFAbsoluteTimeGetCurrent()
     var fileSelectionCompletionHandler: (([URL]) -> Void)?
-
-    private var logFileURL: URL {
-        let directory = FileManager.default.temporaryDirectory
-        return directory.appendingPathComponent("detection_log.txt")
-    }
-
+    var detectionCounter = 0
+    
+    private var logFileURL: URL?
+    private var summaryLogFileURL: URL?
+    
     func selectModel(named modelName: String) {
         selectedModelName = modelName
     }
-
+    
     func selectFiles(completion: @escaping ([URL]) -> Void) {
         fileSelectionCompletionHandler = completion
         let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.movie, .image], asCopy: true)
@@ -43,33 +45,42 @@ class CoreMLProcessor: NSObject, ObservableObject {
         guard let window = UIApplication.shared.windows.first else { return }
         window.rootViewController?.present(documentPicker, animated: true, completion: nil)
     }
-
+    
     func startProcessing(urls: [URL], confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
         guard let model = loadModel(named: selectedModelName) else {
             print("Failed to load model: \(selectedModelName)")
             return
         }
-
+        
         isProcessing = true
+        detectionCounter = 0
+        let dateTimeString = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .long)
+        summaryLogFileURL = FileManager.default.temporaryDirectory.appendingPathComponent("summary_V_\(dateTimeString).txt")
+        
         DispatchQueue.global(qos: .userInitiated).async {
             for url in urls {
                 if !self.isProcessing { break }
+                let logFilename = url.deletingPathExtension().lastPathComponent + "_V_" + dateTimeString + ".txt"
+                self.logFileURL = FileManager.default.temporaryDirectory.appendingPathComponent(logFilename)
+                
                 if url.pathExtension.lowercased() == "mp4" || url.pathExtension.lowercased() == "mov" {
                     self.processVideo(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: iouThreshold, noVideoPlayback: noVideoPlayback)
                 } else {
-                    self.processImage(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: iouThreshold)
+                    self.processImage(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: confidenceThreshold)
                 }
             }
-
-            self.isProcessing = false
-            self.generateGeneralLog()
+            
+            DispatchQueue.main.async {
+                self.isProcessing = false
+                self.generateGeneralLog()
+            }
         }
     }
-
+    
     func stopProcessing() {
         isProcessing = false
     }
-
+    
     private func loadModel(named modelName: String) -> MLModel? {
         guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else {
             print("Model not found: \(modelName)")
@@ -82,62 +93,80 @@ class CoreMLProcessor: NSObject, ObservableObject {
             return nil
         }
     }
-
+    
     private func processVideo(url: URL, model: MLModel, confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
         print("Processing video: \(url)")
         let asset = AVAsset(url: url)
         let reader = try! AVAssetReader(asset: asset)
-
+        
         guard let videoTrack = asset.tracks(withMediaType: .video).first else { return }
         let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
         reader.add(readerOutput)
         reader.startReading()
-
+        
         self.totalFrames = Int(videoTrack.nominalFrameRate) * Int(CMTimeGetSeconds(asset.duration))
         self.framesProcessed = 0
-
+        
         while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader.status == .reading {
             if !isProcessing { break }
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
             let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
             let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
+            let frameTime = CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(sampleBuffer))
             let request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
                 if let results = request.results as? [VNRecognizedObjectObservation] {
-                    self?.currentObservations = results
+                    DispatchQueue.main.async {
+                        self?.currentObservations = results
+                    }
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            self?.logDetection(observation)
+                            self?.logDetection(observation, at: frameTime, for: url, frameNumber: self?.framesProcessed ?? 0)
+                        }
+                    }
+                    if let frameImage = self?.convertCIImageToUIImage(ciImage) {
+                        DispatchQueue.main.async {
+                            self?.detectionFrames.append(frameImage)
                         }
                     }
                 }
             }
-
+            
             try? handler.perform([request])
             self.framesProcessed += 1
             if CFAbsoluteTimeGetCurrent() - self.fpsCalculationStartTime >= 5 {
-                self.updateStats()
+                DispatchQueue.main.async {
+                    self.updateStats()
+                }
                 self.fpsCalculationStartTime = CFAbsoluteTimeGetCurrent()
                 self.lastFrameCount = self.framesProcessed
             }
         }
         reader.cancelReading()
-
+        
         generateLog(for: url)
     }
-
+    
     private func processImage(url: URL, model: MLModel, confidenceThreshold: Float, iouThreshold: Float) {
         print("Processing image: \(url)")
         guard let image = CIImage(contentsOf: url) else { return }
         let handler = VNImageRequestHandler(ciImage: image, options: [:])
-
+        
         var request: VNCoreMLRequest
+        
         if selectedModelName == "ccashier3" {
             request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
                 if let results = request.results as? [VNRecognizedObjectObservation] {
-                    self?.currentObservations = results
+                    DispatchQueue.main.async {
+                        self?.currentObservations = results
+                    }
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            self?.logDetection(observation)
+                            self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
+                        }
+                    }
+                    if let frameImage = self?.convertCIImageToUIImage(image) {
+                        DispatchQueue.main.async {
+                            self?.detectionFrames.append(frameImage)
                         }
                     }
                 }
@@ -154,80 +183,138 @@ class CoreMLProcessor: NSObject, ObservableObject {
             let handler = VNImageRequestHandler(ciImage: resizedImage, options: [:])
             request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
                 if let results = request.results as? [VNRecognizedObjectObservation] {
-                    self?.currentObservations = results
+                    DispatchQueue.main.async {
+                        self?.currentObservations = results
+                    }
                     for observation in results {
                         if observation.confidence >= confidenceThreshold {
-                            self?.logDetection(observation)
+                            self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
+                        }
+                    }
+                    if let frameImage = self?.convertCIImageToUIImage(resizedImage) {
+                        DispatchQueue.main.async {
+                            self?.detectionFrames.append(frameImage)
                         }
                     }
                 }
             }
         }
-
+        
         try? handler.perform([request])
         generateLog(for: url)
     }
-
+    
     private func resizeImage(image: CIImage, targetSize: CGSize) -> CIImage {
         let scale = CGAffineTransform(scaleX: targetSize.width / image.extent.width, y: targetSize.height / image.extent.height)
         return image.transformed(by: scale)
     }
-
+    
+    private func convertCIImageToUIImage(_ ciImage: CIImage) -> UIImage {
+        let context = CIContext()
+        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+            return UIImage(cgImage: cgImage)
+        }
+        return UIImage()
+    }
+    
     private func generateLog(for url: URL) {
-        let logFilename = url.deletingPathExtension().lastPathComponent + "_log.txt"
-        let logFileURL = FileManager.default.temporaryDirectory.appendingPathComponent(logFilename)
-
+        guard let logFileURL = logFileURL else { return }
+        
         do {
             let logText = currentFileLog.joined(separator: "\n")
             try logText.write(to: logFileURL, atomically: true, encoding: .utf8)
-            logs.append(logFileURL.path)
+            DispatchQueue.main.async {
+                self.logs.append(logFileURL.path)
+            }
             currentFileLog.removeAll()
         } catch {
             print("Error writing log: \(error)")
         }
     }
-
+    
     private func generateGeneralLog() {
-        let generalLogFilename = "general_log.txt"
-        let generalLogFileURL = FileManager.default.temporaryDirectory.appendingPathComponent(generalLogFilename)
-
+        guard let summaryLogFileURL = summaryLogFileURL else { return }
+        
+        let elapsedTime = CFAbsoluteTimeGetCurrent() - fpsCalculationStartTime
+        let summaryInfo = """
+        Video File: \(logs.map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }.joined(separator: ", "))
+        Average FPS: \(String(format: "%.2f", Double(framesProcessed) / elapsedTime))
+        Total Detections: \(detectionCounter)
+        Below Threshold Detections: \(detailedLogs.count - detectionCounter)
+        Model Used: \(selectedModelName)
+        Elapsed Time: \(String(format: "%.2f", elapsedTime)) seconds
+        """
+        
         do {
-            let logText = detailedLogs.joined(separator: "\n")
-            try logText.write(to: generalLogFileURL, atomically: true, encoding: .utf8)
-            generalLog.append(logFileURL.path)
-            detailedLogs.removeAll()
+            try summaryInfo.write(to: summaryLogFileURL, atomically: true, encoding: .utf8)
+            DispatchQueue.main.async {
+                self.generalLog.append(summaryLogFileURL.path)
+            }
         } catch {
-            print("Error writing general log: \(error)")
+            print("Error writing summary log: \(error)")
         }
     }
-
+    
     private func updateStats() {
-        let memoryUsed = ProcessInfo.processInfo.physicalMemory / (1024 * 1024)
+        var usedMegabytes: Float = 0
+        var info = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                task_info(
+                    mach_task_self_,
+                    task_flavor_t(MACH_TASK_BASIC_INFO),
+                    $0,
+                    &count
+                )
+            }
+        }
+        
+        if kerr == KERN_SUCCESS {
+            let usedBytes: Float = Float(info.resident_size)
+            usedMegabytes = usedBytes / 1024.0 / 1024.0
+        }
+        
         let currentTime = CFAbsoluteTimeGetCurrent()
         let elapsedTime = currentTime - fpsCalculationStartTime
         let fps = Double(framesProcessed - lastFrameCount) / elapsedTime
-        stats = """
-        Memory used: \(memoryUsed) MB
-        FPS: \(fps)
-        Frames processed: \(framesProcessed) / \(totalFrames)
-        """
+        
+        let formattedMemoryUsed = String(format: "%.2f", usedMegabytes)
+        let formattedFPS = String(format: "%.2f", fps)
+        
+        DispatchQueue.main.async {
+            self.stats = """
+            Memory used: \(formattedMemoryUsed) MB
+            FPS: \(formattedFPS)
+            Frames processed: \(self.framesProcessed) / \(self.totalFrames)
+            """
+        }
+        
         fpsCalculationStartTime = currentTime
         lastFrameCount = framesProcessed
     }
-
-    private func logDetection(_ observation: VNRecognizedObjectObservation) {
+    
+    private func logDetection(_ observation: VNRecognizedObjectObservation, at time: Double?, for url: URL, frameNumber: Int?) {
         let label = observation.labels.first?.identifier ?? "Unknown"
         let boundingBox = observation.boundingBox
+        let timeString = time != nil ? "\(Int(time! / 60)):\(String(format: "%.2f", time!.truncatingRemainder(dividingBy: 60)))" : "N/A"
+        let frameString = frameNumber != nil ? "\(frameNumber!)" : "N/A"
         let logMessage = """
-        \(detailedLogs.count) Object detected: \(label) at (x: \(roundedString(boundingBox.origin.x)), y: \(roundedString(boundingBox.origin.y)), width: \(roundedString(boundingBox.width)), height: \(roundedString(boundingBox.height)))
+        \(String(format: "%04d", detectionCounter)) Object detected in \(url.lastPathComponent): \(label) at \(timeString) (frame: \(frameString)) (x: \(roundedString(boundingBox.origin.x)), y: \(roundedString(boundingBox.origin.y)), width: \(roundedString(boundingBox.width)), height: \(roundedString(boundingBox.height)))
         """
         appendToLogFile(logMessage)
-        detailedLogs.append(logMessage)
+        DispatchQueue.main.async {
+            self.detailedLogs.append(logMessage)
+        }
+        detectionCounter += 1
     }
-
+    
     private func appendToLogFile(_ message: String) {
+        guard let logFileURL = logFileURL else { return }
         do {
             let data = message.data(using: .utf8)!
+            let directory = logFileURL.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
             if FileManager.default.fileExists(atPath: logFileURL.path) {
                 let fileHandle = try FileHandle(forWritingTo: logFileURL)
                 fileHandle.seekToEndOfFile()
@@ -240,11 +327,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
             print("Failed to log detection: \(error)")
         }
     }
-
+    
     private func roundedString(_ value: CGFloat) -> String {
         return String(format: "%.2f", value)
     }
-
+    
     func loadLog(logPath: String) -> [String] {
         do {
             let logContent = try String(contentsOfFile: logPath)

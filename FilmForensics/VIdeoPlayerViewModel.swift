@@ -138,7 +138,7 @@ class VideoPlayerViewModel: ObservableObject {
     
     let player = AVPlayer()
     private let context = CIContext()
-    private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+    private let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB])
     private var timer: Timer?
     
     private var defaultSettings: [String: Float] {

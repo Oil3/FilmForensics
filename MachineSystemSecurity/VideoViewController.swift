@@ -39,7 +39,7 @@ class VideoViewController: UIViewController, AVPlayerItemOutputPullDelegate {
         playerItem = player?.currentItem
         
         playerItemOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB
         ])
         
         if let playerItem = playerItem, let playerItemOutput = playerItemOutput {

@@ -16,7 +16,7 @@ struct ContentView: View {
                 NavigationLink(destination: VideoView(selectedURL: $selectedURL)) {
                     Label("Video", systemImage: "video")
                 }
-                NavigationLink(destination: Text("View Logs")) {
+                NavigationLink(destination: LogView()) {
                     Label("View Logs", systemImage: "doc.text")
                 }
 //                NavigationLink(destination: GalleryView(selectedURL: $selectedURL)) {

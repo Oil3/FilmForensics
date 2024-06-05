@@ -72,6 +72,7 @@
 		34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */; };
 		34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */; };
 		34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
+		34C825B42C102B7D0006E453 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B32C102B7D0006E453 /* LogView.swift */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
 		34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
@@ -158,6 +159,7 @@
 		34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccontrol4.mlmodel; sourceTree = "<group>"; };
 		34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cctrack23090.mlmodel; sourceTree = "<group>"; };
 		34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccashier3.mlmodel; sourceTree = "<group>"; };
+		34C825B32C102B7D0006E453 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MachineSystemSecurity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E11DD62C0CA68200A7B857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -225,6 +227,7 @@
 				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
+				34C825B32C102B7D0006E453 /* LogView.swift */,
 			);
 			path = V;
 			sourceTree = "<group>";
@@ -278,11 +281,11 @@
 		34A99DA92BFC2A88004685AC = {
 			isa = PBXGroup;
 			children = (
+				344D22E02C0EF86100C6966E /* V */,
 				34A99DB42BFC2A88004685AC /* FilmForensics */,
 				341AD8B42BFFA3B000BF3CE3 /* MLmodelImage */,
 				349771502BFEF4AB00533EEA /* OverlayWindow.swift */,
 				34E11DD12C0CA68200A7B857 /* MachineSystemSecurity */,
-				344D22E02C0EF86100C6966E /* V */,
 				34A99DB32BFC2A88004685AC /* Products */,
 				344D22F32C0EFD4200C6966E /* Frameworks */,
 			);
@@ -520,6 +523,7 @@
 				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
 				34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */,
 				34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */,
+				34C825B42C102B7D0006E453 /* LogView.swift in Sources */,
 				344D22F12C0EF8F600C6966E /* DocumentPicker.swift in Sources */,
 				344D22E42C0EF86100C6966E /* ContentView.swift in Sources */,
 				344D22F22C0EF9F100C6966E /* MLcopycontrol25k.mlmodel in Sources */,

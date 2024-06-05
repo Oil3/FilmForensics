@@ -11,12 +11,10 @@ import Vision
 
 struct CoreMLProcessView: View {
     @StateObject private var processor = CoreMLProcessor()
-    @State private var selectedLog: String = ""
-    @State private var logEntries: [String] = []
     @State private var processingFiles: [URL] = []
-    @State private var selectedImage: UIImage?
-    @State private var selectedVideo: URL?
-    
+    @State private var selectedMediaItem: URL?
+    @State private var detectionFrames: [UIImage] = []
+
     var body: some View {
         VStack {
             Picker("Select Model", selection: $processor.selectedModelName) {
@@ -52,50 +50,18 @@ struct CoreMLProcessView: View {
                 .padding()
             }
 
-            HStack {
-                VStack {
-                    Text("Current File Log")
-                        .font(.headline)
-                        .padding()
-                    
-                    SyntaxHighlightingTextView(text: Binding(
-                        get: { processor.currentFileLog.joined(separator: "\n") },
-                        set: { _ in }
-                    ))
-                    .frame(maxHeight: 200)
-                    .padding()
-                }
-
-                VStack {
-                    Text("General Log & Stats")
-                        .font(.headline)
-                        .padding()
-                    
-                    SyntaxHighlightingTextView(text: Binding(
-                        get: { processor.generalLog.joined(separator: "\n") },
-                        set: { _ in }
-                    ))
-                    .frame(maxHeight: 200)
-                    .padding()
-
-                    Text(processor.stats)
-                        .padding()
-                }
-            }
-
             VStack {
-                Text("Media Carousel")
+                Text("Selected Media Items")
                     .font(.headline)
                     .padding()
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(processingFiles, id: \.self) { fileURL in
-                            if fileURL.pathExtension.lowercased() == "mp4" || fileURL.pathExtension.lowercased() == "mov" {
-                                VideoThumbnailView(url: fileURL, selectedVideo: $selectedVideo)
-                            } else {
-                                ImageThumbnailView(url: fileURL, selectedImage: $selectedImage)
-                            }
+                            MediaItemView(url: fileURL, isSelected: fileURL == selectedMediaItem)
+                                .onTapGesture {
+                                    selectedMediaItem = fileURL
+                                }
                         }
                     }
                 }
@@ -103,7 +69,26 @@ struct CoreMLProcessView: View {
                 .padding()
             }
 
-            if let selectedImage = selectedImage {
+            VStack {
+                Text("Detection Frames")
+                    .font(.headline)
+                    .padding()
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(detectionFrames, id: \.self) { frame in
+                            Image(uiImage: frame)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 100, height: 100)
+                        }
+                    }
+                }
+                .frame(height: 100)
+                .padding()
+            }
+
+            if let selectedImage = processor.selectedImage {
                 Image(uiImage: selectedImage)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -114,7 +99,7 @@ struct CoreMLProcessView: View {
                     .padding()
             }
 
-            if let selectedVideo = selectedVideo {
+            if let selectedVideo = processor.selectedVideo {
                 VideoPlayer(player: AVPlayer(url: selectedVideo))
                     .frame(maxHeight: 300)
                     .padding()
@@ -124,50 +109,29 @@ struct CoreMLProcessView: View {
     }
 }
 
-struct ImageThumbnailView: View {
+struct MediaItemView: View {
     let url: URL
-    @Binding var selectedImage: UIImage?
+    let isSelected: Bool
     
     var body: some View {
-        if let image = UIImage(contentsOfFile: url.path) {
-            Image(uiImage: image)
-                .resizable()
-                .frame(width: 100, height: 100)
-                .aspectRatio(contentMode: .fit)
-                .onTapGesture {
-                    selectedImage = image
-                }
-        }
-    }
-}
-
-struct VideoThumbnailView: View {
-    let url: URL
-    @Binding var selectedVideo: URL?
-    
-    var body: some View {
-        let thumbnail = generateThumbnail(url: url)
-        
-        return Image(uiImage: thumbnail)
-            .resizable()
-            .frame(width: 100, height: 100)
-            .aspectRatio(contentMode: .fit)
-            .onTapGesture {
-                selectedVideo = url
+        ZStack {
+            if let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
+            } else {
+                Image(systemName: "video")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
             }
-    }
-    
-    private func generateThumbnail(url: URL) -> UIImage {
-        let asset = AVAsset(url: url)
-        let imageGenerator = AVAssetImageGenerator(asset: asset)
-        imageGenerator.appliesPreferredTrackTransform = true
-
-        let time = CMTime(seconds: 1, preferredTimescale: 60)
-        if let cgImage = try? imageGenerator.copyCGImage(at: time, actualTime: nil) {
-            return UIImage(cgImage: cgImage)
+            
+            if isSelected {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.blue, lineWidth: 4)
+            }
         }
-
-        return UIImage(systemName: "video") ?? UIImage()
     }
 }
 
