@@ -100,17 +100,17 @@ class CoreMLProcessor: NSObject, ObservableObject {
     private func processVideo(url: URL, model: MLModel, confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
         print("Processing video: \(url)")
         let asset = AVAsset(url: url)
-        let reader = try! AVAssetReader(asset: asset)
+        let reader = try? AVAssetReader(asset: asset)
 
         guard let videoTrack = asset.tracks(withMediaType: .video).first else { return }
         let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-        reader.add(readerOutput)
-        reader.startReading()
+      reader?.add(readerOutput)
+      reader?.startReading()
 
         self.totalFrames = Int(videoTrack.nominalFrameRate) * Int(CMTimeGetSeconds(asset.duration))
         self.framesProcessed = 0
 
-        while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader.status == .reading {
+      while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader?.status == .reading {
             if !isProcessing { break }
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
             let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
@@ -144,7 +144,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
                 self.lastFrameCount = self.framesProcessed
             }
         }
-        reader.cancelReading()
+      reader?.cancelReading()
 
         generateLog(for: url)
     }
@@ -267,7 +267,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         """
 
         do {
-          let directory = summaryLogFileURL.deletingLastPathComponent()
+            let directory = summaryLogFileURL.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
           try summaryInfo.write(to: summaryLogFileURL, atomically: true, encoding: .utf8)
             DispatchQueue.main.async {

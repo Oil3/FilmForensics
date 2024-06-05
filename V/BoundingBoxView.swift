@@ -78,7 +78,7 @@ struct BoundingBoxViewWrapper: UIViewRepresentable {
         view.updateSize(for: image.size)
         view.observations = observations
         return view
-    }é
+    }
 
     func updateUIView(_ uiView: BoundingBoxView, context: Context) {
         uiView.updateSize(for: image.size)
