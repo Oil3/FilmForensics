@@ -222,11 +222,13 @@ class CoreMLProcessor: NSObject, ObservableObject {
         
         do {
             let logText = currentFileLog.joined(separator: "\n")
+            let directory = logFileURL.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
             try logText.write(to: logFileURL, atomically: true, encoding: .utf8)
             DispatchQueue.main.async {
                 self.logs.append(logFileURL.path)
+                self.currentFileLog.removeAll()
             }
-            currentFileLog.removeAll()
         } catch {
             print("Error writing log: \(error)")
         }
@@ -236,9 +238,10 @@ class CoreMLProcessor: NSObject, ObservableObject {
         guard let summaryLogFileURL = summaryLogFileURL else { return }
         
         let elapsedTime = CFAbsoluteTimeGetCurrent() - fpsCalculationStartTime
+        let avgFps = Double(framesProcessed) / elapsedTime
         let summaryInfo = """
         Video File: \(logs.map { URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent }.joined(separator: ", "))
-        Average FPS: \(String(format: "%.2f", Double(framesProcessed) / elapsedTime))
+        Average FPS: \(String(format: "%.2f", avgFps))
         Total Detections: \(detectionCounter)
         Below Threshold Detections: \(detailedLogs.count - detectionCounter)
         Model Used: \(selectedModelName)
@@ -246,6 +249,8 @@ class CoreMLProcessor: NSObject, ObservableObject {
         """
         
         do {
+            let directory = summaryLogFileURL.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
             try summaryInfo.write(to: summaryLogFileURL, atomically: true, encoding: .utf8)
             DispatchQueue.main.async {
                 self.generalLog.append(summaryLogFileURL.path)
@@ -305,6 +310,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         appendToLogFile(logMessage)
         DispatchQueue.main.async {
             self.detailedLogs.append(logMessage)
+            self.currentFileLog.append(logMessage)
         }
         detectionCounter += 1
     }

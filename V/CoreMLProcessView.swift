@@ -5,12 +5,11 @@
 //  Created by Almahdi Morris on 4/6/24.
 //
 import SwiftUI
-import UIKit
 import AVKit
 import Vision
 
 struct CoreMLProcessView: View {
-    @StateObject private var processor = CoreMLProcessor()
+    @EnvironmentObject var processor: CoreMLProcessor
     @State private var processingFiles: [URL] = []
     @State private var selectedMediaItem: URL?
     @State private var detectionFrames: [UIImage] = []
@@ -76,7 +75,7 @@ struct CoreMLProcessView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        ForEach(detectionFrames, id: \.self) { frame in
+                        ForEach(processor.detectionFrames, id: \.self) { frame in
                             Image(uiImage: frame)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
@@ -86,6 +85,32 @@ struct CoreMLProcessView: View {
                 }
                 .frame(height: 100)
                 .padding()
+            }
+
+            VStack {
+                Text("Current Logs")
+                    .font(.headline)
+                    .padding()
+
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        ForEach(processor.detailedLogs, id: \.self) { log in
+                            Text(log)
+                                .font(.system(size: 12, weight: .regular, design: .monospaced))
+                        }
+                    }
+                }
+                .frame(maxHeight: 200)
+                .padding()
+            }
+
+            VStack {
+                Text("Stats")
+                    .font(.headline)
+                    .padding()
+
+                Text(processor.stats)
+                    .padding()
             }
 
             if let selectedImage = processor.selectedImage {
@@ -115,13 +140,11 @@ struct MediaItemView: View {
     
     var body: some View {
         ZStack {
-            if let image = UIImage(contentsOfFile: url.path) {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+            if url.pathExtension.lowercased() == "mp4" || url.pathExtension.lowercased() == "mov" {
+                VideoThumbnailView(url: url)
                     .frame(width: 100, height: 100)
-            } else {
-                Image(systemName: "video")
+            } else if let image = UIImage(contentsOfFile: url.path) {
+                Image(uiImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 100, height: 100)
@@ -131,6 +154,37 @@ struct MediaItemView: View {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(Color.blue, lineWidth: 4)
             }
+        }
+    }
+}
+
+struct VideoThumbnailView: View {
+    let url: URL
+    
+    var body: some View {
+        if let thumbnail = generateThumbnail(url: url) {
+            Image(uiImage: thumbnail)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        } else {
+            Image(systemName: "video")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+        }
+    }
+    
+    private func generateThumbnail(url: URL) -> UIImage? {
+        let asset = AVAsset(url: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        let time = CMTime(seconds: 1, preferredTimescale: 60)
+        
+        do {
+            let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+            return UIImage(cgImage: cgImage)
+        } catch {
+            print("Failed to generate thumbnail: \(error.localizedDescription)")
+            return nil
         }
     }
 }

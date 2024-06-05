@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct VApp: App {
+    @StateObject private var processor = CoreMLProcessor()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                                .environmentObject(processor)
+
         }
     }
 }
