@@ -2,7 +2,7 @@
 //  ImageViewer.swift
 //  Machine Security System
 //
-//  Created by Almahdi Morris on 1/6/24.
+// Copyright Almahdi Morris - 1/6/24.
 //
 import SwiftUI
 

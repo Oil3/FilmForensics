@@ -2,7 +2,7 @@
 //  VideoController.swift
 //  V
 //
-//  Created by Almahdi Morris on 4/6/24.
+// Copyright Almahdi Morris - 4/6/24.
 //
 
 import UIKit
