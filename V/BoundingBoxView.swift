@@ -3,6 +3,11 @@ import SwiftUI
 import Vision
 import AVFoundation
 
+import UIKit
+import SwiftUI
+import Vision
+import AVFoundation
+
 class BoundingBoxView: UIView {
     private let strokeWidth: CGFloat = 2
     

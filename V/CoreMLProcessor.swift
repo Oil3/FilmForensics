@@ -18,6 +18,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
     @Published var selectedImage: UIImage?
     @Published var selectedVideo: URL?
     @Published var detectionFrames: [DetectionFrame] = []
+    @Published var showStats: Bool = true
 
     var isProcessing = false
     var framesProcessed = 0
@@ -32,7 +33,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
     struct DetectionFrame: Identifiable, Hashable {
         let id = UUID()
-        let image: UIImage
+        let imageURL: URL
         let timestamp: Double
     }
 
@@ -100,17 +101,17 @@ class CoreMLProcessor: NSObject, ObservableObject {
     private func processVideo(url: URL, model: MLModel, confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
         print("Processing video: \(url)")
         let asset = AVAsset(url: url)
-        let reader = try? AVAssetReader(asset: asset)
+        let reader = try! AVAssetReader(asset: asset)
 
         guard let videoTrack = asset.tracks(withMediaType: .video).first else { return }
         let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
-      reader?.add(readerOutput)
-      reader?.startReading()
+        reader.add(readerOutput)
+        reader.startReading()
 
         self.totalFrames = Int(videoTrack.nominalFrameRate) * Int(CMTimeGetSeconds(asset.duration))
         self.framesProcessed = 0
 
-      while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader?.status == .reading {
+        while let sampleBuffer = readerOutput.copyNextSampleBuffer(), reader.status == .reading {
             if !isProcessing { break }
             guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { continue }
             let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
@@ -126,9 +127,10 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: frameTime, for: url, frameNumber: self?.framesProcessed ?? 0)
                         }
                     }
-                    if let frameImage = self?.drawBoundingBoxes(on: ciImage, with: results) {
+                    if let frameImage = self?.drawBoundingBoxes(on: ciImage, with: results),
+                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
                         DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(image: frameImage, timestamp: frameTime))
+                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: frameTime))
                         }
                     }
                 }
@@ -136,15 +138,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
             try? handler.perform([request])
             self.framesProcessed += 1
-            if CFAbsoluteTimeGetCurrent() - self.fpsCalculationStartTime >= 5 {
-                DispatchQueue.main.async {
-                    self.updateStats()
-                }
-                self.fpsCalculationStartTime = CFAbsoluteTimeGetCurrent()
-                self.lastFrameCount = self.framesProcessed
+            DispatchQueue.main.async {
+                self.updateStats()
             }
         }
-      reader?.cancelReading()
+        reader.cancelReading()
 
         generateLog(for: url)
     }
@@ -167,9 +165,10 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
                         }
                     }
-                    if let frameImage = self?.drawBoundingBoxes(on: image, with: results) {
+                    if let frameImage = self?.drawBoundingBoxes(on: image, with: results),
+                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
                         DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(image: frameImage, timestamp: 0))
+                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0))
                         }
                     }
                 }
@@ -194,9 +193,10 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
                         }
                     }
-                    if let frameImage = self?.drawBoundingBoxes(on: resizedImage, with: results) {
+                    if let frameImage = self?.drawBoundingBoxes(on: resizedImage, with: results),
+                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
                         DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(image: frameImage, timestamp: 0))
+                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0))
                         }
                     }
                 }
@@ -206,7 +206,6 @@ class CoreMLProcessor: NSObject, ObservableObject {
         try? handler.perform([request])
         generateLog(for: url)
     }
-
     private func resizeImage(image: CIImage, targetSize: CGSize) -> CIImage {
         let scale = CGAffineTransform(scaleX: targetSize.width / image.extent.width, y: targetSize.height / image.extent.height)
         return image.transformed(by: scale)
@@ -234,6 +233,18 @@ class CoreMLProcessor: NSObject, ObservableObject {
         UIGraphicsEndImageContext()
 
         return newImage
+    }
+
+    private func saveImageAsJPEG(_ image: UIImage, withName name: String) -> URL? {
+        guard let data = image.jpegData(compressionQuality: 0.95) else { return nil }
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(name).appendingPathExtension("jpg")
+        do {
+            try data.write(to: fileURL)
+            return fileURL
+        } catch {
+            print("Error saving image as JPEG: \(error)")
+            return nil
+        }
     }
 
     private func generateLog(for url: URL) {
@@ -269,7 +280,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         do {
             let directory = summaryLogFileURL.deletingLastPathComponent()
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true, attributes: nil)
-          try summaryInfo.write(to: summaryLogFileURL, atomically: true, encoding: .utf8)
+            try summaryInfo.write(to: summaryLogFileURL, atomically: true, encoding: .utf8)
             DispatchQueue.main.async {
                 self.stats = summaryInfo
             }
@@ -306,11 +317,13 @@ class CoreMLProcessor: NSObject, ObservableObject {
         let formattedFPS = String(format: "%.2f", fps)
 
         DispatchQueue.main.async {
-            self.stats = """
-            Memory used: \(formattedMemoryUsed) MB
-            FPS: \(formattedFPS)
-            Frames processed: \(self.framesProcessed) / \(self.totalFrames)
-            """
+            if self.showStats {
+                self.stats = """
+                Memory used: \(formattedMemoryUsed) MB
+                FPS: \(formattedFPS)
+                Frames processed: \(self.framesProcessed) / \(self.totalFrames)
+                """
+            }
         }
 
         fpsCalculationStartTime = currentTime
