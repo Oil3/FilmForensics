@@ -2,7 +2,7 @@
 //  MachineSystemSecurityApp.swift
 //  MachineSystemSecurity
 //
-//  Created by Almahdi Morris on 2/6/24.
+// Copyright Almahdi Morris - 2/6/24.
 //
 
 import SwiftUI

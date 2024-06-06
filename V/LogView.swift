@@ -2,7 +2,7 @@
 //  LogView.swift
 //  V
 //
-//  Created by Almahdi Morris on 5/6/24.
+// Copyright Almahdi Morris - 5/6/24.
 //
 
 import SwiftUI

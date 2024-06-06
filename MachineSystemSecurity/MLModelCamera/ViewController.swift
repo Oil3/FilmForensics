@@ -2,7 +2,7 @@
 //  ViewController.swift
 //  CoreMLPlayground
 //
-//  Created by Shuichi Tsutsumi on 2018/06/14.
+// CopywriteShuichi Tsutsumi on 2018/06/14.
 //  Copyright © 2018 Shuichi Tsutsumi. All rights reserved.
 //
 

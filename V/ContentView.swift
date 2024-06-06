@@ -2,7 +2,7 @@
 //  ContentView.swift
 //  V
 //
-//  Created by Almahdi Morris on 4/6/24.
+// Copyright Almahdi Morris - 4/6/24.
 //
 
 import SwiftUI
@@ -22,7 +22,7 @@ struct ContentView: View {
 //                NavigationLink(destination: GalleryView(selectedURL: $selectedURL)) {
 //                    Label("Gallery", systemImage: "photo.on.rectangle")
 //                }
-                NavigationLink(destination: Text("Settings")) {
+                NavigationLink(destination: SettingsView())  {
                     Label("Settings", systemImage: "gearshape")
                 }
                 NavigationLink(destination: CoreMLProcessView()) {

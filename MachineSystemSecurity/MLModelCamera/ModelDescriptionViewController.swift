@@ -2,7 +2,7 @@
 //  ModelDescriptionViewController.swift
 //  MLModelCamera
 //
-//  Created by Shuichi Tsutsumi on 2018/06/20.
+// CopywriteShuichi Tsutsumi on 2018/06/20.
 //  Copyright © 2018 Shuichi Tsutsumi. All rights reserved.
 //
 

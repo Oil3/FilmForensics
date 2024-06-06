@@ -2,7 +2,7 @@
 //  VIdeoPlayerViewModel.swift
 //  FilmForensics
 //
-//  Created by Almahdi Morris on 05/20/24.
+// Copyright Almahdi Morris - 05/20/24.
 //
 import SwiftUI
 import AVFoundation

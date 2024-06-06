@@ -2,7 +2,7 @@
 //  VideoView.swift
 //  Machine Security System
 //
-//  Created by Almahdi Morris on 05/05/24.
+// Copyright Almahdi Morris - 05/05/24.
 //
 import SwiftUI
 

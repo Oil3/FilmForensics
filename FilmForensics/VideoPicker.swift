@@ -2,7 +2,7 @@
 //  VideoPicker.swift
 //  FilmForensics
 //
-//  Created by Almahdi Morris on 05/22/24.
+// Copyright Almahdi Morris - 05/22/24.
 //
 import SwiftUI
 import AVKit
