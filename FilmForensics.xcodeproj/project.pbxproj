@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
+		342A34522C157A3200F1995E /* SRResNet.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */; };
+		342A34532C157A3200F1995E /* bsrgan.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */; };
+		342A34552C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
+		342A34562C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
+		342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
 		344D22E22C0EF86100C6966E /* VApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E12C0EF86100C6966E /* VApp.swift */; };
 		344D22E42C0EF86100C6966E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E32C0EF86100C6966E /* ContentView.swift */; };
 		344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 344D22E52C0EF86200C6966E /* Assets.xcassets */; };
@@ -86,9 +92,9 @@
 		341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = bsrgan.mlmodel; sourceTree = "<group>"; };
 		341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = realesrgan512.mlmodel; sourceTree = "<group>"; };
 		341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRGAN.mlmodel; sourceTree = "<group>"; };
-		341AD8BB2BFFA61300BF3CE3 /* bsrgan.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = bsrgan.mlmodel; path = ../../../../Downloads/bsrgan.mlmodel; sourceTree = "<group>"; };
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
+		342A34542C162CA100F1995E /* MLresizer.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MLresizer.mlmodel; sourceTree = "<group>"; };
 		344D22DF2C0EF86100C6966E /* V.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = V.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		344D22E12C0EF86100C6966E /* VApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VApp.swift; sourceTree = "<group>"; };
 		344D22E32C0EF86100C6966E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -198,10 +204,10 @@
 		341AD8B42BFFA3B000BF3CE3 /* MLmodelImage */ = {
 			isa = PBXGroup;
 			children = (
+				342A34542C162CA100F1995E /* MLresizer.mlmodel */,
 				341AD8B52BFFA3D900BF3CE3 /* MPRNetDebluring.mlmodel */,
-				341AD8BB2BFFA61300BF3CE3 /* bsrgan.mlmodel */,
-				341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */,
 				341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */,
+				341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */,
 				341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */,
 				341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */,
 				341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */,
@@ -521,6 +527,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
 				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
 				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
@@ -551,6 +558,7 @@
 				3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */,
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
+				342A34552C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */,
 				34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */,
 				3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */,
@@ -567,6 +575,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				342A34562C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				3471ED412C0CF71900916598 /* ImageViewer.swift in Sources */,
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
@@ -579,6 +588,9 @@
 				3471ED522C0CF71900916598 /* SyntaxHighlightingTextView.swift in Sources */,
 				3471ED6E2C0CF71900916598 /* CameraView.swift in Sources */,
 				3471ED512C0CF71900916598 /* SettingsView.swift in Sources */,
+				342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */,
+				342A34522C157A3200F1995E /* SRResNet.mlmodel in Sources */,
+				342A34532C157A3200F1995E /* bsrgan.mlmodel in Sources */,
 				3471ED5E2C0CF71900916598 /* BoundingBoxView.swift in Sources */,
 				3471ED5D2C0CF71900916598 /* CameraViewController.swift in Sources */,
 				3471ED4A2C0CF71900916598 /* ViewController.swift in Sources */,
