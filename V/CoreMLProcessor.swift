@@ -3,8 +3,7 @@
   //  V
   //
   // Copyright Almahdi Morris - 4/6/24.
-  //
-// CoreMLProcessor.swift
+  //r
 import SwiftUI
 import CoreML
 import Vision
@@ -19,7 +18,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
     @Published var selectedImage: UIImage?
     @Published var selectedVideo: URL?
     @Published var detectionFrames: [DetectionFrame] = []
-    @Published var showStats: Bool = true
+    @Published var resizedImages: [UIImage] = []
 
     var isProcessing = false
     var framesProcessed = 0
@@ -36,6 +35,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         let id = UUID()
         let imageURL: URL
         let timestamp: Double
+        let boundingBoxes: [CGRect]
     }
 
     func selectModel(named modelName: String) {
@@ -128,10 +128,12 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: frameTime, for: url, frameNumber: self?.framesProcessed ?? 0)
                         }
                     }
-                    if !results.isEmpty, let frameImage = self?.drawBoundingBoxes(on: ciImage, with: results),
-                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
-                        DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: frameTime))
+                    if let frameImage = self?.drawBoundingBoxes(on: ciImage, with: results) {
+                        if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
+                            DispatchQueue.main.async {
+                                let boundingBoxes = results.map { $0.boundingBox }
+                                self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: frameTime, boundingBoxes: boundingBoxes))
+                            }
                         }
                     }
                 }
@@ -139,8 +141,12 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
             try? handler.perform([request])
             self.framesProcessed += 1
-            DispatchQueue.main.async {
-                self.updateStats()
+            if CFAbsoluteTimeGetCurrent() - self.fpsCalculationStartTime >= 5 {
+                DispatchQueue.main.async {
+                    self.updateStats()
+                }
+                self.fpsCalculationStartTime = CFAbsoluteTimeGetCurrent()
+                self.lastFrameCount = self.framesProcessed
             }
         }
         reader.cancelReading()
@@ -166,10 +172,12 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
                         }
                     }
-                    if !results.isEmpty, let frameImage = self?.drawBoundingBoxes(on: image, with: results),
-                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
-                        DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0))
+                    if let frameImage = self?.drawBoundingBoxes(on: image, with: results) {
+                        if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
+                            DispatchQueue.main.async {
+                                let boundingBoxes = results.map { $0.boundingBox }
+                                self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0, boundingBoxes: boundingBoxes))
+                            }
                         }
                     }
                 }
@@ -194,10 +202,12 @@ class CoreMLProcessor: NSObject, ObservableObject {
                             self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
                         }
                     }
-                    if !results.isEmpty, let frameImage = self?.drawBoundingBoxes(on: resizedImage, with: results),
-                       let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
-                        DispatchQueue.main.async {
-                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0))
+                    if let frameImage = self?.drawBoundingBoxes(on: resizedImage, with: results) {
+                        if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
+                            DispatchQueue.main.async {
+                                let boundingBoxes = results.map { $0.boundingBox }
+                                self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0, boundingBoxes: boundingBoxes))
+                            }
                         }
                     }
                 }
@@ -235,18 +245,6 @@ class CoreMLProcessor: NSObject, ObservableObject {
         UIGraphicsEndImageContext()
 
         return newImage
-    }
-
-    private func saveImageAsJPEG(_ image: UIImage, withName name: String) -> URL? {
-        guard let data = image.jpegData(compressionQuality: 0.95) else { return nil }
-        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(name).appendingPathExtension("jpg")
-        do {
-            try data.write(to: fileURL)
-            return fileURL
-        } catch {
-            print("Error saving image as JPEG: \(error)")
-            return nil
-        }
     }
 
     private func generateLog(for url: URL) {
@@ -319,13 +317,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
         let formattedFPS = String(format: "%.2f", fps)
 
         DispatchQueue.main.async {
-            if self.showStats {
-                self.stats = """
-                Memory used: \(formattedMemoryUsed) MB
-                FPS: \(formattedFPS)
-                Frames processed: \(self.framesProcessed) / \(self.totalFrames)
-                """
-            }
+            self.stats = """
+            Memory used: \(formattedMemoryUsed) MB
+            FPS: \(formattedFPS)
+            Frames processed: \(self.framesProcessed) / \(self.totalFrames)
+            """
         }
 
         fpsCalculationStartTime = currentTime
@@ -379,7 +375,99 @@ class CoreMLProcessor: NSObject, ObservableObject {
             return []
         }
     }
+
+    private func saveImageAsJPEG(_ image: UIImage, withName name: String) -> URL? {
+        guard let data = image.jpegData(compressionQuality: 0.95) else { return nil }
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(name).appendingPathExtension("jpg")
+        do {
+            try data.write(to: fileURL)
+            return fileURL
+        } catch {
+            print("Error saving image as JPEG: \(error)")
+            return nil
+        }
+    }
+    private func loadResizerModel() -> MLModel? {
+        guard let modelURL = Bundle.main.url(forResource: "MLresizer", withExtension: "mlmodelc") else {
+            print("Model not found: MLresizer")
+            return nil
+        }
+        do {
+            return try MLModel(contentsOf: modelURL)
+        } catch {
+            print("Error loading model: \(error)")
+            return nil
+        }
+    }
+
+    func resizeImage(image: UIImage) {
+        guard let pixelBuffer = image.toCVPixelBuffer(),
+              let model = loadResizerModel() else {
+            print("Failed to load model or convert image")
+            return
+        }
+
+        do {
+            let resizer = try MLresizer(model: model)
+            let input = MLresizerInput(image: pixelBuffer)
+            let output = try resizer.prediction(input: input)
+            
+            if let output640 = output.output_640.toUIImage(),
+               let output416 = output.output_416.toUIImage(),
+               let output720p = output.output_720p.toUIImage(),
+               let output512 = output.output_512.toUIImage() {
+                DispatchQueue.main.async {
+                    self.resizedImages = [output640, output416, output720p, output512]
+                }
+            }
+        } catch {
+            print("Error during prediction: \(error)")
+        }
+    }
 }
+
+extension CVPixelBuffer {
+    func toUIImage() -> UIImage? {
+        let ciImage = CIImage(cvPixelBuffer: self)
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+            return UIImage(cgImage: cgImage)
+        }
+        return nil
+    }
+}
+extension UIImage {
+    func toCVPixelBuffer() -> CVPixelBuffer? {
+        let width = Int(self.size.width)
+        let height = Int(self.size.height)
+        let attributes: [NSObject: AnyObject] = [
+            kCVPixelBufferCGImageCompatibilityKey: true as AnyObject,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true as AnyObject
+        ]
+
+        var pixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attributes as CFDictionary, &pixelBuffer)
+        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
+            return nil
+        }
+
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        let pixelData = CVPixelBufferGetBaseAddress(buffer)
+        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
+        let context = CGContext(data: pixelData, width: width, height: height, bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
+
+        context?.translateBy(x: 0, y: CGFloat(height))
+        context?.scaleBy(x: 1.0, y: -1.0)
+
+        UIGraphicsPushContext(context!)
+        self.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
+        UIGraphicsPopContext()
+        CVPixelBufferUnlockBaseAddress(buffer, .readOnly)
+
+        return buffer
+    }
+}
+
 
 // MARK: - UIDocumentPickerDelegate
 extension CoreMLProcessor: UIDocumentPickerDelegate {
@@ -391,3 +479,5 @@ extension CoreMLProcessor: UIDocumentPickerDelegate {
         // Handle cancellation
     }
 }
+
+

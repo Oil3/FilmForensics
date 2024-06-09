@@ -435,7 +435,7 @@ class VideoPlayerViewModel: ObservableObject {
     }
 }
 
-struct FilterPreset: Identifiable, Hashable, Equatable {
+struct FilterPreset: Identifiable, Equatable {
     let id = UUID()
     let brightness: Float
     let contrast: Float

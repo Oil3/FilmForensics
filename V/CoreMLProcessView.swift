@@ -40,6 +40,11 @@ struct CoreMLProcessView: View {
                 }
                 .padding()
 
+                Button("Placeholder") {
+                    // Placeholder button action
+                }
+                .padding()
+
                 Button("Clear Frames", action: clearFrames)
                     .padding()
 
@@ -49,6 +54,11 @@ struct CoreMLProcessView: View {
                 Button("Export All", action: exportAllFrames)
                     .padding()
 
+                Button("Resize Image") {
+                    if let selectedImage = processor.selectedImage {
+                        processor.resizeImage(image: selectedImage)
+                    }
+                }
                 Spacer()
 
                 VStack {
@@ -79,6 +89,7 @@ struct CoreMLProcessView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 150, height: 150)
+                            .background(selectedMediaItem == file ? Color.blue.opacity(0.3) : Color.clear)
                             .contextMenu {
                                 Button("Copy", action: { copyFile(file) })
                                 Button("Export", action: { exportFile(file) })
@@ -97,14 +108,6 @@ struct CoreMLProcessView: View {
             }
             .frame(height: 200)
             .padding()
-            .onAppear {
-                if processingFiles.count > 0 {
-                    selectedMediaItem = processingFiles[currentFileIndex]
-                }
-            }
-            .onKeyDown { key in
-                handleKeyDown(key)
-            }
 
             Text("Detection Frames (\(currentDetectionFrameIndex + 1)/\(processor.detectionFrames.count))")
                 .font(.headline)
@@ -126,7 +129,7 @@ struct CoreMLProcessView: View {
                                         .padding(4),
                                     alignment: .bottom
                                 )
-                                .border(selectedDetectionFrames.contains(frame) ? Color.blue : Color.clear, width: 3)
+                                .background(selectedDetectionFrames.contains(frame) ? Color.blue.opacity(0.3) : Color.clear)
                                 .contextMenu {
                                     Button("Copy", action: { copyFrame(frame) })
                                     Button("Export", action: { exportFrame(frame) })
@@ -162,7 +165,16 @@ struct CoreMLProcessView: View {
                     )
                     .padding()
             }
-
+  if let selectedImage = processor.selectedImage {
+                Image(uiImage: selectedImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxHeight: 300)
+                    .overlay(
+                        BoundingBoxViewWrapper(observations: $processor.currentObservations, image: selectedImage)
+                    )
+                    .padding()
+            }
             if let selectedVideo = processor.selectedVideo {
                 VideoPlayer(player: AVPlayer(url: selectedVideo))
                     .frame(maxHeight: 300)
@@ -170,8 +182,8 @@ struct CoreMLProcessView: View {
             }
         }
         .padding()
-        .sheet(item: $previewItem) { item in
-            QuickLookPreview(url: item.url)
+        .sheet(item: $previewItem) { preview in
+            QuickLookPreview(previewItem: preview.url)
         }
     }
 
@@ -256,126 +268,48 @@ struct CoreMLProcessView: View {
     private func selectAllFiles() {
         // Implement your select all files functionality
     }
-
-    private func handleKeyDown(_ key: Key) {
-        switch key {
-        case .leftArrow:
-            if currentFileIndex > 0 {
-                currentFileIndex -= 1
-                selectedMediaItem = processingFiles[currentFileIndex]
-            }
-        case .rightArrow:
-            if currentFileIndex < processingFiles.count - 1 {
-                currentFileIndex += 1
-                selectedMediaItem = processingFiles[currentFileIndex]
-            }
-        default:
-            break
-        }
-    }
-}
-
-struct KeyDownModifier: ViewModifier {
-    let keyDownHandler: (Key) -> Void
-
-    func body(content: Content) -> some View {
-        content
-            .background(KeyDownHandlingView(keyDownHandler: keyDownHandler))
-    }
-}
-
-extension View {
-    func onKeyDown(perform action: @escaping (Key) -> Void) -> some View {
-        self.modifier(KeyDownModifier(keyDownHandler: action))
-    }
-}
-
-struct KeyDownHandlingView: UIViewRepresentable {
-    let keyDownHandler: (Key) -> Void
-
-    class Coordinator: NSObject, UIKeyInput {
-        var keyDownHandler: (Key) -> Void
-
-        init(keyDownHandler: @escaping (Key) -> Void) {
-            self.keyDownHandler = keyDownHandler
-        }
-
-        var hasText: Bool = false
-
-        func insertText(_ text: String) {}
-
-        func deleteBackward() {}
-
-         func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
-            guard let key = presses.first?.key else { return }
-
-            switch key.keyCode {
-            case .keyboardLeftArrow:
-                keyDownHandler(.leftArrow)
-            case .keyboardRightArrow:
-                keyDownHandler(.rightArrow)
-            default:
-                break
-            }
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        return Coordinator(keyDownHandler: keyDownHandler)
-    }
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        view.becomeFirstResponder()
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {}
-
-    static func dismantleUIView(_ uiView: UIView, coordinator: ()) {
-        uiView.resignFirstResponder()
-    }
-}
-
-enum Key {
-    case leftArrow
-    case rightArrow
 }
 
 struct QuickLookPreview: UIViewControllerRepresentable {
-    let url: URL
+    let previewItem: URL
 
     func makeUIViewController(context: Context) -> QLPreviewController {
-        let controller = QLPreviewController()
-        controller.dataSource = context.coordinator
-        return controller
+        let previewController = QLPreviewController()
+        previewController.dataSource = context.coordinator
+        return previewController
     }
 
     func updateUIViewController(_ uiViewController: QLPreviewController, context: Context) {}
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(previewItem: previewItem)
     }
 
     class Coordinator: NSObject, QLPreviewControllerDataSource {
-        var parent: QuickLookPreview
+        let previewItem: URL
 
-        init(_ parent: QuickLookPreview) {
-            self.parent = parent
+        init(previewItem: URL) {
+            self.previewItem = previewItem
         }
 
         func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
-            1
+            return 1
         }
 
         func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
-            parent.url as NSURL
+            return previewItem as NSURL
         }
     }
 }
 
 struct IdentifiableURL: Identifiable {
-    let id = UUID()
+    var id: URL { url }
     let url: URL
 }
+
+extension CGRect: Hashable {
+    public var hashValue: Int {
+        return NSCoder.string(for: self).hashValue
+    }
+}
+
