@@ -19,7 +19,7 @@ struct GalleryView: View {
                     Button(action: {
                         viewModel.selectFiles()
                     }) {
-                        Label("Add Friles", systemImage: "plus")
+                        Label("Add Files", systemImage: "plus")
                     }
                     .padding()
 
