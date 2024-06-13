@@ -67,9 +67,7 @@ struct LogView: View {
         do {
             let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("exported_log.txt")
             try logs.write(to: tempURL, atomically: true, encoding: .utf8)
-
-            let documentPicker = UIDocumentPickerViewController(forExporting: [tempURL], asCopy: true)
-            UIApplication.shared.windows.first?.rootViewController?.present(documentPicker, animated: true, completion: nil)
+        let documentPicker = NSOpenPanel()
         } catch {
             print("Error exporting log: \(error.localizedDescription)")
         }

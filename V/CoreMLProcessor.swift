@@ -1,9 +1,3 @@
-  //
-  //  CoreMLProcessor.swift
-  //  V
-  //
-  // Copyright Almahdi Morris - 4/6/24.
-  //r
 import SwiftUI
 import CoreML
 import Vision
@@ -15,10 +9,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
     @Published var detailedLogs: [String] = []
     @Published var stats: String = ""
     @Published var currentObservations: [VNRecognizedObjectObservation] = []
-    @Published var selectedImage: UIImage?
+    @Published var selectedImage: NSImage?
     @Published var selectedVideo: URL?
     @Published var detectionFrames: [DetectionFrame] = []
-    @Published var resizedImages: [UIImage] = []
+    @Published var resizedImages: [String: NSImage] = [:]
+    @Published var selectedResizedImageKey: String = "output_640"
 
     var isProcessing = false
     var framesProcessed = 0
@@ -31,7 +26,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
     private var logFileURL: URL?
     private var summaryLogFileURL: URL?
 
-    struct DetectionFrame: Identifiable, Hashable {
+    struct DetectionFrame: Identifiable {
         let id = UUID()
         let imageURL: URL
         let timestamp: Double
@@ -42,13 +37,17 @@ class CoreMLProcessor: NSObject, ObservableObject {
         selectedModelName = modelName
     }
 
-    func selectFiles(completion: @escaping ([URL]) -> Void) {
-        fileSelectionCompletionHandler = completion
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.movie, .image], asCopy: true)
-        documentPicker.allowsMultipleSelection = true
-        documentPicker.delegate = self
-        guard let window = UIApplication.shared.windows.first else { return }
-        window.rootViewController?.present(documentPicker, animated: true, completion: nil)
+    func selectFiles(completionHandler: @escaping ([URL]) -> Void) {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = true
+        openPanel.canChooseDirectories = false
+        openPanel.allowsMultipleSelection = true
+        openPanel.allowedFileTypes = ["public.movie", "public.image"]
+        openPanel.begin { response in
+            if response == .OK {
+                completionHandler(openPanel.urls)
+            }
+        }
     }
 
     func startProcessing(urls: [URL], confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
@@ -67,11 +66,11 @@ class CoreMLProcessor: NSObject, ObservableObject {
                 if !self.isProcessing { break }
                 let logFilename = url.deletingPathExtension().lastPathComponent + "_V_" + dateTimeString + ".txt"
                 self.logFileURL = FileManager.default.temporaryDirectory.appendingPathComponent(logFilename)
-
-                if url.pathExtension.lowercased() == "mp4" || url.pathExtension.lowercased() == "mov" {
+            let videoExtensions = ["mp4", "mov", "gif"]
+              if videoExtensions.contains(url.pathExtension) {
                     self.processVideo(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: iouThreshold, noVideoPlayback: noVideoPlayback)
                 } else {
-                    self.processImage(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: confidenceThreshold)
+                    self.processImage(url: url, model: model, confidenceThreshold: confidenceThreshold, iouThreshold: iouThreshold)
                 }
             }
 
@@ -156,58 +155,23 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
     private func processImage(url: URL, model: MLModel, confidenceThreshold: Float, iouThreshold: Float) {
         print("Processing image: \(url)")
-        guard let image = CIImage(contentsOf: url) else { return }
-        let handler = VNImageRequestHandler(ciImage: image, options: [:])
+        let handler = VNImageRequestHandler(url: url, options: [:])
 
-        var request: VNCoreMLRequest
-
-        if selectedModelName == "ccashier3" {
-            request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
-                if let results = request.results as? [VNRecognizedObjectObservation] {
-                    DispatchQueue.main.async {
-                        self?.currentObservations = results
-                    }
-                    for observation in results {
-                        if observation.confidence >= confidenceThreshold {
-                            self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
-                        }
-                    }
-                    if let frameImage = self?.drawBoundingBoxes(on: image, with: results) {
-                        if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
-                            DispatchQueue.main.async {
-                                let boundingBoxes = results.map { $0.boundingBox }
-                                self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0, boundingBoxes: boundingBoxes))
-                            }
-                        }
+        let request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
+            if let results = request.results as? [VNRecognizedObjectObservation] {
+                DispatchQueue.main.async {
+                    self?.currentObservations = results
+                }
+                for observation in results {
+                    if observation.confidence >= confidenceThreshold {
+                        self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
                     }
                 }
-            }
-        } else {
-            // Handle specific input names and resizing
-            var targetSize: CGSize
-            if selectedModelName == "cctrack23090" {
-                targetSize = CGSize(width: 416, height: 416)
-            } else {
-                targetSize = CGSize(width: 704, height: 416)
-            }
-            let resizedImage = resizeImage(image: image, targetSize: targetSize)
-            let handler = VNImageRequestHandler(ciImage: resizedImage, options: [:])
-            request = VNCoreMLRequest(model: try! VNCoreMLModel(for: model)) { [weak self] request, error in
-                if let results = request.results as? [VNRecognizedObjectObservation] {
-                    DispatchQueue.main.async {
-                        self?.currentObservations = results
-                    }
-                    for observation in results {
-                        if observation.confidence >= confidenceThreshold {
-                            self?.logDetection(observation, at: nil, for: url, frameNumber: nil)
-                        }
-                    }
-                    if let frameImage = self?.drawBoundingBoxes(on: resizedImage, with: results) {
-                        if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
-                            DispatchQueue.main.async {
-                                let boundingBoxes = results.map { $0.boundingBox }
-                                self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0, boundingBoxes: boundingBoxes))
-                            }
+                if let frameImage = self?.drawBoundingBoxes(on: CIImage(contentsOf: url)!, with: results) {
+                    if let imageURL = self?.saveImageAsJPEG(frameImage, withName: "frame_\(self?.framesProcessed ?? 0)") {
+                        DispatchQueue.main.async {
+                            let boundingBoxes = results.map { $0.boundingBox }
+                            self?.detectionFrames.append(DetectionFrame(imageURL: imageURL, timestamp: 0, boundingBoxes: boundingBoxes))
                         }
                     }
                 }
@@ -216,35 +180,6 @@ class CoreMLProcessor: NSObject, ObservableObject {
 
         try? handler.perform([request])
         generateLog(for: url)
-    }
-
-    private func resizeImage(image: CIImage, targetSize: CGSize) -> CIImage {
-        let scale = CGAffineTransform(scaleX: targetSize.width / image.extent.width, y: targetSize.height / image.extent.height)
-        return image.transformed(by: scale)
-    }
-
-    private func drawBoundingBoxes(on image: CIImage, with observations: [VNRecognizedObjectObservation]) -> UIImage? {
-        let context = CIContext(options: nil)
-        guard let cgImage = context.createCGImage(image, from: image.extent) else { return nil }
-        let uiImage = UIImage(cgImage: cgImage)
-
-        UIGraphicsBeginImageContext(uiImage.size)
-        uiImage.draw(at: .zero)
-
-        let drawRect = CGRect(x: 0, y: 0, width: uiImage.size.width, height: uiImage.size.height)
-        let contextRef = UIGraphicsGetCurrentContext()
-        contextRef?.setStrokeColor(UIColor.red.cgColor)
-        contextRef?.setLineWidth(2.0)
-
-        for observation in observations {
-            let rect = VNImageRectForNormalizedRect(observation.boundingBox, Int(drawRect.width), Int(drawRect.height))
-            contextRef?.stroke(rect)
-        }
-
-        let newImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-
-        return newImage
     }
 
     private func generateLog(for url: URL) {
@@ -269,7 +204,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         let elapsedTime = CFAbsoluteTimeGetCurrent() - fpsCalculationStartTime
         let avgFps = Double(framesProcessed) / elapsedTime
         let summaryInfo = """
-        Video File: \(logFileURL?.deletingPathExtension().lastPathComponent ?? "")
+        Video File: \(logFileURL?.deletingLastPathComponent().lastPathComponent ?? "")
         Average FPS: \(String(format: "%.2f", avgFps))
         Total Detections: \(detectionCounter)
         Below Threshold Detections: \(detailedLogs.count - detectionCounter)
@@ -376,17 +311,59 @@ class CoreMLProcessor: NSObject, ObservableObject {
         }
     }
 
-    private func saveImageAsJPEG(_ image: UIImage, withName name: String) -> URL? {
-        guard let data = image.jpegData(compressionQuality: 0.95) else { return nil }
+    private func saveImageAsJPEG(_ image: CIImage, withName name: String) -> URL? {
+        let context = CIContext()
+        guard let cgImage = context.createCGImage(image, from: image.extent),
+              let data = NSImage(cgImage: cgImage, size: NSSize(width: image.extent.size.width, height: image.extent.size.height)).tiffRepresentation,
+              let bitmapImage = NSBitmapImageRep(data: data),
+              let jpegData = bitmapImage.representation(using: .jpeg, properties: [:]) else {
+            return nil
+        }
         let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(name).appendingPathExtension("jpg")
         do {
-            try data.write(to: fileURL)
+            try jpegData.write(to: fileURL)
             return fileURL
         } catch {
             print("Error saving image as JPEG: \(error)")
             return nil
         }
     }
+
+    func resizeImage(image: CIImage, outputKey: CGSize) -> CIImage {
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(image, from: image.extent)
+        let nsImage = NSImage(cgImage: cgImage!, size: NSSize(width: image.extent.width, height: image.extent.height))
+        guard let resizerModel = loadResizerModel() else {
+            print("Failed to load resizer model")
+            return image
+        }
+        do {
+            let resizer = try MLresizer(model: resizerModel)
+            let pixelBuffer = nsImage.toCVPixelBuffer()!
+            let input = MLresizerInput(image: pixelBuffer)
+            let output = try resizer.prediction(input: input)
+            let outputImage = CIImage(cvPixelBuffer: output.output_640) // Adjust as necessary for other output sizes
+            return outputImage
+        } catch {
+            print("Error during resizing prediction: \(error)")
+            return image
+        }
+    }
+
+    private func drawBoundingBoxes(on image: CIImage, with observations: [VNRecognizedObjectObservation]) -> CIImage {
+        var annotatedImage = image
+        let context = CIContext()
+        for observation in observations {
+            let boundingBox = observation.boundingBox
+            let color = CIColor(red: 1, green: 0, blue: 0, alpha: 1)
+            annotatedImage = annotatedImage.applyingFilter("CISourceOverCompositing", parameters: [
+                kCIInputImageKey: CIImage(color: color).cropped(to: CGRect(x: boundingBox.origin.x * image.extent.width, y: boundingBox.origin.y * image.extent.height, width: boundingBox.size.width * image.extent.width, height: boundingBox.size.height * image.extent.height)),
+                kCIInputBackgroundImageKey: annotatedImage
+            ])
+        }
+        return annotatedImage
+    }
+
     private func loadResizerModel() -> MLModel? {
         guard let modelURL = Bundle.main.url(forResource: "MLresizer", withExtension: "mlmodelc") else {
             print("Model not found: MLresizer")
@@ -399,59 +376,23 @@ class CoreMLProcessor: NSObject, ObservableObject {
             return nil
         }
     }
-
-    func resizeImage(image: UIImage) {
-        guard let pixelBuffer = image.toCVPixelBuffer(),
-              let model = loadResizerModel() else {
-            print("Failed to load model or convert image")
-            return
-        }
-
-        do {
-            let resizer = try MLresizer(model: model)
-            let input = MLresizerInput(image: pixelBuffer)
-            let output = try resizer.prediction(input: input)
-            
-            if let output640 = output.output_640.toUIImage(),
-               let output416 = output.output_416.toUIImage(),
-               let output720p = output.output_720p.toUIImage(),
-               let output512 = output.output_512.toUIImage() {
-                DispatchQueue.main.async {
-                    self.resizedImages = [output640, output416, output720p, output512]
-                }
-            }
-        } catch {
-            print("Error during prediction: \(error)")
-        }
-    }
 }
 
-extension CVPixelBuffer {
-    func toUIImage() -> UIImage? {
-        let ciImage = CIImage(cvPixelBuffer: self)
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
-            return UIImage(cgImage: cgImage)
-        }
-        return nil
-    }
-}
-extension UIImage {
+extension NSImage {
     func toCVPixelBuffer() -> CVPixelBuffer? {
         let width = Int(self.size.width)
         let height = Int(self.size.height)
-        let attributes: [NSObject: AnyObject] = [
-            kCVPixelBufferCGImageCompatibilityKey: true as AnyObject,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: true as AnyObject
-        ]
-
         var pixelBuffer: CVPixelBuffer?
-        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, attributes as CFDictionary, &pixelBuffer)
+        let pixelBufferAttributes = [
+            kCVPixelBufferCGImageCompatibilityKey: true,
+            kCVPixelBufferCGBitmapContextCompatibilityKey: true
+        ] as CFDictionary
+        let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32ARGB, pixelBufferAttributes, &pixelBuffer)
         guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
             return nil
         }
 
-        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        CVPixelBufferLockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
         let pixelData = CVPixelBufferGetBaseAddress(buffer)
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
         let context = CGContext(data: pixelData, width: width, height: height, bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: rgbColorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
@@ -459,25 +400,12 @@ extension UIImage {
         context?.translateBy(x: 0, y: CGFloat(height))
         context?.scaleBy(x: 1.0, y: -1.0)
 
-        UIGraphicsPushContext(context!)
-        self.draw(in: CGRect(x: 0, y: 0, width: width, height: height))
-        UIGraphicsPopContext()
-        CVPixelBufferUnlockBaseAddress(buffer, .readOnly)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(cgContext: context!, flipped: false)
+        self.draw(at: CGPoint(x: 0, y: 0), from: CGRect(x: 0, y: 0, width: width, height: height), operation: .copy, fraction: 1.0)
+        NSGraphicsContext.restoreGraphicsState()
 
+        CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
         return buffer
     }
 }
-
-
-// MARK: - UIDocumentPickerDelegate
-extension CoreMLProcessor: UIDocumentPickerDelegate {
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        fileSelectionCompletionHandler?(urls)
-    }
-
-    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        // Handle cancellation
-    }
-}
-
-
