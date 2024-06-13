@@ -10,7 +10,7 @@
     import CoreML
     import SwiftUI
 
-    class VideoViewController: UIViewController {
+    class V--------------------ideoViewController: UIViewController {
         @State private var selectedURL: URL?
         private var playerViewController: AVPlayerViewController!
         private var displayLink: CADisplayLink?
@@ -86,18 +86,18 @@
             view.layer.addSublayer(detectionOverlay)
         }
 
-        private func loadModel() {
-            guard let modelURL = Bundle.main.url(forResource: "MLcopycontrol25k", withExtension: "mlmodelc") else {
-                fatalError("Model file not found")
-            }
-
-            do {
-                let model = try MLModel(contentsOf: modelURL)
-                selectedVNModel = try VNCoreMLModel(for: model)
-            } catch {
-                fatalError("Error loading model: \(error)")
-            }
-        }
+//        private func loadModel() {
+//            guard let modelURL = Bundle.main.url(forResource: "MLcopycontrol25k", withExtension: "mlmodelc") else {
+//                fatalError("Model file not found")
+//            }
+//
+//            do {
+//                let model = try MLModel(contentsOf: modelURL)
+//                selectedVNModel = try VNCoreMLModel(for: model)
+//            } catch {
+//                fatalError("Error loading model: \(error)")
+//            }
+//        }
 
         private func processFrame(pixelBuffer: CVPixelBuffer) {
             guard let model = selectedVNModel else { return }

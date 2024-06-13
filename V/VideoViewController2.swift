@@ -1,8 +1,9 @@
-import AppKit
 import AVKit
+import Vision
+import AppKit
 
-class VideoController: NSViewController {
-    var playerViewController: AVPlayerViewController!
+class VideoViewController: NSViewController {
+    var playerView: AVPlayerView!
     var detectionOverlay: CALayer!
     var videoOutput: AVPlayerItemVideoOutput?
     var displayLink: CVDisplayLink?
@@ -10,31 +11,29 @@ class VideoController: NSViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.wantsLayer = true
         view.layer?.backgroundColor = NSColor.black.cgColor
-        setupPlayerViewController()
+        setupPlayerView()
         setupDetectionOverlay()
         loadModel()
     }
 
-    private func setupPlayerViewController() {
-        playerViewController = AVPlayerViewController()
-        playerViewController.view.frame = view.bounds
-        addChild(playerViewController)
-        view.addSubview(playerViewController.view)
-        playerViewController.didMove(toParent: self)
+    private func setupPlayerView() {
+        playerView = AVPlayerView()
+        playerView.frame = view.bounds
+        playerView.wantsLayer = true  // Ensure it creates a backing layer.
+        view.addSubview(playerView)
     }
 
     private func setupDetectionOverlay() {
         detectionOverlay = CALayer()
         detectionOverlay.frame = view.bounds
         detectionOverlay.masksToBounds = true
-        playerViewController.contentOverlayView?.layer?.addSublayer(detectionOverlay)
+        playerView.layer?.addSublayer(detectionOverlay)
     }
 
     func loadVideo(url: URL) {
         let player = AVPlayer(url: url)
-        playerViewController.player = player
+        playerView.player = player
         setupVideoOutput(player: player)
         player.play()
     }
@@ -49,22 +48,21 @@ class VideoController: NSViewController {
     }
 
     private func setupDisplayLink() {
-        // Create a CVDisplayLink to handle screen refreshing
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-        CVDisplayLinkSetOutputHandler(displayLink!) { [weak self] (displayLink, inNow, inOutputTime, flagsIn, flagsOut) -> CVReturn in
-            self?.processVideoFrame()
+        CVDisplayLinkSetOutputCallback(displayLink!, { (displayLink, inNow, inOutputTime, flagsIn, flagsOut, displayLinkContext) -> CVReturn in
+            let controller = Unmanaged<VideoViewController>.fromOpaque(displayLinkContext!).takeUnretainedValue()
+            controller.processVideoFrame()
             return kCVReturnSuccess
-        }
+        }, Unmanaged.passUnretained(self).toOpaque())
         CVDisplayLinkStart(displayLink!)
     }
 
     private func processVideoFrame() {
         guard let videoOutput = self.videoOutput else { return }
+
         let currentTime = videoOutput.itemTime(forHostTime: CACurrentMediaTime())
-        if videoOutput.hasNewPixelBuffer(forItemTime: currentTime) {
-            if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) {
-                processFrame(pixelBuffer: pixelBuffer)
-            }
+        if videoOutput.hasNewPixelBuffer(forItemTime: currentTime), let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: nil) {
+            processFrame(pixelBuffer: pixelBuffer)
         }
     }
 

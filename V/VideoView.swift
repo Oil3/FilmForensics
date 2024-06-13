@@ -4,25 +4,25 @@
 //
 // Copyright Almahdi Morris - 4/6/24.
 //
-
 import SwiftUI
+import AVKit
 
-struct VideoView: UIViewControllerRepresentable {
+struct VideoView: NSViewRepresentable {
     @Binding var selectedURL: URL?
 
-    func makeUIViewController(context: Context) -> VideoViewController {
-        let viewController = VideoViewController()
+    func makeNSView(context: Context) -> AVPlayerView {
+        let playerView = AVPlayerView()
         if let url = selectedURL {
-            viewController.loadVideo(url: url)
+            let player = AVPlayer(url: url)
+            playerView.player = player
         }
-        return viewController
+        return playerView
     }
 
-    func updateUIViewController(_ uiViewController: VideoViewController, context: Context) {
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
         if let url = selectedURL {
-            uiViewController.loadVideo(url: url)
+            nsView.player = AVPlayer(url: url)
+            nsView.player?.play()
         }
     }
-
-    typealias UIViewControllerType = VideoViewController
 }
