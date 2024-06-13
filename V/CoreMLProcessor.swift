@@ -4,8 +4,8 @@ import Vision
 import AVFoundation
 
 class CoreMLProcessor: NSObject, ObservableObject {
-    @Published var selectedModelName: String = "ccashier3"
-    @Published var modelList: [String] = ["ccashier3", "ccontrol4", "cctrack23090"]
+    @Published var selectedModelName: String = "IO_cashtrack"
+    @Published var modelList: [String] = ["ccashier3", "IO_cashtrack", "cctrack23090"]
     @Published var detailedLogs: [String] = []
     @Published var stats: String = ""
     @Published var currentObservations: [VNRecognizedObjectObservation] = []

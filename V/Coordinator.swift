@@ -1,42 +1,48 @@
 import AVKit
 import Vision
 import AppKit
+import SwiftUI
 
-class VideoViewController: NSViewController {
-    var playerView: AVPlayerView!
-    var detectionOverlay: CALayer!
+class Coordinator: NSObject {
+    var playerView: AVPlayerView?
+    var detectionOverlay: CALayer = CALayer()
     var videoOutput: AVPlayerItemVideoOutput?
     var displayLink: CVDisplayLink?
     var selectedVNModel: VNCoreMLModel?
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.layer?.backgroundColor = NSColor.black.cgColor
-        setupPlayerView()
+    init(modelURL: URL) {
+        super.init()
+        loadModel(from: modelURL)
+    }
+
+    func setupPlayerView(_ view: AVPlayerView) {
+        playerView = view
+        playerView?.wantsLayer = true
         setupDetectionOverlay()
-        loadModel()
     }
 
-    private func setupPlayerView() {
-        playerView = AVPlayerView()
-        playerView.frame = view.bounds
-        playerView.wantsLayer = true  // Ensure it creates a backing layer.
-        view.addSubview(playerView)
-    }
-
-    private func setupDetectionOverlay() {
-        detectionOverlay = CALayer()
-        detectionOverlay.frame = view.bounds
-        detectionOverlay.masksToBounds = true
-        playerView.layer?.addSublayer(detectionOverlay)
-    }
-
-    func loadVideo(url: URL) {
+    func updatePlayerView(_ view: AVPlayerView, with url: URL?) {
+        guard let url = url else { return }
         let player = AVPlayer(url: url)
-        playerView.player = player
+        view.player = player
         setupVideoOutput(player: player)
         player.play()
     }
+
+    private func setupDetectionOverlay() {
+        guard let layer = playerView?.layer else { return }
+        detectionOverlay.frame = layer.bounds
+        detectionOverlay.masksToBounds = true
+        layer.addSublayer(detectionOverlay)
+    }
+
+    private func loadModel(from url: URL) {
+        guard let model = try? MLModel(contentsOf: url) else {
+            fatalError("Failed to load model")
+        }
+        selectedVNModel = try? VNCoreMLModel(for: model)
+    }
+
 
     private func setupVideoOutput(player: AVPlayer) {
         let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: [
@@ -50,7 +56,7 @@ class VideoViewController: NSViewController {
     private func setupDisplayLink() {
         CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
         CVDisplayLinkSetOutputCallback(displayLink!, { (displayLink, inNow, inOutputTime, flagsIn, flagsOut, displayLinkContext) -> CVReturn in
-            let controller = Unmanaged<VideoViewController>.fromOpaque(displayLinkContext!).takeUnretainedValue()
+            let controller = Unmanaged<Coordinator>.fromOpaque(displayLinkContext!).takeUnretainedValue()
             controller.processVideoFrame()
             return kCVReturnSuccess
         }, Unmanaged.passUnretained(self).toOpaque())
@@ -105,9 +111,10 @@ class VideoViewController: NSViewController {
     }
 
     private func convertRect(fromVideoRect videoRect: CGRect) -> CGRect {
-        let width = view.bounds.width
-        let height = view.bounds.height
-        let x = videoRect.origin.x * width
+      let layer = playerView!.layer
+      let height = layer!.bounds.height
+    let width = layer!.bounds.width
+        let x = videoRect.origin.x
         let y = (1 - videoRect.origin.y - videoRect.height) * height
         return CGRect(x: x, y: y, width: videoRect.width * width, height: videoRect.height * height)
     }

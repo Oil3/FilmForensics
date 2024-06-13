@@ -9,6 +9,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedURL: URL?
     @State private var showDocumentPicker = false
+    @State private var processingFiles: URL?
+
 
     var body: some View {
         NavigationSplitView {
@@ -19,9 +21,10 @@ struct ContentView: View {
                 NavigationLink(destination: LogView()) {
                     Label("View Logs", systemImage: "doc.text")
                 }
-//                NavigationLink(destination: GalleryView(selectedURL: $selectedURL)) {
-//                    Label("Gallery", systemImage: "photo.on.rectangle")
-//                }
+              NavigationLink(destination: GalleryView()) {
+                    Label("Gallery", systemImage: "photo.on.rectangle")
+                    
+                }
                 NavigationLink(destination: SettingsView())  {
                     Label("Settings", systemImage: "gearshape")
                 }
@@ -30,6 +33,7 @@ struct ContentView: View {
                 }
             }
             .listStyle(SidebarListStyle())
+            .frame(maxWidth: .infinity)
             .navigationTitle("Machine Security System")
         } detail: {
             Text("Select an item from the sidebar")
