@@ -28,7 +28,7 @@ struct GalleryView: View {
                                 Button("Save to Project", action: { saveToProject(url) })
                                 Button("Show in Finder", action: { showInFinder(url) })
                             }
-                            .border(selectedURL == url ? Color.blue : Color.clear, width: 3)
+                            .border(selectedURL == url ? Color.blue : Color.clear, width: 2)
                             .onTapGesture {
                                 selectedURL = url
                             }

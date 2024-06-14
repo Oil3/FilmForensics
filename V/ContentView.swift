@@ -15,7 +15,7 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List {
-                NavigationLink(destination: VideoView(selectedURL: $selectedURL)) {
+                NavigationLink(destination: VideoViewContainer(selectedURL: $selectedURL)) {
                     Label("Video", systemImage: "video")
                 }
                 NavigationLink(destination: LogView()) {

@@ -62,9 +62,11 @@
 		3497714B2BFEF1DB00533EEA /* FilterControlsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3497714A2BFEF1DB00533EEA /* FilterControlsOverlay.swift */; };
 		3497714F2BFEF1F800533EEA /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3497714E2BFEF1F800533EEA /* HistogramView.swift */; };
 		349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349771502BFEF4AB00533EEA /* OverlayWindow.swift */; };
-		349ECA442C1ADA2900C29D1B /* epoch89.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA432C1ADA2900C29D1B /* epoch89.mlpackage */; };
 		349ECA462C1B503500C29D1B /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA472C1B510F00C29D1B /* GalleryModel.swift */; };
+		349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA492C1B6B9200C29D1B /* DetectionStats.swift */; };
+		349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */; };
+		349ECA4D2C1BCFBF00C29D1B /* detFX.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 3471ED062C0CF71800916598 /* detFX.m4a */; };
 		34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */; };
 		34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB72BFC2A88004685AC /* ContentView.swift */; };
 		34A99DBA2BFC2A89004685AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34A99DB92BFC2A89004685AC /* Assets.xcassets */; };
@@ -152,9 +154,10 @@
 		3497714A2BFEF1DB00533EEA /* FilterControlsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterControlsOverlay.swift; sourceTree = "<group>"; };
 		3497714E2BFEF1F800533EEA /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramView.swift; sourceTree = "<group>"; };
 		349771502BFEF4AB00533EEA /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OverlayWindow.swift; path = FilmForensics/OverlayWindow.swift; sourceTree = "<group>"; };
-		349ECA432C1ADA2900C29D1B /* epoch89.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = epoch89.mlpackage; sourceTree = "<group>"; };
 		349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
 		349ECA472C1B510F00C29D1B /* GalleryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryModel.swift; sourceTree = "<group>"; };
+		349ECA492C1B6B9200C29D1B /* DetectionStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStats.swift; sourceTree = "<group>"; };
+		349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewContainer.swift; sourceTree = "<group>"; };
 		34A99DB22BFC2A88004685AC /* FilmForensics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmForensics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmForensicsApp.swift; sourceTree = "<group>"; };
 		34A99DB72BFC2A88004685AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -227,29 +230,30 @@
 		344D22E02C0EF86100C6966E /* V */ = {
 			isa = PBXGroup;
 			children = (
-				349ECA432C1ADA2900C29D1B /* epoch89.mlpackage */,
+				349ECA492C1B6B9200C29D1B /* DetectionStats.swift */,
+				34AA94B12C19394500CEFB75 /* Coordinator.swift */,
 				34AA94B32C1951D300CEFB75 /* GalleryView.swift */,
 				349ECA472C1B510F00C29D1B /* GalleryModel.swift */,
 				349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */,
 				344D22FC2C0F17E200C6966E /* matrix.mov */,
 				344D22E12C0EF86100C6966E /* VApp.swift */,
 				344D22FA2C0F172B00C6966E /* VideoView.swift */,
+				349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */,
 				344D22E32C0EF86100C6966E /* ContentView.swift */,
 				344D22E52C0EF86200C6966E /* Assets.xcassets */,
-				34C825B52C115DA00006E453 /* SettingsView.swift */,
 				344D22EA2C0EF86200C6966E /* V.entitlements */,
 				344D22E72C0EF86200C6966E /* Preview Content */,
-				344D22EE2C0EF88A00C6966E /* VideoViewController.swift */,
-				34AA94B12C19394500CEFB75 /* Coordinator.swift */,
 				344D22F52C0F046900C6966E /* MetalProcessor.swift */,
 				34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */,
 				34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */,
 				34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */,
+				34C825B52C115DA00006E453 /* SettingsView.swift */,
 				34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */,
+				34C825B32C102B7D0006E453 /* LogView.swift */,
 				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
-				34C825B32C102B7D0006E453 /* LogView.swift */,
+				344D22EE2C0EF88A00C6966E /* VideoViewController.swift */,
 			);
 			path = V;
 			sourceTree = "<group>";
@@ -502,6 +506,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				349ECA4D2C1BCFBF00C29D1B /* detFX.m4a in Resources */,
 				344D22E92C0EF86200C6966E /* Preview Assets.xcassets in Resources */,
 				344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */,
 				344D22FD2C0F17E700C6966E /* matrix.mov in Resources */,
@@ -544,6 +549,7 @@
 				349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */,
 				342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
+				349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */,
 				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
 				349ECA462C1B503500C29D1B /* IO_cashtrack.mlpackage in Sources */,
 				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
@@ -559,8 +565,8 @@
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
+				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
-				349ECA442C1ADA2900C29D1B /* epoch89.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
