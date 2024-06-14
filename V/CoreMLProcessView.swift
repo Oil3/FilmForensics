@@ -1,6 +1,7 @@
 import SwiftUI
 import AVKit
 import Vision
+import CoreML
 
 struct CoreMLProcessView: View {
     @EnvironmentObject var processor: CoreMLProcessor

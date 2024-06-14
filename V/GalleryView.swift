@@ -38,7 +38,7 @@ struct GalleryView: View {
                     }
                 }
             }
-                        .background(NavigationLink(destination: VideoView(selectedURL: $selectedURL), isActive: $showVideoView) {
+                        .background(NavigationLink(destination: VideoViewContainer(selectedURL: $selectedURL), isActive: $showVideoView) {
                 EmptyView()
             }.hidden())
 

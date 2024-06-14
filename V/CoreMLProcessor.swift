@@ -4,7 +4,7 @@ import Vision
 import AVFoundation
 
 class CoreMLProcessor: NSObject, ObservableObject {
-    @Published var selectedModelName: String = "IO_cashtrack"
+    @Published var selectedModelURL: String = "IO_cashtrack"
     @Published var modelList: [String] = ["ccashier3", "IO_cashtrack", "cctrack23090"]
     @Published var detailedLogs: [String] = []
     @Published var stats: String = ""
@@ -34,7 +34,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
     }
 
     func selectModel(named modelName: String) {
-        selectedModelName = modelName
+        selectedModelURL = modelName
     }
 
     func selectFiles(completionHandler: @escaping ([URL]) -> Void) {
@@ -51,8 +51,8 @@ class CoreMLProcessor: NSObject, ObservableObject {
     }
 
     func startProcessing(urls: [URL], confidenceThreshold: Float, iouThreshold: Float, noVideoPlayback: Bool) {
-        guard let model = loadModel(named: selectedModelName) else {
-            print("Failed to load model: \(selectedModelName)")
+        guard let model = loadModel(named: selectedModelURL) else {
+            print("Failed to load model: \(selectedModelURL)")
             return
         }
 
@@ -86,7 +86,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
     }
 
     private func loadModel(named modelName: String) -> MLModel? {
-        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlmodelc") else {
+        guard let modelURL = Bundle.main.url(forResource: modelName, withExtension: "mlpackage") else {
             print("Model not found: \(modelName)")
             return nil
         }
@@ -208,7 +208,7 @@ class CoreMLProcessor: NSObject, ObservableObject {
         Average FPS: \(String(format: "%.2f", avgFps))
         Total Detections: \(detectionCounter)
         Below Threshold Detections: \(detailedLogs.count - detectionCounter)
-        Model Used: \(selectedModelName)
+        Model Used: \(selectedModelURL)
         Elapsed Time: \(String(format: "%.2f", elapsedTime)) seconds
         """
 
