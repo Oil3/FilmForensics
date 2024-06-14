@@ -2,6 +2,7 @@ import SwiftUI
 import Vision
 import AppKit
 import AVKit
+import CoreML
 
 class BoundingBoxView: NSView {
     private let strokeWidth: CGFloat = 2

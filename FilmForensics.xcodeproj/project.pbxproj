@@ -53,6 +53,7 @@
 		3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3E2C0CF71900916598 /* SideBar.swift */; };
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
 		347F76A32C189EFB00C92299 /* myModel.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 347F76A22C189EFB00C92299 /* myModel.mlmodel */; };
+		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
@@ -106,7 +107,6 @@
 		344D22E52C0EF86200C6966E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		344D22E82C0EF86200C6966E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		344D22EA2C0EF86200C6966E /* V.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = V.entitlements; sourceTree = "<group>"; };
-		344D22EE2C0EF88A00C6966E /* VideoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewController.swift; sourceTree = "<group>"; };
 		344D22F52C0F046900C6966E /* MetalProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalProcessor.swift; sourceTree = "<group>"; };
 		344D22F72C0F04EA00C6966E /* VideoController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VideoController.swift; path = V/VideoController.swift; sourceTree = SOURCE_ROOT; };
 		344D22FA2C0F172B00C6966E /* VideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoView.swift; sourceTree = "<group>"; };
@@ -145,6 +145,7 @@
 		3471ED3E2C0CF71900916598 /* SideBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideBar.swift; sourceTree = "<group>"; };
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
 		347F76A22C189EFB00C92299 /* myModel.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = myModel.mlmodel; sourceTree = "<group>"; };
+		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
 		3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		3494C5492BFDCF3900E70B0F /* VideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPicker.swift; sourceTree = "<group>"; };
@@ -230,30 +231,31 @@
 		344D22E02C0EF86100C6966E /* V */ = {
 			isa = PBXGroup;
 			children = (
-				349ECA492C1B6B9200C29D1B /* DetectionStats.swift */,
+				34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */,
+				344D22E32C0EF86100C6966E /* ContentView.swift */,
 				34AA94B12C19394500CEFB75 /* Coordinator.swift */,
-				34AA94B32C1951D300CEFB75 /* GalleryView.swift */,
+				34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */,
+				34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */,
+				349ECA492C1B6B9200C29D1B /* DetectionStats.swift */,
+				348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */,
 				349ECA472C1B510F00C29D1B /* GalleryModel.swift */,
-				349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */,
-				344D22FC2C0F17E200C6966E /* matrix.mov */,
+				34AA94B32C1951D300CEFB75 /* GalleryView.swift */,
+				34C825B32C102B7D0006E453 /* LogView.swift */,
+				344D22F52C0F046900C6966E /* MetalProcessor.swift */,
+				34C825B52C115DA00006E453 /* SettingsView.swift */,
+				34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */,
 				344D22E12C0EF86100C6966E /* VApp.swift */,
 				344D22FA2C0F172B00C6966E /* VideoView.swift */,
 				349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */,
-				344D22E32C0EF86100C6966E /* ContentView.swift */,
-				344D22E52C0EF86200C6966E /* Assets.xcassets */,
 				344D22EA2C0EF86200C6966E /* V.entitlements */,
-				344D22E72C0EF86200C6966E /* Preview Content */,
-				344D22F52C0F046900C6966E /* MetalProcessor.swift */,
-				34C825AB2C0FA5150006E453 /* BoundingBoxView.swift */,
-				34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */,
-				34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */,
-				34C825B52C115DA00006E453 /* SettingsView.swift */,
-				34C825A72C0FA4970006E453 /* SyntaxHighlightingTextView.swift */,
-				34C825B32C102B7D0006E453 /* LogView.swift */,
+				3471ED062C0CF71800916598 /* detFX.m4a */,
 				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
-				344D22EE2C0EF88A00C6966E /* VideoViewController.swift */,
+				349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */,
+				344D22FC2C0F17E200C6966E /* matrix.mov */,
+				344D22E52C0EF86200C6966E /* Assets.xcassets */,
+				344D22E72C0EF86200C6966E /* Preview Content */,
 			);
 			path = V;
 			sourceTree = "<group>";
@@ -372,7 +374,6 @@
 				3471ED2A2C0CF71900916598 /* CameraViewController.swift */,
 				3471ED2D2C0CF71900916598 /* ContentView.swift */,
 				3471ED152C0CF71800916598 /* CoreMLView.swift */,
-				3471ED062C0CF71800916598 /* detFX.m4a */,
 				3471ED282C0CF71900916598 /* GalleryView.swift */,
 				3471ED212C0CF71800916598 /* GalleryViewModel.swift */,
 				3471ED072C0CF71800916598 /* ImageViewer.swift */,
@@ -546,6 +547,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				34AA94B22C19394500CEFB75 /* Coordinator.swift in Sources */,
+				348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */,
 				349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */,
 				342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,

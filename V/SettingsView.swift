@@ -16,11 +16,11 @@ struct SettingsView: View {
                 .font(.largeTitle)
                 .padding()
 
-            Picker("Select Model", selection: $processor.selectedModelName) {
-                ForEach(processor.modelList, id: \.self) { model in
-                    Text(model).tag(model)
-                }
-            }
+//            Picker("Select Model", selection: $processor.selectedModelName) {
+//                ForEach(processor.modelList, id: \.self) { model in
+//                    Text(model).tag(model)
+//                }
+            
             .pickerStyle(SegmentedPickerStyle())
             .padding()
 

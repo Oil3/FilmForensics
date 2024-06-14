@@ -1,32 +1,24 @@
-//
-//  VideoViewContainer.swift
-//  V
-//
-//  Created by Almahdi Morris on 13/6/24.
-//
 import SwiftUI
+
 struct VideoViewContainer: View {
     @Binding var selectedURL: URL?
+    @State private var showBoundingBoxes = true
+    @State private var logDetections = true
+    @EnvironmentObject var detectionStats: DetectionStats
 
     var body: some View {
-        VideoView(selectedURL: $selectedURL)
+        VideoView(selectedURL: $selectedURL, showBoundingBoxes: $showBoundingBoxes, logDetections: $logDetections)
             .toolbar {
-//                Toggle(isOn: $showBoundingBoxes) {
-//                    Label("Bounding Boxes", systemImage: "rectangle")
-//                }
-//                .toggleStyle(SwitchToggleStyle())
-//
-//                Toggle(isOn: $logDetections) {
-//                    Label("Log Detections", systemImage: "doc.text")
-//                }
-//                .toggleStyle(SwitchToggleStyle())
+                Toggle(isOn: $showBoundingBoxes) {
+                    Label("Bounding Boxes", systemImage: "rectangle")
+                }
+                .toggleStyle(SwitchToggleStyle())
+
+                Toggle(isOn: $logDetections) {
+                    Label("Log Detections", systemImage: "doc.text")
+                }
+                .toggleStyle(SwitchToggleStyle())
             }
+            .environmentObject(detectionStats)
     }
-}
-
-
-struct Stats: Identifiable {
-    var id: UUID = UUID()
-    var key: String
-    var value: String
 }
