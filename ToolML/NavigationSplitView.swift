@@ -1,30 +1,28 @@
+//
+//  NavigationSplitView.swift
+//  ToolML
+//
+//  Created by Almahdi Morris on 15/6/24.
+//
 import SwiftUI
 import CoreML
 import Vision
 
-struct ContentView: View {
+struct NavigationSplittView: View {
     @State private var selectedImage: NSImage? = nil
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
     @State private var galleryImages: [NSImage] = []
     @State private var highlightedImage: NSImage? = nil
     @State private var imageSize: CGSize = .zero
 
-    var body: some View {
+var body: some View {
+        NavigationView {
         VStack {
-            // Model Description
-            Text("Model: best")
-                .font(.title)
-                .padding()
-
-            // Image and Detection Result Display
-            HStack {
-                // Left Column: Image Picker and Gallery
-                LazyVStack {
-                    ScrollView (.vertical){
+                    ScrollView {
                         ForEach(galleryImages, id: \.self) { image in
                             Image(nsImage: image)
-                               // .resizable()
-                              //  .scaledToFit()
+                                .resizable()
+                                .scaledToFit()
                                 .frame(width: 100, height: 100)
                                 .padding(2)
                                 .background(highlightedImage == image ? Color.blue.opacity(0.3) : Color.clear)
@@ -35,36 +33,35 @@ struct ContentView: View {
                                 }
                         }
                     }
-.padding()
-                  Spacer()
+                    Spacer()
                     Button(action: selectImage) {
                         Text("Select Image")
                     }
                     Button(action: clearImages) {
                         Text("Clear")
                     }
-                }
+                
                 .frame(width: 120)
-                .frame(maxHeight: 600)
                 .background(
                     Rectangle()
                         .stroke(Color.gray, lineWidth: 1)
                 )
                 .onDrop(of: ["public.file-url"], isTargeted: nil, perform: handleDrop)
 
-                // Right Column: Selected Image and Detection Results
-                VStack {
+
+        }
+                 VStack {
                     if let image = selectedImage {
                         GeometryReader { geometry in
                             ZStack {
                                 Image(nsImage: image)
                                     .resizable()
-                                  //  .scaledToFit()
+                                    .scaledToFit()
                                     .background(GeometryReader { geo -> Color in
                                         DispatchQueue.main.async {
                                             self.imageSize = geo.size
                                         }
-                                        return Color.clear
+                                      Color.clear
                                     })
                                 ForEach(detectedObjects, id: \.self) { object in
                                     drawBoundingBox(for: object, in: geometry.size)
@@ -76,7 +73,7 @@ struct ContentView: View {
                     }
                 }
             }
-        }
+        
         .padding()
         .onAppear {
             addCommandShortcuts()
@@ -164,5 +161,4 @@ struct ContentView: View {
         return false
     }
 }
-
-
+}
