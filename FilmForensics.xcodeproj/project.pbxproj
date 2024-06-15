@@ -20,7 +20,6 @@
 		342D0CF72C1D3D7A00ECDA36 /* epoch59.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF32C1D3D7A00ECDA36 /* epoch59.mlpackage */; };
 		342D0CF82C1D3D7A00ECDA36 /* lastE8.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF42C1D3D7A00ECDA36 /* lastE8.mlpackage */; };
 		342D0D002C1D52D500ECDA36 /* ToolMLApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */; };
-		342D0D022C1D52D500ECDA36 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0D012C1D52D500ECDA36 /* ContentView.swift */; };
 		342D0D042C1D52D600ECDA36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 342D0D032C1D52D600ECDA36 /* Assets.xcassets */; };
 		342D0D072C1D52D600ECDA36 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */; };
 		342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */; };
@@ -29,6 +28,7 @@
 		342D0D0F2C1D57AB00ECDA36 /* cctrack23090.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */; };
 		342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */; };
 		342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */; };
+		342D0D142C1DAF6E00ECDA36 /* NavigationSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0D122C1D5D8E00ECDA36 /* NavigationSplitView.swift */; };
 		344D22E22C0EF86100C6966E /* VApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E12C0EF86100C6966E /* VApp.swift */; };
 		344D22E42C0EF86100C6966E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E32C0EF86100C6966E /* ContentView.swift */; };
 		344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 344D22E52C0EF86200C6966E /* Assets.xcassets */; };
@@ -127,7 +127,7 @@
 		342D0CF42C1D3D7A00ECDA36 /* lastE8.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = lastE8.mlpackage; sourceTree = "<group>"; };
 		342D0CFD2C1D52D500ECDA36 /* ToolML.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToolML.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolMLApp.swift; sourceTree = "<group>"; };
-		342D0D012C1D52D500ECDA36 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		342D0D012C1D52D500ECDA36 /* KeyEventHandlingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventHandlingView.swift; sourceTree = "<group>"; };
 		342D0D032C1D52D600ECDA36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		342D0D082C1D52D600ECDA36 /* ToolML.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToolML.entitlements; sourceTree = "<group>"; };
@@ -273,10 +273,10 @@
 			isa = PBXGroup;
 			children = (
 				342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */,
-				342D0D012C1D52D500ECDA36 /* ContentView.swift */,
 				342D0D122C1D5D8E00ECDA36 /* NavigationSplitView.swift */,
 				342D0D032C1D52D600ECDA36 /* Assets.xcassets */,
 				342D0D082C1D52D600ECDA36 /* ToolML.entitlements */,
+				342D0D012C1D52D500ECDA36 /* KeyEventHandlingView.swift */,
 				342D0D052C1D52D600ECDA36 /* Preview Content */,
 			);
 			path = ToolML;
@@ -646,9 +646,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				342D0D022C1D52D500ECDA36 /* ContentView.swift in Sources */,
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
 				342D0D002C1D52D500ECDA36 /* ToolMLApp.swift in Sources */,
+				342D0D142C1DAF6E00ECDA36 /* NavigationSplitView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
 				342D0D0D2C1D554900ECDA36 /* ccashier3.mlmodel in Sources */,
 				342D0D0F2C1D57AB00ECDA36 /* cctrack23090.mlmodel in Sources */,
