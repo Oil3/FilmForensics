@@ -8,7 +8,7 @@ struct ContentView: View {
     var body: some View {
         NavigationSplitView {
             List {
-                NavigationLink(destination: VideoViewContainer(selectedURL: $selectedURL)) {
+                NavigationLink(destination: VideoViewContainer(selectedURL: $selectedURL).environmentObject(DetectionStats.shared)) {
                     Label("Video", systemImage: "video")
                 }
                 NavigationLink(destination: LogView()) {
@@ -17,7 +17,7 @@ struct ContentView: View {
                 NavigationLink(destination: GalleryView()) {
                     Label("Gallery", systemImage: "photo.on.rectangle")
                 }
-                NavigationLink(destination: SettingsView())  {
+                NavigationLink(destination: SettingsView()) {
                     Label("Settings", systemImage: "gearshape")
                 }
                 NavigationLink(destination: CoreMLProcessView()) {
@@ -27,18 +27,13 @@ struct ContentView: View {
             .listStyle(SidebarListStyle())
             .frame(maxWidth: .infinity)
             .navigationTitle("Machine Security System")
-            .overlay(
-                VStack {
-                    Spacer()
-                    DetectionStatsView()
-                        .environmentObject(DetectionStats.shared)
-                        .padding()
-                }
-            )
         } detail: {
-            Text("Select an item from the sidebar")
-                .foregroundColor(.gray)
+            VStack {
+                Text("Select an item from the sidebar")
+                    .foregroundColor(.gray)
+                DetectionStatsView()
+                    .environmentObject(DetectionStats.shared)
+            }
         }
-        .environmentObject(DetectionStats.shared)
     }
 }

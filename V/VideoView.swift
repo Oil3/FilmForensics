@@ -3,8 +3,8 @@ import AVKit
 
 struct VideoView: NSViewRepresentable {
     @Binding var selectedURL: URL?
-    @Binding var showBoundingBoxes: Bool
-    @Binding var logDetections: Bool
+//    @Binding var showBoundingBoxes: Bool
+//    @Binding var logDetections: Bool
 
     func makeNSView(context: Context) -> AVPlayerView {
         let playerView = AVPlayerView()
@@ -28,6 +28,6 @@ struct VideoView: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(showBoundingBoxes: $showBoundingBoxes, logDetections: $logDetections)
+      Coordinator()
     }
 }
