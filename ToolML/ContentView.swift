@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  ToolML
-//
-//  Created by Almahdi Morris on 14/6/24.
-//
-
 import SwiftUI
 import CoreML
 import Vision
@@ -12,6 +5,8 @@ import Vision
 struct ContentView: View {
     @State private var selectedImage: NSImage? = nil
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
+    @State private var galleryImages: [NSImage] = []
+    @State private var highlightedImage: NSImage? = nil
 
     var body: some View {
         VStack {
@@ -24,14 +19,20 @@ struct ContentView: View {
             HStack {
                 // Left Column: Image Picker and Gallery
                 VStack {
-                    if let image = selectedImage {
-                        Image(nsImage: image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100, height: 100)
-                            .onTapGesture {
-                                runModel(on: image)
-                            }
+                    ScrollView {
+                        ForEach(galleryImages, id: \.self) { image in
+                            Image(nsImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 100, height: 100)
+                                .padding(2)
+                                .background(highlightedImage == image ? Color.blue.opacity(0.3) : Color.clear)
+                                .onTapGesture {
+                                    self.selectedImage = image
+                                    self.highlightedImage = image
+                                    runModel(on: image)
+                                }
+                        }
                     }
                     Spacer()
                     Button(action: selectImage) {
@@ -42,14 +43,19 @@ struct ContentView: View {
                     }
                 }
                 .frame(width: 120)
+                .background(
+                    Rectangle()
+                        .stroke(Color.gray, lineWidth: 1)
+                )
+                .onDrop(of: ["public.file-url"], isTargeted: nil, perform: handleDrop)
 
                 // Right Column: Selected Image and Detection Results
                 VStack {
                     if let image = selectedImage {
                         ZStack {
                             Image(nsImage: image)
-                             //   .resizable()
-                                .fixedSize()
+                                .resizable()
+                                .scaledToFit()
                             ForEach(detectedObjects, id: \.self) { object in
                                 drawBoundingBox(for: object)
                             }
@@ -61,26 +67,43 @@ struct ContentView: View {
             }
         }
         .padding()
+        .onAppear {
+            addCommandShortcuts()
+        }
+    }
+
+    func addCommandShortcuts() {
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            if event.modifierFlags.contains(.command) && event.charactersIgnoringModifiers == "o" {
+                selectImage()
+                return nil
+            }
+            return event
+        }
     }
 
     func selectImage() {
         let panel = NSOpenPanel()
         panel.allowedFileTypes = ["png", "jpg", "jpeg"]
-        panel.allowsMultipleSelection = false
-        if panel.runModal() == .OK, let url = panel.url, let image = NSImage(contentsOf: url) {
-            selectedImage = image
-            runModel(on: image)
+        panel.allowsMultipleSelection = true
+        if panel.runModal() == .OK {
+            for url in panel.urls {
+                if let image = NSImage(contentsOf: url) {
+                    galleryImages.append(image)
+                }
+            }
         }
     }
 
     func clearImages() {
         selectedImage = nil
         detectedObjects.removeAll()
+        galleryImages.removeAll()
     }
 
     func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let model = try! VNCoreMLModel(for: ccashier3().model)
+        let model = try! VNCoreMLModel(for: best().model)
 
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -96,11 +119,37 @@ struct ContentView: View {
 
     func drawBoundingBox(for observation: VNRecognizedObjectObservation) -> some View {
         let boundingBox = observation.boundingBox
-        let normalizedRect = CGRect(x: boundingBox.minX, y:  1 - boundingBox.maxY, width: boundingBox.width, height: boundingBox.height)
+        let imageWidth = selectedImage?.size.width ?? 300
+        let imageHeight = selectedImage?.size.height ?? 300
+        
+        let normalizedRect = CGRect(
+            x: boundingBox.minX * imageWidth,
+            y: (1 - boundingBox.maxY) * imageHeight,
+            width: boundingBox.width * imageWidth,
+            height: boundingBox.height * imageHeight
+        )
         
         return Rectangle()
             .stroke(Color.red, lineWidth: 2)
-            .frame(width: normalizedRect.width * 640, height: normalizedRect.height * 640)
-            .position(x: normalizedRect.midX * 640, y: normalizedRect.midY * 640)
+            .frame(width: normalizedRect.width, height: normalizedRect.height)
+            .position(x: normalizedRect.midX, y: normalizedRect.midY)
+    }
+
+    func handleDrop(providers: [NSItemProvider]) -> Bool {
+        for provider in providers {
+            if provider.hasItemConformingToTypeIdentifier("public.file-url") {
+                provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, error in
+                    if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                        if let image = NSImage(contentsOf: url) {
+                            DispatchQueue.main.async {
+                                self.galleryImages.append(image)
+                            }
+                        }
+                    }
+                }
+                return true
+            }
+        }
+        return false
     }
 }
