@@ -72,19 +72,19 @@ struct FiltersImageControls: View {
                 Button("Save Preset") {
                     imageViewerModel.savePreset()
                 }
-                if let presets = imageViewerModel.presets {
-                    Picker("Load Preset", selection: $imageViewerModel.selectedPreset) {
-                        ForEach(presets, id: \.self) { preset in
-                            Text(preset.name).tag(preset)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .onChange(of: imageViewerModel.selectedPreset) { newValue in
-                        if let newValue = newValue {
-                            imageViewerModel.loadPreset(preset: newValue)
-                        }
-                    }
-                }
+//                if let presets = imageViewerModel.presets {
+//                    Picker("Load Preset", selection: $imageViewerModel.selectedPreset) {
+//                        ForEach(presets, id: \.self) { preset in
+//                            Text(preset.name).tag(preset)
+//                        }
+//                    }
+//                    .pickerStyle(MenuPickerStyle())
+//                    .onChange(of: imageViewerModel.selectedPreset) { newValue in
+//                        if let newValue = newValue {
+//                            imageViewerModel.loadPreset(preset: newValue)
+//                        }
+//                    }
+//                }
             }
             .padding(.horizontal)
             .foregroundColor(.white)

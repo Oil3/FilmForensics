@@ -10,9 +10,22 @@
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
 		342A34522C157A3200F1995E /* SRResNet.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */; };
 		342A34532C157A3200F1995E /* bsrgan.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */; };
-		342A34552C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
-		342A34562C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
-		342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342A34542C162CA100F1995E /* MLresizer.mlmodel */; };
+		342D0CE52C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */; };
+		342D0CE62C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE22C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel */; };
+		342D0CE72C1D3C5000ECDA36 /* cashtrack416.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */; };
+		342D0CE82C1D3C5000ECDA36 /* cashtrack704x416.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE42C1D3C5000ECDA36 /* cashtrack704x416.mlmodel */; };
+		342D0CEA2C1D3C7700ECDA36 /* Photo on 14-6-24 at 21.14.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 342D0CE92C1D3C7700ECDA36 /* Photo on 14-6-24 at 21.14.jpg */; };
+		342D0CF52C1D3D7A00ECDA36 /* epoch70.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF12C1D3D7A00ECDA36 /* epoch70.mlpackage */; };
+		342D0CF62C1D3D7A00ECDA36 /* best.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */; };
+		342D0CF72C1D3D7A00ECDA36 /* epoch59.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF32C1D3D7A00ECDA36 /* epoch59.mlpackage */; };
+		342D0CF82C1D3D7A00ECDA36 /* lastE8.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF42C1D3D7A00ECDA36 /* lastE8.mlpackage */; };
+		342D0D002C1D52D500ECDA36 /* ToolMLApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */; };
+		342D0D022C1D52D500ECDA36 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0D012C1D52D500ECDA36 /* ContentView.swift */; };
+		342D0D042C1D52D600ECDA36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 342D0D032C1D52D600ECDA36 /* Assets.xcassets */; };
+		342D0D072C1D52D600ECDA36 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */; };
+		342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */; };
+		342D0D0D2C1D554900ECDA36 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
+		342D0D0E2C1D554D00ECDA36 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		344D22E22C0EF86100C6966E /* VApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E12C0EF86100C6966E /* VApp.swift */; };
 		344D22E42C0EF86100C6966E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E32C0EF86100C6966E /* ContentView.swift */; };
 		344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 344D22E52C0EF86200C6966E /* Assets.xcassets */; };
@@ -52,8 +65,8 @@
 		3471ED6E2C0CF71900916598 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3D2C0CF71900916598 /* CameraView.swift */; };
 		3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3E2C0CF71900916598 /* SideBar.swift */; };
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
-		347F76A32C189EFB00C92299 /* myModel.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 347F76A22C189EFB00C92299 /* myModel.mlmodel */; };
 		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
+		348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80E2C1C189700C112C3 /* ChartView.swift */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
@@ -100,7 +113,21 @@
 		341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRGAN.mlmodel; sourceTree = "<group>"; };
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
-		342A34542C162CA100F1995E /* MLresizer.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MLresizer.mlmodel; sourceTree = "<group>"; };
+		342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier32_2000.mlmodel; sourceTree = "<group>"; };
+		342D0CE22C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier321it14588.mlmodel; sourceTree = "<group>"; };
+		342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashtrack416.mlmodel; sourceTree = "<group>"; };
+		342D0CE42C1D3C5000ECDA36 /* cashtrack704x416.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashtrack704x416.mlmodel; sourceTree = "<group>"; };
+		342D0CE92C1D3C7700ECDA36 /* Photo on 14-6-24 at 21.14.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "Photo on 14-6-24 at 21.14.jpg"; sourceTree = "<group>"; };
+		342D0CF12C1D3D7A00ECDA36 /* epoch70.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = epoch70.mlpackage; sourceTree = "<group>"; };
+		342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = best.mlpackage; sourceTree = "<group>"; };
+		342D0CF32C1D3D7A00ECDA36 /* epoch59.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = epoch59.mlpackage; sourceTree = "<group>"; };
+		342D0CF42C1D3D7A00ECDA36 /* lastE8.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = lastE8.mlpackage; sourceTree = "<group>"; };
+		342D0CFD2C1D52D500ECDA36 /* ToolML.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ToolML.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolMLApp.swift; sourceTree = "<group>"; };
+		342D0D012C1D52D500ECDA36 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		342D0D032C1D52D600ECDA36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		342D0D082C1D52D600ECDA36 /* ToolML.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToolML.entitlements; sourceTree = "<group>"; };
 		344D22DF2C0EF86100C6966E /* V.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = V.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		344D22E12C0EF86100C6966E /* VApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VApp.swift; sourceTree = "<group>"; };
 		344D22E32C0EF86100C6966E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -144,8 +171,8 @@
 		3471ED3D2C0CF71900916598 /* CameraView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		3471ED3E2C0CF71900916598 /* SideBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideBar.swift; sourceTree = "<group>"; };
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
-		347F76A22C189EFB00C92299 /* myModel.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = myModel.mlmodel; sourceTree = "<group>"; };
 		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
+		348EA80E2C1C189700C112C3 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		3494C5492BFDCF3900E70B0F /* VideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPicker.swift; sourceTree = "<group>"; };
@@ -189,6 +216,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		342D0CFA2C1D52D500ECDA36 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		344D22DC2C0EF86100C6966E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -216,8 +250,11 @@
 		341AD8B42BFFA3B000BF3CE3 /* MLmodelImage */ = {
 			isa = PBXGroup;
 			children = (
-				347F76A22C189EFB00C92299 /* myModel.mlmodel */,
-				342A34542C162CA100F1995E /* MLresizer.mlmodel */,
+				342D0CE92C1D3C7700ECDA36 /* Photo on 14-6-24 at 21.14.jpg */,
+				342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */,
+				342D0CE22C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel */,
+				342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */,
+				342D0CE42C1D3C5000ECDA36 /* cashtrack704x416.mlmodel */,
 				341AD8B52BFFA3D900BF3CE3 /* MPRNetDebluring.mlmodel */,
 				341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */,
 				341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */,
@@ -228,6 +265,26 @@
 			path = MLmodelImage;
 			sourceTree = "<group>";
 		};
+		342D0CFE2C1D52D500ECDA36 /* ToolML */ = {
+			isa = PBXGroup;
+			children = (
+				342D0CFF2C1D52D500ECDA36 /* ToolMLApp.swift */,
+				342D0D012C1D52D500ECDA36 /* ContentView.swift */,
+				342D0D032C1D52D600ECDA36 /* Assets.xcassets */,
+				342D0D082C1D52D600ECDA36 /* ToolML.entitlements */,
+				342D0D052C1D52D600ECDA36 /* Preview Content */,
+			);
+			path = ToolML;
+			sourceTree = "<group>";
+		};
+		342D0D052C1D52D600ECDA36 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
 		344D22E02C0EF86100C6966E /* V */ = {
 			isa = PBXGroup;
 			children = (
@@ -235,6 +292,7 @@
 				344D22E32C0EF86100C6966E /* ContentView.swift */,
 				34AA94B12C19394500CEFB75 /* Coordinator.swift */,
 				34C825A12C0F98E70006E453 /* CoreMLProcessor.swift */,
+				348EA80E2C1C189700C112C3 /* ChartView.swift */,
 				34C825A32C0F9A070006E453 /* CoreMLProcessView.swift */,
 				349ECA492C1B6B9200C29D1B /* DetectionStats.swift */,
 				348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */,
@@ -253,6 +311,10 @@
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
 				349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */,
+				342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */,
+				342D0CF32C1D3D7A00ECDA36 /* epoch59.mlpackage */,
+				342D0CF12C1D3D7A00ECDA36 /* epoch70.mlpackage */,
+				342D0CF42C1D3D7A00ECDA36 /* lastE8.mlpackage */,
 				344D22FC2C0F17E200C6966E /* matrix.mov */,
 				344D22E52C0EF86200C6966E /* Assets.xcassets */,
 				344D22E72C0EF86200C6966E /* Preview Content */,
@@ -309,6 +371,7 @@
 		34A99DA92BFC2A88004685AC = {
 			isa = PBXGroup;
 			children = (
+				342D0CFE2C1D52D500ECDA36 /* ToolML */,
 				344D22E02C0EF86100C6966E /* V */,
 				34A99DB42BFC2A88004685AC /* FilmForensics */,
 				341AD8B42BFFA3B000BF3CE3 /* MLmodelImage */,
@@ -325,6 +388,7 @@
 				34A99DB22BFC2A88004685AC /* FilmForensics.app */,
 				34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */,
 				344D22DF2C0EF86100C6966E /* V.app */,
+				342D0CFD2C1D52D500ECDA36 /* ToolML.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -410,6 +474,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		342D0CFC2C1D52D500ECDA36 /* ToolML */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 342D0D092C1D52D600ECDA36 /* Build configuration list for PBXNativeTarget "ToolML" */;
+			buildPhases = (
+				342D0CF92C1D52D500ECDA36 /* Sources */,
+				342D0CFA2C1D52D500ECDA36 /* Frameworks */,
+				342D0CFB2C1D52D500ECDA36 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ToolML;
+			productName = ToolML;
+			productReference = 342D0CFD2C1D52D500ECDA36 /* ToolML.app */;
+			productType = "com.apple.product-type.application";
+		};
 		344D22DE2C0EF86100C6966E /* V */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 344D22ED2C0EF86200C6966E /* Build configuration list for PBXNativeTarget "V" */;
@@ -471,6 +552,9 @@
 				LastSwiftUpdateCheck = 1530;
 				LastUpgradeCheck = 1530;
 				TargetAttributes = {
+					342D0CFC2C1D52D500ECDA36 = {
+						CreatedOnToolsVersion = 15.3;
+					};
 					344D22DE2C0EF86100C6966E = {
 						CreatedOnToolsVersion = 15.3;
 					};
@@ -498,11 +582,21 @@
 				34A99DB12BFC2A88004685AC /* FilmForensics */,
 				34E11DCF2C0CA68200A7B857 /* MachineSystemSecurity */,
 				344D22DE2C0EF86100C6966E /* V */,
+				342D0CFC2C1D52D500ECDA36 /* ToolML */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		342D0CFB2C1D52D500ECDA36 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				342D0D072C1D52D600ECDA36 /* Preview Assets.xcassets in Resources */,
+				342D0D042C1D52D600ECDA36 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		344D22DD2C0EF86100C6966E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -518,6 +612,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				342D0CEA2C1D3C7700ECDA36 /* Photo on 14-6-24 at 21.14.jpg in Resources */,
 				34A99DBD2BFC2A89004685AC /* Preview Assets.xcassets in Resources */,
 				34A99DBA2BFC2A89004685AC /* Assets.xcassets in Resources */,
 			);
@@ -542,6 +637,18 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		342D0CF92C1D52D500ECDA36 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				342D0D022C1D52D500ECDA36 /* ContentView.swift in Sources */,
+				342D0D002C1D52D500ECDA36 /* ToolMLApp.swift in Sources */,
+				342D0D0D2C1D554900ECDA36 /* ccashier3.mlmodel in Sources */,
+				342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */,
+				342D0D0E2C1D554D00ECDA36 /* IO_cashtrack.mlpackage in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		344D22DB2C0EF86100C6966E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -549,7 +656,6 @@
 				34AA94B22C19394500CEFB75 /* Coordinator.swift in Sources */,
 				348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */,
 				349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */,
-				342A34572C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
 				349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */,
 				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
@@ -557,7 +663,6 @@
 				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
 				34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */,
 				34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */,
-				347F76A32C189EFB00C92299 /* myModel.mlmodel in Sources */,
 				34C825B62C115DA00006E453 /* SettingsView.swift in Sources */,
 				34C825B42C102B7D0006E453 /* LogView.swift in Sources */,
 				344D22E42C0EF86100C6966E /* ContentView.swift in Sources */,
@@ -569,6 +674,7 @@
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
+				348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -576,22 +682,29 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				342D0CE52C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel in Sources */,
 				3497714F2BFEF1F800533EEA /* HistogramView.swift in Sources */,
 				34E4C0602C0BBEE5007D3A05 /* FiltersImageControlsView.swift in Sources */,
 				34E4C05E2C0BBAB5007D3A05 /* ImageViewerModel.swift in Sources */,
 				3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */,
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
-				342A34552C162CA100F1995E /* MLresizer.mlmodel in Sources */,
+				342D0CE62C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel in Sources */,
 				349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */,
 				34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */,
 				3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */,
 				3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */,
+				342D0CE72C1D3C5000ECDA36 /* cashtrack416.mlmodel in Sources */,
+				342D0CE82C1D3C5000ECDA36 /* cashtrack704x416.mlmodel in Sources */,
+				342D0CF82C1D3D7A00ECDA36 /* lastE8.mlpackage in Sources */,
+				342D0CF52C1D3D7A00ECDA36 /* epoch70.mlpackage in Sources */,
 				34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */,
 				34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */,
+				342D0CF62C1D3D7A00ECDA36 /* best.mlpackage in Sources */,
 				349771492BFEF01500533EEA /* Extensions.swift in Sources */,
 				3497714B2BFEF1DB00533EEA /* FilterControlsOverlay.swift in Sources */,
 				3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */,
+				342D0CF72C1D3D7A00ECDA36 /* epoch59.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -599,7 +712,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				342A34562C162CA100F1995E /* MLresizer.mlmodel in Sources */,
 				3471ED412C0CF71900916598 /* ImageViewer.swift in Sources */,
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
@@ -654,6 +766,64 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		342D0D0A2C1D52D600ECDA36 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ToolML/ToolML.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ToolML/Preview Content\"";
+				DEVELOPMENT_TEAM = 46WUYUUA8V;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oil3.ToolML;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		342D0D0B2C1D52D600ECDA36 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ToolML/ToolML.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ToolML/Preview Content\"";
+				DEVELOPMENT_TEAM = 46WUYUUA8V;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oil3.ToolML;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		344D22EB2C0EF86200C6966E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -996,6 +1166,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		342D0D092C1D52D600ECDA36 /* Build configuration list for PBXNativeTarget "ToolML" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				342D0D0A2C1D52D600ECDA36 /* Debug */,
+				342D0D0B2C1D52D600ECDA36 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		344D22ED2C0EF86200C6966E /* Build configuration list for PBXNativeTarget "V" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

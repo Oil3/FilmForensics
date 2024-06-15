@@ -3,7 +3,6 @@ import Vision
 import AppKit
 import SwiftUI
 import CoreML
-import AVFoundation
 
 class Coordinator: NSObject, ObservableObject {
     var playerView: AVPlayerView?
@@ -11,21 +10,14 @@ class Coordinator: NSObject, ObservableObject {
     var videoOutput: AVPlayerItemVideoOutput?
     var displayLink: CVDisplayLink?
     private var bufferSize: CGSize = .zero
-    private var yoloModel: IO_cashtrack?
-    private var selectedVNModel: VNCoreMLModel?
+    var yoloModel: IO_cashtrack?
     private var audioPlayer: AVAudioPlayer?
-    private var lastDetectionTime: CFTimeInterval = 0
 
-    @Binding var showBoundingBoxes: Bool
-    @Binding var logDetections: Bool
     @EnvironmentObject var detectionStats: DetectionStats
 
-    init(showBoundingBoxes: Binding<Bool>, logDetections: Binding<Bool>) {
-        _showBoundingBoxes = showBoundingBoxes
-        _logDetections = logDetections
+    override init() {
         super.init()
         loadModel()
-        loadSound()
     }
 
     func loadModel() {
@@ -34,29 +26,10 @@ class Coordinator: NSObject, ObservableObject {
         }
 
         do {
-            let model = try MLModel(contentsOf: modelUrl)
-            yoloModel = IO_cashtrack(model: model)
+            yoloModel = try? IO_cashtrack(contentsOf: modelUrl)
         } catch {
             fatalError("Error loading model: \(error)")
         }
-    }
-
-    func loadSound() {
-        guard let soundURL = Bundle.main.url(forResource: "detFX", withExtension: "m4a") else {
-            print("Failed to find sound file.")
-            return
-        }
-
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
-            audioPlayer?.prepareToPlay()
-        } catch {
-            print("Failed to load sound file: \(error)")
-        }
-    }
-
-    func playSound() {
-        audioPlayer?.play()
     }
 
     func setupPlayerView(_ view: AVPlayerView) {
@@ -113,7 +86,10 @@ class Coordinator: NSObject, ObservableObject {
 
         let input = IO_cashtrackInput(image: pixelBuffer, iouThreshold: 0.45, confidenceThreshold: 0.25)
         guard let output = try? model.prediction(input: input) else {
-//            self.detectionStats.addMultiple([], removeAllFirst: false)
+            DispatchQueue.main.async {
+                self.detectionStats.recordFrame()
+                self.detectionStats.recordPrediction()
+            }
             return
         }
 
@@ -128,7 +104,6 @@ class Coordinator: NSObject, ObservableObject {
 
         var stats = [Stats]()
         var observations = [VNRecognizedObjectObservation]()
-        var detectedObjectsCount = 0
 
         for i in 0..<confidence.shape[0].intValue {
             let confidenceValues = (0..<confidence.shape[1].intValue).map { confidence[[i, $0] as [NSNumber]].floatValue }
@@ -147,29 +122,12 @@ class Coordinator: NSObject, ObservableObject {
 
                 let label = "Object \(maxIndex)"
                 stats.append(Stats(key: label, value: String(format: "%.2f", maxConfidence)))
-                detectedObjectsCount += 1
             }
         }
 
-        detectionStats.addMultiple(stats, removeAllFirst: false)
+       
 
-        if showBoundingBoxes {
-            drawVisionRequestResults(observations)
-        }
-
-        if detectedObjectsCount > 0 {
-            playSound()
-            updateDetectionTime()
-        }
-    }
-
-    private func updateDetectionTime() {
-        let currentTime = CACurrentMediaTime()
-        let detectionInterval = currentTime - lastDetectionTime
-        lastDetectionTime = currentTime
-
-        let fps = 1.0 / detectionInterval
-        detectionStats.addMultiple([Stats(key: "FPS", value: String(format: "%.2f", fps))], removeAllFirst: false)
+        drawVisionRequestResults(observations)
     }
 
     func drawVisionRequestResults(_ results: [VNRecognizedObjectObservation]) {
@@ -180,6 +138,9 @@ class Coordinator: NSObject, ObservableObject {
             let objectBounds = VNImageRectForNormalizedRect(observation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
             let shapeLayer = self.createRoundedRectLayerWithBounds(objectBounds)
             detectionOverlay.addSublayer(shapeLayer)
+//             detectionStats.addMultiple(stats, removeAllFirst: false)
+//        detectionStats.recordFrame()
+//        detectionStats.recordPrediction()
         }
         self.updateLayerGeometry()
         CATransaction.commit()

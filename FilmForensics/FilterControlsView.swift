@@ -71,20 +71,20 @@ struct FilterControls: View {
                 Button("Save Preset") {
                     videoPlayerViewModel.savePreset()
                 }
-                if let presets = videoPlayerViewModel.presets {
-                    Picker("Load Preset", selection: $videoPlayerViewModel.selectedPreset) {
-                        ForEach(presets, id: \.self) { preset in
-                            Text(preset.name).tag(preset)
-                        }
+//                if let presets = videoPlayerViewModel.presets {
+//                    Picker("Load Preset", selection: $videoPlayerViewModel.selectedPreset) {
+//                        (presets, id: \.self) { preset in
+//                            Text(preset.name)
+//                        }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                    .onChange(of: videoPlayerViewModel.selectedPreset) { newValue in
-                        if let newValue = newValue {
-                            videoPlayerViewModel.loadPreset(preset: newValue)
-                        }
-                    }
-                }
-            }
+//                    .pickerStyle(MenuPickerStyle())
+//                    .onChange(of: videoPlayerViewModel.selectedPreset) { newValue in
+//                        if let newValue = newValue {
+//                            videoPlayerViewModel.loadPreset(preset: newValue)
+//                        }
+//                    }
+//                }
+//            }
             .padding(.horizontal)
             .foregroundColor(.white)
         }
