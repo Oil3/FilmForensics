@@ -1,83 +1,87 @@
-//
-//  NavigationSplitView.swift
-//  ToolML
-//
-//  Created by Almahdi Morris on 15/6/24.
-//
+  //
+  //  NavigationSplitView.swift
+  //  ToolML
+  //
+  //  Created by Almahdi Morris on 15/6/24.
+  //
 import SwiftUI
 import CoreML
 import Vision
 
-struct NavigationSplittView: View {
-    @State private var selectedImage: NSImage? = nil
+struct MainView: View {
+    @State private var selectedImage: NSImage? = nil {
+        didSet {
+            if let image = selectedImage {
+                runModel(on: image)
+            }
+        }
+    }
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
     @State private var galleryImages: [NSImage] = []
     @State private var highlightedImage: NSImage? = nil
     @State private var imageSize: CGSize = .zero
+    @FocusState private var isFocused: Bool
 
-var body: some View {
-        NavigationView {
-        VStack {
-                    ScrollView {
-                        ForEach(galleryImages, id: \.self) { image in
+    var body: some View {
+        NavigationSplitView {
+            List(galleryImages, id: \.self, selection: $selectedImage) { image in
+                        Image(nsImage: image)
+                            .resizable()
+                            .frame(width: 100, height: 100)
+                            .padding(2)
+                            .background(highlightedImage == image ? Color.blue.opacity(0.3) : Color.clear)
+                            .onTapGesture {
+                                self.selectedImage = image
+                                self.highlightedImage = image
+                                runModel(on: image)
+                            }
+                    }
+//                }
+//                Spacer()
+//                Button(action: selectImage) {
+//                    Text("Select Image")
+//                }
+//                Button(action: clearImages) {
+//                    Text("Clear")
+//                }
+//            }
+            .frame(width: 120)
+            .background(
+                Rectangle()
+                    .stroke(Color.gray, lineWidth: 1)
+            )
+            .onDrop(of: ["public.file-url"], isTargeted: nil, perform: handleDrop)
+            .focused($isFocused)
+        } detail: {
+            VStack {
+                if let image = selectedImage {
+                    GeometryReader { geometry in
+                        ZStack {
                             Image(nsImage: image)
                                 .resizable()
-                                .scaledToFit()
-                                .frame(width: 100, height: 100)
-                                .padding(2)
-                                .background(highlightedImage == image ? Color.blue.opacity(0.3) : Color.clear)
-                                .onTapGesture {
-                                    self.selectedImage = image
-                                    self.highlightedImage = image
-                                    runModel(on: image)
-                                }
-                        }
-                    }
-                    Spacer()
-                    Button(action: selectImage) {
-                        Text("Select Image")
-                    }
-                    Button(action: clearImages) {
-                        Text("Clear")
-                    }
-                
-                .frame(width: 120)
-                .background(
-                    Rectangle()
-                        .stroke(Color.gray, lineWidth: 1)
-                )
-                .onDrop(of: ["public.file-url"], isTargeted: nil, perform: handleDrop)
-
-
-        }
-                 VStack {
-                    if let image = selectedImage {
-                        GeometryReader { geometry in
-                            ZStack {
-                                Image(nsImage: image)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .background(GeometryReader { geo -> Color in
-                                        DispatchQueue.main.async {
-                                            self.imageSize = geo.size
-                                        }
-                                      Color.clear
-                                    })
-                                ForEach(detectedObjects, id: \.self) { object in
-                                    drawBoundingBox(for: object, in: geometry.size)
-                                }
+                                .background(GeometryReader { geo -> Color in
+                                    DispatchQueue.main.async {
+                                        self.imageSize = geo.size
+                                    }
+                                    return Color.clear
+                                })
+                            ForEach(detectedObjects, id: \.self) { object in
+                                drawBoundingBox(for: object, in: geometry.size)
                             }
                         }
-                    } else {
-                        Text("No Image Selected")
                     }
+                } else {
+                    Text("No Image Selected")
                 }
             }
-        
+        }
         .padding()
         .onAppear {
+        isFocused = true
             addCommandShortcuts()
         }
+   //             .onMoveCommand(perform: handleMoveCommand)
+
     }
 
     func addCommandShortcuts() {
@@ -90,6 +94,34 @@ var body: some View {
         }
     }
 
+//    func handleMoveCommand(_ direction: MoveCommandDirection) {
+//        switch direction {
+//        case .left, .up:
+//            selectPreviousImage()
+//        case .right, .down:
+//            selectNextImage()
+//        default:
+//            break
+//        }
+//    }
+
+
+    func selectPreviousImage() {
+        guard let currentIndex = galleryImages.firstIndex(of: selectedImage ?? NSImage()), currentIndex > 0 else { return }
+        let previousImage = galleryImages[currentIndex - 1]
+        selectedImage = previousImage
+        highlightedImage = previousImage
+        runModel(on: previousImage)
+    }
+
+    func selectNextImage() {
+        guard let currentIndex = galleryImages.firstIndex(of: selectedImage ?? NSImage()), currentIndex < galleryImages.count - 1 else { return }
+        let nextImage = galleryImages[currentIndex + 1]
+        selectedImage = nextImage
+        highlightedImage = nextImage
+        runModel(on: nextImage)
+    }
+
     func selectImage() {
         let panel = NSOpenPanel()
         panel.allowedFileTypes = ["png", "jpg", "jpeg"]
@@ -98,6 +130,7 @@ var body: some View {
             for url in panel.urls {
                 if let image = NSImage(contentsOf: url) {
                     galleryImages.append(image)
+                    selectLatestImage()
                 }
             }
         }
@@ -107,6 +140,14 @@ var body: some View {
         selectedImage = nil
         detectedObjects.removeAll()
         galleryImages.removeAll()
+    }
+
+    func selectLatestImage() {
+        if let latestImage = galleryImages.last {
+            selectedImage = latestImage
+            highlightedImage = latestImage
+            runModel(on: latestImage)
+        }
     }
 
     func runModel(on image: NSImage) {
@@ -144,21 +185,30 @@ var body: some View {
     }
 
     func handleDrop(providers: [NSItemProvider]) -> Bool {
+        var addedImages = [NSImage]()
+        let dispatchGroup = DispatchGroup()
+
         for provider in providers {
             if provider.hasItemConformingToTypeIdentifier("public.file-url") {
+                dispatchGroup.enter()
                 provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, error in
                     if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
                         if let image = NSImage(contentsOf: url) {
                             DispatchQueue.main.async {
-                                self.galleryImages.append(image)
+                                addedImages.append(image)
                             }
                         }
                     }
+                    dispatchGroup.leave()
                 }
-                return true
             }
         }
-        return false
+
+        dispatchGroup.notify(queue: .main) {
+            self.galleryImages.append(contentsOf: addedImages)
+            self.selectLatestImage()
+        }
+
+        return true
     }
-}
 }
