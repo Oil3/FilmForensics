@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
 		342A34522C157A3200F1995E /* SRResNet.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */; };
 		342A34532C157A3200F1995E /* bsrgan.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */; };
@@ -116,6 +117,7 @@
 		341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRGAN.mlmodel; sourceTree = "<group>"; };
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
+		34278E032C1F133700E3D6AA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier32_2000.mlmodel; sourceTree = "<group>"; };
 		342D0CE22C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier321it14588.mlmodel; sourceTree = "<group>"; };
 		342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashtrack416.mlmodel; sourceTree = "<group>"; };
@@ -271,6 +273,7 @@
 		342D0CFE2C1D52D500ECDA36 /* ToolML */ = {
 			isa = PBXGroup;
 			children = (
+				34278E032C1F133700E3D6AA /* ContentView.swift */,
 				342D0D122C1D5D8E00ECDA36 /* MainView.swift */,
 				342D0D182C1E1D0900ECDA36 /* MediaModel.swift */,
 				342D0D032C1D52D600ECDA36 /* Assets.xcassets */,
@@ -651,6 +654,7 @@
 				342D0D0D2C1D554900ECDA36 /* ccashier3.mlmodel in Sources */,
 				342D0D0F2C1D57AB00ECDA36 /* cctrack23090.mlmodel in Sources */,
 				342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */,
+				34278E052C1F135300E3D6AA /* ContentView.swift in Sources */,
 				342D0D0E2C1D554D00ECDA36 /* IO_cashtrack.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
