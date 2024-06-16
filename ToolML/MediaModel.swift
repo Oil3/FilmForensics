@@ -1,6 +1,7 @@
 import SwiftUI
 import AVKit
 import Vision
+import Combine
 
 enum MediaType {
     case image
@@ -25,6 +26,7 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
     @Published var currentFrame: NSImage?
     @Published var detectedObjects: [VNRecognizedObjectObservation] = []
     let type: MediaType
+    var cancellables = Set<AnyCancellable>()
 
     init(url: URL, type: MediaType) {
         self.url = url
@@ -42,7 +44,6 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
             if let nsImage = NSImage(contentsOf: url) {
                 DispatchQueue.main.async {
                     self.image = nsImage
-                    self.runModelOnImage(nsImage)
                 }
             }
         }
@@ -50,9 +51,9 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
 
     func generateImageThumbnail() {
         guard type == .image else { return }
-        let size = NSSize(width: 100, height: 100)
+      let targetSize = NSSize(width: 100, height: 100)//, height: 100)
         if let nsImage = NSImage(contentsOf: url) {
-            let thumbnail = nsImage.resizeImage(size: size)
+            let thumbnail = nsImage.resizeImage(targetSize: targetSize)
             DispatchQueue.main.async {
                 self.thumbnail = thumbnail
             }
@@ -119,13 +120,18 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
 }
 
 extension NSImage {
-    func resizeImage(size: NSSize) -> NSImage {
-        let img = NSImage(size: size)
-        img.lockFocus()
+    func resizeImage(targetSize: NSSize) -> NSImage {
+let originalSize = self.size
+        let widthRatio  = targetSize.width  / originalSize.width
+        let heightRatio = targetSize.height / originalSize.height
+                let scaleFactor = min(widthRatio, heightRatio)
+        let scaledSize = NSSize(width: originalSize.width * scaleFactor, height: originalSize.height * scaleFactor)
+        let newImage = NSImage(size: scaledSize)
+        newImage.lockFocus()
         let ctx = NSGraphicsContext.current
-        ctx?.imageInterpolation = .high
-        self.draw(in: NSRect(origin: .zero, size: size), from: NSRect(origin: .zero, size: self.size), operation: .copy, fraction: 1)
-        img.unlockFocus()
-        return img
+        ctx?.imageInterpolation = .none
+        self.draw(in: NSRect(origin: .zero, size: scaledSize), from: NSRect(origin: .zero, size: originalSize), operation: .copy, fraction: 1)
+        newImage.unlockFocus()
+        return newImage
     }
 }
