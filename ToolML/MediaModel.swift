@@ -2,7 +2,6 @@ import SwiftUI
 import AVKit
 import Vision
 
-
 enum MediaType {
     case image
     case video

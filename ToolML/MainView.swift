@@ -6,7 +6,7 @@ import AVKit
 struct MainView: View {
     @State private var selectedMediaModel: MediaModel? {
         didSet {
-            runPrediction()
+            handleSelectionChange()
         }
     }
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
@@ -18,18 +18,18 @@ struct MainView: View {
         NavigationSplitView {
             ScrollViewReader { proxy in
                 ScrollView {
-                  LazyVStack {
-                          ForEach(galleryMediaModels.indices, id: \.self) { index in
-                              let mediaModel = galleryMediaModels[index]
-                              MediaView(mediaModel: mediaModel)
-                                  .frame(width: 100, height: 100)
-                                  .padding(2)
-                                  .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
-                                  .onTapGesture {
-                                      self.selectedMediaModel = mediaModel
-                                  }
-                                  .id(index)
-                          }
+                    LazyVStack {
+                        ForEach(galleryMediaModels.indices, id: \.self) { index in
+                            let mediaModel = galleryMediaModels[index]
+                            MediaView(mediaModel: mediaModel)
+                                .frame(width: 100, height: 100)
+                                .padding(2)
+                                .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
+                                .onTapGesture {
+                                    self.selectedMediaModel = mediaModel
+                                }
+                                .id(index)
+                        }
                     }
                     .padding()
                 }
@@ -131,6 +131,29 @@ struct MainView: View {
         )
     }
 
+    func handleSelectionChange() {
+        guard let mediaModel = selectedMediaModel else { return }
+        detectedObjects.removeAll()
+
+        if mediaModel.type == .image {
+            if mediaModel.image == nil {
+                mediaModel.loadImage()
+                
+                    if let image = mediaModel.image {
+                      runModel(on: image)
+                    }
+                
+            } else {
+                if let image = mediaModel.image {
+                    runModel(on: image)
+                }
+            }
+        } else if mediaModel.type == .video {
+            mediaModel.startVideo()
+            mediaModel.extractFrame()
+        }
+    }
+    
     func handleMoveCommand(direction: MoveCommandDirection) {
         switch direction {
         case .left, .up:
@@ -140,7 +163,6 @@ struct MainView: View {
         default:
             break
         }
-        runPrediction()
     }
 
     func moveSelection(by offset: Int) {
@@ -152,30 +174,16 @@ struct MainView: View {
 
     func moveSelectionUp() {
         moveSelection(by: -1)
-        runPrediction()
     }
 
     func moveSelectionDown() {
         moveSelection(by: 1)
-        runPrediction()
-    }
-
-    func runPrediction() {
-        guard let mediaModel = selectedMediaModel else { return }
-        detectedObjects.removeAll()
-
-        if mediaModel.type == .image, let image = mediaModel.image {
-            runModel(on: image)
-        } else if mediaModel.type == .video {
-            mediaModel.startVideo()
-            mediaModel.extractFrame()
-        }
     }
 
     func scrollToSelectedMedia(proxy: ScrollViewProxy) {
         if let selectedIndex = galleryMediaModels.firstIndex(where: { $0.id == selectedMediaModel?.id }) {
             withAnimation {
-                proxy.scrollTo(selectedIndex, anchor: .center)
+                proxy.scrollTo(selectedIndex, anchor: nil)
             }
         }
     }
@@ -218,7 +226,7 @@ struct MainView: View {
 
     func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let model = try! VNCoreMLModel(for: best().model)
+        let model = try! VNCoreMLModel(for: ccashier3().model)
 
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {
