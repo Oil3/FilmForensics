@@ -130,10 +130,9 @@ struct MainView: View {
             return event
         }
     }
-
     func selectMedia() {
         let panel = NSOpenPanel()
-        panel.allowedFileTypes = ["png", "jpg", "jpeg", "mp4", "mov"]
+        panel.allowedContentTypes = [.image, .movie]
         panel.allowsMultipleSelection = true
         if panel.runModal() == .OK {
             for url in panel.urls {
@@ -157,7 +156,7 @@ struct MainView: View {
         }
     }
 
-    func runModel(on image: NSImage) {
+   public func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
         let model = try! VNCoreMLModel(for: best().model)
 
@@ -222,12 +221,17 @@ struct MainView: View {
 
 struct MediaView: View {
     @ObservedObject var mediaModel: MediaModel
+      //  @State private var detectedObjects: [VNRecognizedObjectObservation] = []
 
     var body: some View {
         Group {
             if mediaModel.type == .image, let image = mediaModel.image {
                 Image(nsImage: image)
                     .resizable()
+//                    .onAppear {
+//                        runModel(on: image)
+//                        
+//                    }
             } else if mediaModel.type == .video, let thumbnail = mediaModel.videoThumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
@@ -239,6 +243,22 @@ struct MediaView: View {
             }
         }
     }
+    
+//private func runModel(on image: NSImage) {
+//        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
+//        let model = try! VNCoreMLModel(for: best().model)
+//
+//        let request = VNCoreMLRequest(model: model) { request, error in
+//            if let results = request.results as? [VNRecognizedObjectObservation] {
+//                DispatchQueue.main.async {
+//                    self.detectedObjects = results
+//                }
+//            }
+//        }
+//
+//        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+//        try? handler.perform([request])
+//    }
 }
 
 @main
