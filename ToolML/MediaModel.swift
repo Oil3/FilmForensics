@@ -40,7 +40,7 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
     func loadImage() {
         if type == .image && image == nil {
             if let nsImage = NSImage(contentsOf: url) {
-                DispatchQueue.main.async {
+                DispatchQueue.global(qos: .userInteractive).async {
                     self.image = nsImage
                     self.runModelOnImage(nsImage)
                 }
@@ -53,7 +53,7 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
         let size = NSSize(width: 100, height: 100)
         if let nsImage = NSImage(contentsOf: url) {
             let thumbnail = nsImage.resizeImage(size: size)
-            DispatchQueue.main.async {
+            DispatchQueue.global(qos: .userInteractive).async {
                 self.thumbnail = thumbnail
             }
         }
@@ -104,6 +104,7 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
     func runModelOnImage(_ image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
         let model = try! VNCoreMLModel(for: best().model)
+            DispatchQueue.global(qos: .userInteractive).async {
 
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -117,7 +118,7 @@ class MediaModel: ObservableObject, Identifiable, Hashable {
         try? handler.perform([request])
     }
 }
-
+}
 extension NSImage {
     func resizeImage(size: NSSize) -> NSImage {
         let img = NSImage(size: size)
