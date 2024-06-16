@@ -2,7 +2,7 @@ import SwiftUI
 import CoreML
 import Vision
 import AVKit
-
+import Combine
 struct MainView: View {
     @State private var selectedMediaModel: MediaModel? {
         didSet {
@@ -13,6 +13,7 @@ struct MainView: View {
     @State private var galleryMediaModels: [MediaModel] = []
     @State private var imageSize: CGSize = .zero
     @FocusState private var isFocused: Bool
+    @State private var cancellables = Set<AnyCancellable>()
 
     var body: some View {
         NavigationSplitView {
@@ -33,7 +34,7 @@ struct MainView: View {
                     }
                     .padding()
                 }
-                .onChange(of: selectedMediaModel) { _ in
+                .onChange(of: selectedMediaModel) {
                     scrollToSelectedMedia(proxy: proxy)
                 }
             }
@@ -136,24 +137,16 @@ struct MainView: View {
         detectedObjects.removeAll()
 
         if mediaModel.type == .image {
-            if mediaModel.image == nil {
-                mediaModel.loadImage()
-                
-                    if let image = mediaModel.image {
-                      runModel(on: image)
-                    }
-                
+            if let image = mediaModel.image {
+                runModel(on: image)
             } else {
-                if let image = mediaModel.image {
-                    runModel(on: image)
-                }
+                mediaModel.loadImage()
             }
         } else if mediaModel.type == .video {
             mediaModel.startVideo()
             mediaModel.extractFrame()
         }
-    }
-    
+    }    
     func handleMoveCommand(direction: MoveCommandDirection) {
         switch direction {
         case .left, .up:
@@ -226,7 +219,7 @@ struct MainView: View {
 
     func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let model = try! VNCoreMLModel(for: ccashier3().model)
+        let model = try! VNCoreMLModel(for: IO_cashtrack().model)
 
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {
