@@ -14,17 +14,16 @@ TabView {
 MainView()
         .badge(2)
         .tabItem {
-            Label("Received", systemImage: "tray.and.arrow.down.fill")
+            Label("Image", systemImage: "tray.and.arrow.down.fill")
         }
-    MainView()
+    MainView() //placeholder
         .tabItem {
-            Label("Sent", systemImage: "tray.and.arrow.up.fill")
+            Label("Video", systemImage: "tray.and.arrow.up.fill")
         }
-//    AccountView()
-//        .badge("!")
-//        .tabItem {
-//            Label("Account", systemImage: "person.crop.circle.fill")
-//        }
+            MainView() //placeholder
+        .tabItem {
+            Label("Settings", systemImage: "tray.and.arrow.up.fill")
+        }
 }
    }
 }
