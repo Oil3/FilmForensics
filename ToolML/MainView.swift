@@ -1,9 +1,3 @@
-  //
-  //  MainView.swift
-  //  ToolML
-  //
-  //  Created by Almahdi Morris on 15/6/24.
-  //
 import SwiftUI
 import CoreML
 import Vision
@@ -12,16 +6,7 @@ import AVKit
 struct MainView: View {
     @State private var selectedMediaModel: MediaModel? {
         didSet {
-            if let mediaModel = selectedMediaModel {
-                if mediaModel.type == .image {
-                    mediaModel.loadImage()
-                    if let image = mediaModel.image {
-                        runModel(on: image)
-                    }
-                } else if mediaModel.type == .video {
-                    mediaModel.startVideo()
-                }
-            }
+            runPrediction()
         }
     }
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
@@ -31,22 +16,25 @@ struct MainView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(galleryMediaModels, id: \.self, selection: $selectedMediaModel) { mediaModel in
-                MediaView(mediaModel: mediaModel)
-                    .frame(width: 100, height: 100)
-                    .padding(2)
-                    .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
-                    .onTapGesture {
-                        self.selectedMediaModel = mediaModel
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))]) {
+                    ForEach(galleryMediaModels, id: \.self) { mediaModel in
+                        MediaView(mediaModel: mediaModel)
+                            .frame(width: 100, height: 100)
+                            .padding(2)
+                            .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
+                            .onTapGesture {
+                                self.selectedMediaModel = mediaModel
+                            }
                     }
+                }
+                .padding()
             }
             .frame(width: 120)
-            .background(
-                Rectangle()
-                    .stroke(Color.gray, lineWidth: 1)
-            )
             .onDrop(of: ["public.file-url"], isTargeted: nil, perform: handleDrop)
+            .onMoveCommand(perform: handleMoveCommand)
             .focused($isFocused)
+            .scrollIndicators(.hidden)
         } detail: {
             VStack {
                 if let mediaModel = selectedMediaModel {
@@ -119,6 +107,62 @@ struct MainView: View {
             isFocused = true
             addCommandShortcuts()
         }
+        .overlay(
+            VStack {
+                Button(action: moveSelectionUp) {
+                    Text("")
+                }
+                .keyboardShortcut(.upArrow, modifiers: [])
+                .opacity(0)
+
+                Button(action: moveSelectionDown) {
+                    Text("")
+                }
+                .keyboardShortcut(.downArrow, modifiers: [])
+                .opacity(0)
+            }
+        )
+    }
+
+    func handleMoveCommand(direction: MoveCommandDirection) {
+        switch direction {
+        case .left, .up:
+            moveSelection(by: -1)
+        case .right, .down:
+            moveSelection(by: 1)
+        default:
+            break
+        }
+        runPrediction()
+    }
+
+    func moveSelection(by offset: Int) {
+        if let currentIndex = galleryMediaModels.firstIndex(where: { $0.id == selectedMediaModel?.id }) {
+            let newIndex = (currentIndex + offset + galleryMediaModels.count) % galleryMediaModels.count
+            selectedMediaModel = galleryMediaModels[newIndex]
+        }
+    }
+
+    func moveSelectionUp() {
+        moveSelection(by: -1)
+        runPrediction()
+    }
+
+    func moveSelectionDown() {
+        moveSelection(by: 1)
+        runPrediction()
+    }
+
+    func runPrediction() {
+        guard let mediaModel = selectedMediaModel else { return }
+        detectedObjects.removeAll()
+
+        if mediaModel.type == .image, let image = mediaModel.image {
+            runModel(on: image)
+        } else if mediaModel.type == .video {
+            mediaModel.startVideo()
+            mediaModel.extractFrame()
+        }
     }
 
     func addCommandShortcuts() {
@@ -130,6 +174,7 @@ struct MainView: View {
             return event
         }
     }
+
     func selectMedia() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.image, .movie]
@@ -156,7 +201,7 @@ struct MainView: View {
         }
     }
 
-   public func runModel(on image: NSImage) {
+    func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
         let model = try! VNCoreMLModel(for: best().model)
 
@@ -176,14 +221,14 @@ struct MainView: View {
         let boundingBox = observation.boundingBox
         let imageWidth = imageSize.width
         let imageHeight = imageSize.height
-        
+
         let normalizedRect = CGRect(
             x: boundingBox.minX * imageWidth,
             y: (1 - boundingBox.maxY) * imageHeight,
             width: boundingBox.width * imageWidth,
             height: boundingBox.height * imageHeight
         )
-        
+
         return Rectangle()
             .stroke(Color.red, lineWidth: 2)
             .frame(width: normalizedRect.width, height: normalizedRect.height)
@@ -221,44 +266,26 @@ struct MainView: View {
 
 struct MediaView: View {
     @ObservedObject var mediaModel: MediaModel
-      //  @State private var detectedObjects: [VNRecognizedObjectObservation] = []
 
     var body: some View {
         Group {
-            if mediaModel.type == .image, let image = mediaModel.image {
-                Image(nsImage: image)
+            if mediaModel.type == .image, let thumbnail = mediaModel.thumbnail {
+                Image(nsImage: thumbnail)
                     .resizable()
-//                    .onAppear {
-//                        runModel(on: image)
-//                        
-//                    }
+                    .onAppear {
+                      mediaModel.generateImageThumbnail()
+                    }
             } else if mediaModel.type == .video, let thumbnail = mediaModel.videoThumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
                     .onAppear {
-                        mediaModel.generateThumbnail()
+                        mediaModel.generateVideoThumbnail()
                     }
             } else {
                 Color.gray
             }
         }
     }
-    
-//private func runModel(on image: NSImage) {
-//        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-//        let model = try! VNCoreMLModel(for: best().model)
-//
-//        let request = VNCoreMLRequest(model: model) { request, error in
-//            if let results = request.results as? [VNRecognizedObjectObservation] {
-//                DispatchQueue.main.async {
-//                    self.detectedObjects = results
-//                }
-//            }
-//        }
-//
-//        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-//        try? handler.perform([request])
-//    }
 }
 
 @main
