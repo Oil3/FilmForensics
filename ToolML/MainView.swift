@@ -17,17 +17,21 @@ struct MainView: View {
     var body: some View {
         NavigationSplitView {
             ScrollViewReader { proxy in
-                List(galleryMediaModels.indices, id: \.self, selection: $selectedMediaModel) { index in
-                    let mediaModel = galleryMediaModels[index]
-                    MediaView(mediaModel: mediaModel)
-                        .frame(width: 100, height: 100)
-                        .padding(2)
-                        .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
-                        .onTapGesture {
-                            self.selectedMediaModel = mediaModel
-                           // loadFullImage(for: mediaModel)
-                        }
-                        .id(index)
+                ScrollView {
+                  LazyVStack {
+                          ForEach(galleryMediaModels.indices, id: \.self) { index in
+                              let mediaModel = galleryMediaModels[index]
+                              MediaView(mediaModel: mediaModel)
+                                  .frame(width: 100, height: 100)
+                                  .padding(2)
+                                  .background(selectedMediaModel?.id == mediaModel.id ? Color.blue.opacity(0.3) : Color.clear)
+                                  .onTapGesture {
+                                      self.selectedMediaModel = mediaModel
+                                  }
+                                  .id(index)
+                          }
+                    }
+                    .padding()
                 }
                 .onChange(of: selectedMediaModel) { _ in
                     scrollToSelectedMedia(proxy: proxy)
@@ -38,13 +42,6 @@ struct MainView: View {
             .onMoveCommand(perform: handleMoveCommand)
             .focused($isFocused)
             .scrollIndicators(.never)
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: selectMedia) {
-                        Label("Add", systemImage: "plus")
-                    }
-                }
-            }
         } detail: {
             VStack {
                 if let mediaModel = selectedMediaModel {
@@ -169,6 +166,9 @@ struct MainView: View {
 
         if mediaModel.type == .image, let image = mediaModel.image {
             runModel(on: image)
+        } else if mediaModel.type == .video {
+            mediaModel.startVideo()
+            mediaModel.extractFrame()
         }
     }
 
@@ -216,12 +216,6 @@ struct MainView: View {
         }
     }
 
-    func loadFullImage(for mediaModel: MediaModel) {
-        if mediaModel.type == .image, mediaModel.image == nil {
-            mediaModel.loadImage()
-        }
-    }
-
     func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
         let model = try! VNCoreMLModel(for: best().model)
@@ -240,8 +234,8 @@ struct MainView: View {
 
     func drawBoundingBox(for observation: VNRecognizedObjectObservation, in parentSize: CGSize) -> some View {
         let boundingBox = observation.boundingBox
-        let imageWidth = parentSize.width
-        let imageHeight = parentSize.height
+        let imageWidth = imageSize.width
+        let imageHeight = imageSize.height
 
         let normalizedRect = CGRect(
             x: boundingBox.minX * imageWidth,
@@ -293,14 +287,12 @@ struct MediaView: View {
             if mediaModel.type == .image, let thumbnail = mediaModel.thumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
                     .onAppear {
                         mediaModel.generateImageThumbnail()
                     }
             } else if mediaModel.type == .video, let thumbnail = mediaModel.videoThumbnail {
                 Image(nsImage: thumbnail)
                     .resizable()
-                    .aspectRatio(contentMode: .fit)
                     .onAppear {
                         mediaModel.generateVideoThumbnail()
                     }
@@ -310,4 +302,3 @@ struct MediaView: View {
         }
     }
 }
-

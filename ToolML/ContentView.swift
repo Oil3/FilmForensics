@@ -29,7 +29,7 @@ MainView()
    }
 }
 @main
-struct MyApp: App {
+struct CMLTools: App {
     var body: some Scene {
         WindowGroup {
             MainView()
