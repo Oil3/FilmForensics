@@ -3,6 +3,7 @@ import SwiftUI
 class MediaModel: ObservableObject {
     @Published var videos: [URL] = []
     @Published var selectedVideoURL: URL?
+    @Published var currentFrame: NSImage?
     
     func addVideos() {
         let panel = NSOpenPanel()
@@ -17,5 +18,6 @@ class MediaModel: ObservableObject {
     func clearVideos() {
         videos.removeAll()
         selectedVideoURL = nil
+        currentFrame = nil
     }
 }
