@@ -10,8 +10,10 @@ struct VideoToolsView: View {
     @State private var playerView = AVPlayerView()
     @State private var detectedObjects: [VNRecognizedObjectObservation] = []
     @State private var imageSize: CGSize = .zero
+    @State private var videoSize: CGSize = .zero
     @State private var objectDetectionEnabled = false
-
+    @State private var videoOutput: AVPlayerItemVideoOutput?
+    
     var body: some View {
         NavigationView {
             videoGallery
@@ -34,6 +36,7 @@ struct VideoToolsView: View {
                     mediaModel.selectedVideoURL = url
                     let asset = AVAsset(url: url)
                     let playerItem = AVPlayerItem(asset: asset)
+                    setupVideoOutput(for: playerItem)
                     player.replaceCurrentItem(with: playerItem)
                     playerView.player = player
                     startFrameExtraction()
@@ -62,29 +65,23 @@ struct VideoToolsView: View {
                     .padding()
 
                     VideoPlayerView(playerView: playerView)
-                        .frame(height: 400)
+                        .frame(maxHeight: 1980)
                         .overlay(
                             GeometryReader { geo -> AnyView in
                                 if let frame = mediaModel.currentFrame {
                                     DispatchQueue.main.async {
-                                        self.imageSize = geo.size
+                                        self.videoSize = geo.size
                                         if objectDetectionEnabled {
-                                            runModel(on: frame)
+                                            if let pixelBuffer = mediaModel.currentPixelBuffer {
+                                                runModel(on: pixelBuffer)
+                                            }
                                         }
                                     }
                                     return AnyView(
-                                        ZStack {
-                                            Image(nsImage: frame)
-                                                .resizable()
-                                                .background(GeometryReader { geo -> Color in
-                                                    DispatchQueue.main.async {
-                                                        self.imageSize = geo.size
-                                                    }
-                                                    return Color.clear
-                                                })
+                                    
                                             ForEach(detectedObjects, id: \.self) { object in
                                                 drawBoundingBox(for: object, in: geo.size)
-                                            }
+//                                            }
                                         }
                                     )
                                 } else {
@@ -113,14 +110,14 @@ struct VideoToolsView: View {
 
     private func drawBoundingBox(for observation: VNRecognizedObjectObservation, in parentSize: CGSize) -> some View {
         let boundingBox = observation.boundingBox
-        let imageWidth = imageSize.width
-        let imageHeight = imageSize.height
+        let videoWidth = videoSize.width
+        let videoHeight = videoSize.height
 
         let normalizedRect = CGRect(
-            x: boundingBox.minX * imageWidth,
-            y: (1 - boundingBox.maxY) * imageHeight,
-            width: boundingBox.width * imageWidth,
-            height: boundingBox.height * imageHeight
+            x: boundingBox.minX * videoWidth,
+            y: (1 - boundingBox.maxY) * videoHeight,
+            width: boundingBox.width * videoWidth,
+            height: boundingBox.height * videoHeight
         )
 
         return Rectangle()
@@ -129,8 +126,7 @@ struct VideoToolsView: View {
             .position(x: normalizedRect.midX, y: normalizedRect.midY)
     }
 
-    private func runModel(on image: NSImage) {
-        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
+    private func runModel(on pixelBuffer: CVPixelBuffer) {
         let model = try! VNCoreMLModel(for: IO_cashtrack().model)
 
         let request = VNCoreMLRequest(model: model) { request, error in
@@ -141,40 +137,38 @@ struct VideoToolsView: View {
             }
         }
 
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([request])
     }
 
-    private func startFrameExtraction() {
-        let interval = CMTime(value: 1, timescale: 1)
-        player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
-            if let currentItem = player.currentItem {
-                let currentTime = currentItem.currentTime()
-                let generator = AVAssetImageGenerator(asset: currentItem.asset)
-                generator.appliesPreferredTrackTransform = true
-                generator.requestedTimeToleranceAfter = .zero
-                generator.requestedTimeToleranceBefore = .zero
+    private func setupVideoOutput(for playerItem: AVPlayerItem) {
+        let pixelBufferAttributes: [String: Any] = [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ]
+        let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
+        playerItem.add(videoOutput)
+        self.videoOutput = videoOutput
+    }
 
-                do {
-                    let cgImage = try generator.copyCGImage(at: currentTime, actualTime: nil)
-                    let nsImage = NSImage(cgImage: cgImage, size: .zero)
-                    let resizedImage = resizeImage(image: nsImage, targetSize: CGSize(width: 640, height: 640))
-                    mediaModel.currentFrame = resizedImage
-                } catch {
-                    print("Error extracting frame: \(error)")
+    private func startFrameExtraction() {
+        let interval = CMTime(value: 1, timescale: 10)
+        player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
+            if let currentItem = player.currentItem,
+               let videoOutput = self.videoOutput,
+               videoOutput.hasNewPixelBuffer(forItemTime: time) {
+                
+                var presentationTime = CMTime()
+                if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: &presentationTime) {
+//                    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+//                    let context = CIContext()
+//                    if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+//                        let nsImage = NSImage(cgImage: cgImage, size: .zero)
+                        mediaModel.currentFrame = pixelBuffer
+                        mediaModel.currentPixelBuffer = pixelBuffer
+//                    }
                 }
             }
         }
-    }
-
-    private func resizeImage(image: NSImage, targetSize: CGSize) -> NSImage {
-        let img = NSImage(size: targetSize)
-        img.lockFocus()
-        let ctx = NSGraphicsContext.current
-        ctx?.imageInterpolation = .high
-        image.draw(in: NSRect(origin: .zero, size: targetSize), from: NSRect(origin: .zero, size: image.size), operation: .copy, fraction: 1)
-        img.unlockFocus()
-        return img
     }
 
     private func beginTrimming() {
