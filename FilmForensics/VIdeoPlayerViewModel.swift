@@ -422,7 +422,7 @@ class VideoPlayerViewModel: ObservableObject {
     }
 
     func detectObjects(in image: CIImage) {
-        guard let model = try? VNCoreMLModel(for: MLcopycontrol25k().model) else { return }
+        guard let model = try? VNCoreMLModel(for: best().model) else { return }
 
         let request = VNCoreMLRequest(model: model) { [weak self] request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {

@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>0</integer>
 		</dict>
+		<key>MLmedia.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>4</integer>
+		</dict>
 		<key>MachineSystemSecurity.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>

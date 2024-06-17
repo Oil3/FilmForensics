@@ -219,7 +219,7 @@ struct MainView: View {
 
     func runModel(on image: NSImage) {
         guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return }
-        let model = try! VNCoreMLModel(for: IO_cashtrack().model)
+        let model = try! VNCoreMLModel(for: cctrack23090().model)
 
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {

@@ -72,6 +72,13 @@
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
 		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
 		348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80E2C1C189700C112C3 /* ChartView.swift */; };
+		349246CA2C20554800638047 /* MLmediaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246C92C20554800638047 /* MLmediaApp.swift */; };
+		349246CC2C20554800638047 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246CB2C20554800638047 /* ContentView.swift */; };
+		349246CE2C20554900638047 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 349246CD2C20554900638047 /* Assets.xcassets */; };
+		349246D22C20554900638047 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 349246D12C20554900638047 /* Preview Assets.xcassets */; };
+		349246D72C20557100638047 /* MainVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D62C20557100638047 /* MainVideoView.swift */; };
+		349246D92C20558700638047 /* VideoToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* VideoToolsView.swift */; };
+		349246DB2C20565700638047 /* MediaModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246DA2C20565700638047 /* MediaModel.swift */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
@@ -180,6 +187,15 @@
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
 		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
 		348EA80E2C1C189700C112C3 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
+		349246C72C20554800638047 /* MLmedia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MLmedia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		349246C92C20554800638047 /* MLmediaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLmediaApp.swift; sourceTree = "<group>"; };
+		349246CB2C20554800638047 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		349246CD2C20554900638047 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		349246CF2C20554900638047 /* MLmedia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MLmedia.entitlements; sourceTree = "<group>"; };
+		349246D12C20554900638047 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		349246D62C20557100638047 /* MainVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVideoView.swift; sourceTree = "<group>"; };
+		349246D82C20558700638047 /* VideoToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoToolsView.swift; sourceTree = "<group>"; };
+		349246DA2C20565700638047 /* MediaModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaModel.swift; sourceTree = "<group>"; };
 		3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		3494C5492BFDCF3900E70B0F /* VideoPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPicker.swift; sourceTree = "<group>"; };
@@ -231,6 +247,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		344D22DC2C0EF86100C6966E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		349246C42C20554800638047 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -377,9 +400,33 @@
 			path = models;
 			sourceTree = "<group>";
 		};
+		349246C82C20554800638047 /* MLmedia */ = {
+			isa = PBXGroup;
+			children = (
+				349246C92C20554800638047 /* MLmediaApp.swift */,
+				349246CB2C20554800638047 /* ContentView.swift */,
+				349246DA2C20565700638047 /* MediaModel.swift */,
+				349246D62C20557100638047 /* MainVideoView.swift */,
+				349246D82C20558700638047 /* VideoToolsView.swift */,
+				349246CD2C20554900638047 /* Assets.xcassets */,
+				349246CF2C20554900638047 /* MLmedia.entitlements */,
+				349246D02C20554900638047 /* Preview Content */,
+			);
+			path = MLmedia;
+			sourceTree = "<group>";
+		};
+		349246D02C20554900638047 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				349246D12C20554900638047 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
 		34A99DA92BFC2A88004685AC = {
 			isa = PBXGroup;
 			children = (
+				349246C82C20554800638047 /* MLmedia */,
 				342D0CFE2C1D52D500ECDA36 /* ToolML */,
 				344D22E02C0EF86100C6966E /* V */,
 				34A99DB42BFC2A88004685AC /* FilmForensics */,
@@ -398,6 +445,7 @@
 				34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */,
 				344D22DF2C0EF86100C6966E /* V.app */,
 				342D0CFD2C1D52D500ECDA36 /* ToolML.app */,
+				349246C72C20554800638047 /* MLmedia.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -517,6 +565,23 @@
 			productReference = 344D22DF2C0EF86100C6966E /* V.app */;
 			productType = "com.apple.product-type.application";
 		};
+		349246C62C20554800638047 /* MLmedia */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 349246D52C20554900638047 /* Build configuration list for PBXNativeTarget "MLmedia" */;
+			buildPhases = (
+				349246C32C20554800638047 /* Sources */,
+				349246C42C20554800638047 /* Frameworks */,
+				349246C52C20554800638047 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MLmedia;
+			productName = MLmedia;
+			productReference = 349246C72C20554800638047 /* MLmedia.app */;
+			productType = "com.apple.product-type.application";
+		};
 		34A99DB12BFC2A88004685AC /* FilmForensics */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 34A99DC02BFC2A89004685AC /* Build configuration list for PBXNativeTarget "FilmForensics" */;
@@ -567,6 +632,9 @@
 					344D22DE2C0EF86100C6966E = {
 						CreatedOnToolsVersion = 15.3;
 					};
+					349246C62C20554800638047 = {
+						CreatedOnToolsVersion = 15.3;
+					};
 					34A99DB12BFC2A88004685AC = {
 						CreatedOnToolsVersion = 15.3;
 					};
@@ -592,6 +660,7 @@
 				34E11DCF2C0CA68200A7B857 /* MachineSystemSecurity */,
 				344D22DE2C0EF86100C6966E /* V */,
 				342D0CFC2C1D52D500ECDA36 /* ToolML */,
+				349246C62C20554800638047 /* MLmedia */,
 			);
 		};
 /* End PBXProject section */
@@ -615,6 +684,15 @@
 				344D22E92C0EF86200C6966E /* Preview Assets.xcassets in Resources */,
 				344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */,
 				344D22FD2C0F17E700C6966E /* matrix.mov in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		349246C52C20554800638047 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				349246D22C20554900638047 /* Preview Assets.xcassets in Resources */,
+				349246CE2C20554900638047 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -689,6 +767,18 @@
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
 				348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		349246C32C20554800638047 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
+				349246CC2C20554800638047 /* ContentView.swift in Sources */,
+				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
+				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
+				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -903,6 +993,82 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "2,6";
+			};
+			name = Release;
+		};
+		349246D32C20554900638047 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MLmedia/MLmedia.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MLmedia/Preview Content\"";
+				DEVELOPMENT_TEAM = 46WUYUUA8V;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oil3.MLmedia;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		349246D42C20554900638047 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = MLmedia/MLmedia.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"MLmedia/Preview Content\"";
+				DEVELOPMENT_TEAM = 46WUYUUA8V;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.oil3.MLmedia;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1194,6 +1360,15 @@
 			buildConfigurations = (
 				344D22EB2C0EF86200C6966E /* Debug */,
 				344D22EC2C0EF86200C6966E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		349246D52C20554900638047 /* Build configuration list for PBXNativeTarget "MLmedia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				349246D32C20554900638047 /* Debug */,
+				349246D42C20554900638047 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
