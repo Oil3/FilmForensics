@@ -79,6 +79,7 @@
 		349246D72C20557100638047 /* MainVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D62C20557100638047 /* MainVideoView.swift */; };
 		349246D92C20558700638047 /* VideoToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* VideoToolsView.swift */; };
 		349246DB2C20565700638047 /* MediaModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246DA2C20565700638047 /* MediaModel.swift */; };
+		349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
@@ -778,6 +779,7 @@
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
+				349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
