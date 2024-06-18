@@ -58,38 +58,43 @@ struct VideoToolsView: View {
         VStack {
             if mediaModel.selectedVideoURL != nil {
                 VStack {
-                    HStack {
+                    VStack {
                         Text("Duration: \(player.currentItem?.asset.duration.seconds ?? 0, specifier: "%.2f")s")
                         Text("FPS: \(player.currentItem?.asset.tracks(withMediaType: .video).first?.nominalFrameRate ?? 0, specifier: "%.2f")")
                     }
-                    .padding()
-
+                    
+VStack {
                     VideoPlayerView(playerView: playerView)
-                        .frame(maxHeight: 1980)
+                    .frame(minWidth: 400, maxWidth: 1980, minHeight: 400,  maxHeight: 1980)
+                     // .aspectRatio(contentMode: .fit)
+                     
                         .overlay(
                             GeometryReader { geo -> AnyView in
-                                if let frame = mediaModel.currentFrame {
+                                if let pixelBuffer = mediaModel.currentPixelBuffer {
+
                                     DispatchQueue.main.async {
                                         self.videoSize = geo.size
-                                        if objectDetectionEnabled {
-                                            if let pixelBuffer = mediaModel.currentPixelBuffer {
-                                                runModel(on: pixelBuffer)
+                                        
+                                        if objectDetectionEnabled {                                                runModel(on: pixelBuffer)
                                             }
                                         }
-                                    }
                                     return AnyView(
                                     
                                             ForEach(detectedObjects, id: \.self) { object in
                                                 drawBoundingBox(for: object, in: geo.size)
-//                                            }
                                         }
                                     )
-                                } else {
+                                    
+                                }
+else {
                                     return AnyView(EmptyView())
                                 }
                             }
-                        )
 
+                        )
+                    
+}
+.aspectRatio(1.778, contentMode: .fit)
                     Button("Enable Object Detection") {
                         objectDetectionEnabled.toggle()
                     }
@@ -99,13 +104,35 @@ struct VideoToolsView: View {
                         beginTrimming()
                     }
                     .padding()
+                    
                 }
+                
             } else {
                 Text("Select a video to edit")
                     .padding()
             }
         }
-        .frame(minWidth: 400)
+                            
+
+        //.frame(maxWidth: 1080)
+      //  .aspectRatio(contentMode: .)
+      //  .colorMultiply(.blue)
+    }
+    
+    private func calculateVideoFrame(for containerSize: CGSize) -> CGSize {
+        guard let videoTrack = player.currentItem?.asset.tracks(withMediaType: .video).first else {
+            return .zero
+        }
+
+        let videoSize = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
+        let videoRatio = abs(videoSize.width / videoSize.height)
+        let containerRatio = containerSize.width / containerSize.height
+
+        if videoRatio > containerRatio {
+            return CGSize(width: containerSize.width, height: containerSize.width / videoRatio)
+        } else {
+            return CGSize(width: containerSize.height * videoRatio, height: containerSize.height)
+        }
     }
 
     private func drawBoundingBox(for observation: VNRecognizedObjectObservation, in parentSize: CGSize) -> some View {
@@ -128,19 +155,18 @@ struct VideoToolsView: View {
 
     private func runModel(on pixelBuffer: CVPixelBuffer) {
         let model = try! VNCoreMLModel(for: IO_cashtrack().model)
-
+                  DispatchQueue.main.async {
         let request = VNCoreMLRequest(model: model) { request, error in
             if let results = request.results as? [VNRecognizedObjectObservation] {
-                DispatchQueue.main.async {
                     self.detectedObjects = results
                 }
             }
-        }
+        
 
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         try? handler.perform([request])
     }
-
+}
     private func setupVideoOutput(for playerItem: AVPlayerItem) {
         let pixelBufferAttributes: [String: Any] = [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
@@ -148,10 +174,12 @@ struct VideoToolsView: View {
         let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
         playerItem.add(videoOutput)
         self.videoOutput = videoOutput
+      
+        
     }
 
     private func startFrameExtraction() {
-        let interval = CMTime(value: 1, timescale: 10)
+        let interval = CMTime(value: 1, timescale: 40)
         player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
             if let currentItem = player.currentItem,
                let videoOutput = self.videoOutput,
@@ -236,7 +264,16 @@ struct VideoPlayerView: NSViewRepresentable {
         return playerView
     }
 
-    func updateNSView(_ nsView: AVPlayerView, context: Context) {}
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+    //playerView.bounds = nsView.bounds
+    nsView.allowsMagnification = true
+    nsView.showsFrameSteppingButtons = true
+    nsView.allowsVideoFrameAnalysis = true
+    nsView.videoFrameAnalysisTypes = .default
+    nsView.controlsStyle = .floating
+    nsView.allowsPictureInPicturePlayback = true
+    }
+    
 }
 
 extension CMTime {
