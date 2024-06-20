@@ -292,7 +292,8 @@ extension AVAsset {
         let duration = CMTimeGetSeconds(self.duration)
         let frameRate = self.nominalFrameRate
         return Int(duration * Double(frameRate))
-    }
+        } 
+    
 
     var nominalFrameRate: Float {
         return self.tracks(withMediaType: .video).first?.nominalFrameRate ?? 0
