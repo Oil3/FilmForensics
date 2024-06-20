@@ -27,7 +27,6 @@ struct MainVideoView: View {
     @State private var droppedFrames = 0
     @State private var corruptedFrames = 0
     @State private var detectionFPS: Double = 0.0
-
     var body: some View {
         NavigationView {
             videoGallery
@@ -77,25 +76,33 @@ struct MainVideoView: View {
         VStack {
             if mediaModel.selectedVideoURL != nil {
                 VStack {
-                    VStack {
+                HStack {
+                      HStack {
                         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
                         Text("Model: IO_cashtrack.mlmodel")
-                        //Text("Input Shape: \(getModelInputShape())")
-                        Text("Real-Time FPS: \(getVideoFrameRate(), specifier: "%.2f")")
-                        Text("Current Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
-                        Text("Current Frame: \(getCurrentFrameNumber())")
+//                        Text("Input Shape: \(getModelInputShape())")
+      }
+            HStack {
+                        //Text("Real-Time FPS: \(getVideoFrameRate(), specifier: "%.2f")")
+                        Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
+                        Text("Frame: \(getCurrentFrameNumber())")
                         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
                         Text("Dropped Frames: \(droppedFrames)")
                         Text("Corrupted Frames: \(corruptedFrames)")
-                        Text("Original Size: \(player.currentItem?.asset.tracks(withMediaType: .video).first?.naturalSize.width ?? 0)x\(player.currentItem?.asset.tracks(withMediaType: .video).first?.naturalSize.height ?? 0)")
-                        Text("Current Size: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
-                        Text("Detection FPPS: \(detectionFPS, specifier: "%.2f")")
+                        //Text("Original Resolution: \(player.currentItem?.asset.tracks(withMediaType: .video).first?.naturalSize.width ?? 0)x\(player.currentItem?.asset.tracks(withMediaType: .video).first?.naturalSize.height ?? 0)")
+                        }
+                        HStack {
+                        Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
+                        Text("Detection FPS: \(detectionFPS, specifier: "%.2f")")
+                      Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
+
                         Text("Total Objects Detected: \(totalObjectsDetected)")
                     }
-                    .padding()
+}
+                            VStack {
 
                     VideoPlayerViewMain(player: player, detections: $detectedObjects)
-                        .frame(minWidth: 400, maxWidth: 1980, minHeight: 400, maxHeight: 1980)
+                        .frame(minWidth: 640, maxWidth: 3200, minHeight: 360, maxHeight: 1800)
                         .overlay(
                             GeometryReader { geo -> AnyView in
                                 DispatchQueue.main.async {
@@ -110,49 +117,39 @@ struct MainVideoView: View {
                                 )
                             }
                         )
-
+                        .scaledToFit()
+}
                     VStack {
                         HStack {
                             Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
-                                .padding()
 
                             Toggle("Save Labels", isOn: $saveLabels)
-                                .padding()
 
                             Toggle("Save Frames", isOn: $saveFrames)
-                                .padding()
 
                             Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
-                                .padding()
                         }
 
                         HStack {
                             Button("Select Save Path") {
                                 selectSavePath()
                             }
-                            .padding()
 
                             if let savePath = savePath {
                                 Text("Save Path: \(savePath.path)")
-                                    .padding()
                             }
                         }
 
                         HStack {
                             Toggle("FPS Mode", isOn: $fpsMode)
-                                .padding()
 
                             Toggle("Frame Per Frame Mode", isOn: $framePerFrameMode)
-                                .padding()
 
                             Toggle("Loop", isOn: $loopMode)
-                                .padding()
 
                             Toggle("Play Backward", isOn: $playBackward)
-                                .padding()
                             
                             Toggle("Show Bounding Boxes", isOn: $showBoundingBoxes)
-                                .padding()
                         }
 
                         HStack {
@@ -175,27 +172,22 @@ struct MainVideoView: View {
                                     startPlayBackwardMode()
                                 }
                             }
-                            .padding()
-
                             Button("Pause") {
                                 player.pause()
                                 stopFPSMode()
                                 stopFramePerFrameMode()
                                 stopPlayBackwardMode()
-                            }
+                            }                        }
                             .padding()
-                        }
 
                         HStack {
                             Button("Load All Labels") {
                                 loadAllLabels()
                             }
-                            .padding()
 
                             Button("Load and Sync Labels") {
                                 loadAndSyncLabels()
                             }
-                            .padding()
                         }
                     }
                 }
@@ -204,8 +196,7 @@ struct MainVideoView: View {
                     .padding()
             }
         }
-        .frame(minWidth: 400)
-    }
+       }
 
     private func getVideoFrameRate() -> Float {
         return player.currentItem?.tracks.first?.currentVideoFrameRate ?? 0
@@ -232,7 +223,6 @@ struct MainVideoView: View {
         let boundingBox = observation.boundingBox
         let videoWidth = videoSize.width
         let videoHeight = videoSize.height
-
         let normalizedRect = CGRect(
             x: boundingBox.minX * videoWidth,
             y: (1 - boundingBox.maxY) * videoHeight,
@@ -245,6 +235,8 @@ struct MainVideoView: View {
             .frame(width: normalizedRect.width, height: normalizedRect.height)
             .position(x: normalizedRect.midX, y: normalizedRect.midY)
     }
+ 
+    
 
     private func runModel(on pixelBuffer: CVPixelBuffer) {
         let model = try! VNCoreMLModel(for: IO_cashtrack().model)

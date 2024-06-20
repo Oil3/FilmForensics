@@ -1204,6 +1204,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"FilmForensics/Preview Content\"";
 				DEVELOPMENT_TEAM = 46WUYUUA8V;
 				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "access to your photo library to select videos.";
@@ -1239,6 +1240,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"FilmForensics/Preview Content\"";
 				DEVELOPMENT_TEAM = 46WUYUUA8V;
 				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "access to your photo library to select videos.";
