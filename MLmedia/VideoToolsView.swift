@@ -65,8 +65,7 @@ struct VideoToolsView: View {
                     
 VStack {
                     VideoPlayerView(playerView: playerView)
-                    .frame(minWidth: 400, maxWidth: 1980, minHeight: 400,  maxHeight: 1980)
-                     // .aspectRatio(contentMode: .fit)
+                        .frame(minWidth: 640, maxWidth: 3200, minHeight: 360, maxHeight: 1800)
                      
                         .overlay(
                             GeometryReader { geo -> AnyView in
@@ -92,9 +91,9 @@ else {
                             }
 
                         )
+                    .scaledToFit()
                     
 }
-.aspectRatio(1.778, contentMode: .fit)
                     Button("Enable Object Detection") {
                         objectDetectionEnabled.toggle()
                     }
