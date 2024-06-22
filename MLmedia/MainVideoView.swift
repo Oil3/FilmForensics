@@ -96,7 +96,8 @@ struct MainVideoView: View {
                     }
                     HStack {
                         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
-                        Text("Frame: \(getCurrentFrameNumber())")
+                      Text("Frame: \(getCurrentFrameNumber())")
+
                         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
                         Text("Dropped Frames: \(droppedFrames)")
                         Text("Corrupted Frames: \(corruptedFrames)")
@@ -104,8 +105,8 @@ struct MainVideoView: View {
                     HStack {
                         Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
                         Text("Detection FPPS: \(detectionFPS, specifier: "%.2f")")
-                        Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
-                        Text("Total Objects Detected: \(totalObjectsDetected)")
+                      Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
+                      Text("Total Objects Detected: \(totalObjectsDetected)")
                     }
 
                     VStack {
@@ -208,16 +209,15 @@ struct MainVideoView: View {
         .scrollIndicators(.never)
         .scrollDisabled(false)
     }
-
-    private func getVideoFrameRate() -> Float {
-        return player.currentItem?.asset.tracks.first?.nominalFrameRate ?? 0
-    }
-
-    private func getCurrentFrameNumber() -> Int {
-        guard let currentItem = player.currentItem else { return 0 }
-        let currentTime = currentItem.currentTime()
-        let frameRate = getVideoFrameRate()
-        return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
+  
+  private func getVideoFrameRate() -> Float {
+    return player.currentItem?.asset.tracks.first?.nominalFrameRate ?? 0
+  }
+  private func getCurrentFrameNumber() -> Int {
+    guard let currentItem = player.currentItem else { return 0 }
+    let currentTime = currentItem.currentTime()
+      let frameRate = getVideoFrameRate()
+    return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
     }
 
     private func drawBoundingBox(for observation: VNRecognizedObjectObservation, in parentSize: CGSize) -> some View {
@@ -246,8 +246,10 @@ struct MainVideoView: View {
                     self.detectedObjects = results
                     self.totalObjectsDetected += results.count
                     if saveLabels || saveFrames {
-                        processAndSaveDetections(results, at: player.currentItem?.currentTime())
+                      Task {
+                        await processAndSaveDetections(results, at: player.currentItem?.currentTime())
                     }
+                      }
                     if autoPauseOnNewDetection && !results.isEmpty {
                         player.pause()
                     }
@@ -261,51 +263,50 @@ struct MainVideoView: View {
         try? handler.perform([request])
     }
 
-    private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) {
-        guard let time = time else { return }
-        guard let savePath = savePath else { return }
-
-        let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
-        let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-        let folderName = "\(videoFilename)"
-        let folderURL = savePath.appendingPathComponent(folderName)
-        let labelsFolderURL = folderURL.appendingPathComponent("labels")
-        let imagesFolderURL = folderURL.appendingPathComponent("images")
-
-        createFolderIfNotExists(at: folderURL)
-        createFolderIfNotExists(at: labelsFolderURL)
-        createFolderIfNotExists(at: imagesFolderURL)
-
-        let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-        let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-
-        var labelText = ""
-                var detectionLog = [Detection]()
-
-        for detection in detections {
-            let boundingBox = detection.boundingBox
-            let identifier = detection.labels.first?.identifier ?? "unknown"
-            let confidence = detection.labels.first?.confidence ?? 0.0
-            labelText += "0 \(boundingBox.midX) \(1 - boundingBox.midY) \(boundingBox.width) \(boundingBox.height)\n"
-          detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
-        }
-
-        if !labelText.isEmpty {
-            do {
-                try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-            } catch {
-                print("Error saving labels: \(error)")
-            }
-
-            if saveFrames {
-                saveCurrentFrame(fileName: frameFileName.path)
-            }
-        }
-
-        if saveJsonLog {
-            logDetections(detections: detections, time: time, folderURL: folderURL)
-        }
+  private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
+    guard let time = time, let savePath = savePath else { return }
+    
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
+    let folderName = "\(videoFilename)"
+    let folderURL = savePath.appendingPathComponent(folderName)
+    let labelsFolderURL = folderURL.appendingPathComponent("labels")
+    let imagesFolderURL = folderURL.appendingPathComponent("images")
+    
+    createFolderIfNotExists(at: folderURL)
+    createFolderIfNotExists(at: labelsFolderURL)
+    createFolderIfNotExists(at: imagesFolderURL)
+    
+    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
+    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
+    
+    var labelText = ""
+    var detectionLog = [Detection]()
+    
+    for detection in detections {
+      let boundingBox = detection.boundingBox
+      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
+      let identifier = detection.labels.first?.identifier ?? "unknown"
+      let confidence = detection.confidence
+      detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
     }
+    
+    if !labelText.isEmpty {
+      do {
+        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
+      } catch {
+        print("Error saving labels: \(error)")
+      }
+      
+      if saveFrames {
+        saveCurrentFrame(fileName: frameFileName.path)
+      }
+    }
+    
+    if saveJsonLog {
+      logDetections(detections: detectionLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
 
     private func saveCurrentFrame(fileName: String) {
         guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
@@ -425,29 +426,26 @@ struct MainVideoView: View {
         }
     }
 
-    private func logDetections(detections: [VNRecognizedObjectObservation], time: CMTime, folderURL: URL) {
-        let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-        let logFileName = folderURL.appendingPathComponent("log_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
-
-        var log = DetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
-
-        if let data = try? Data(contentsOf: logFileName),
-           let existingLog = try? JSONDecoder().decode(DetectionLog.self, from: data) {
-            log = existingLog
-        }
-
-    let frameLog = FrameLog(frameNumber: frameNumber, detections: detections.map {
-      Detection(boundingBox: $0.boundingBox, identifier: $0.labels.first!.identifier, confidence: $0.confidence)
-    })
-        log.frames.append(frameLog)
-
-        do {
-            let data = try JSONEncoder().encode(log)
-            try data.write(to: logFileName)
-        } catch {
-            print("Error saving log: \(error)")
-        }
+  private func logDetections(detections: [Detection], frameNumber: Int, folderURL: URL) {
+    let logFileName = folderURL.appendingPathComponent("log_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+    
+    var log = DetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+    
+    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(DetectionLog.self, from: data) {
+      log = existingLog
     }
+    
+    let frameLog = FrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
+    log.frames.append(frameLog)
+    
+    do {
+      let data = try JSONEncoder().encode(log)
+      try data.write(to: logFileName)
+    } catch {
+      print("Error saving log: \(error)")
+    }
+  }
+
 
     private func loadAllLabels() {
         guard let savePath = savePath else { return }
@@ -499,11 +497,12 @@ struct MainVideoView: View {
                 }
                 frameDetections[frameNumber] = detections
             }
+          
             self.detectedObjects = []
             player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
                 let frameNumber = Int(CMTimeGetSeconds(time) * Double(self.getVideoFrameRate()))
                 self.detectedObjects = frameDetections[frameNumber] ?? []
-            }
+              }
         } catch {
             print("Error loading labels: \(error)")
         }
@@ -562,6 +561,7 @@ struct VideoPlayerViewMain: NSViewRepresentable {
         playerView.allowsPictureInPicturePlayback = true
         playerView.controlsStyle = .floating
         playerView.autoresizingMask = .none
+      playerView.videoFrameAnalysisTypes = .subject
         return playerView
     }
 
