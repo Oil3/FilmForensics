@@ -26,7 +26,6 @@
 		342D0D072C1D52D600ECDA36 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 342D0D062C1D52D600ECDA36 /* Preview Assets.xcassets */; };
 		342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */; };
 		342D0D0D2C1D554900ECDA36 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
-		342D0D0E2C1D554D00ECDA36 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		342D0D0F2C1D57AB00ECDA36 /* cctrack23090.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */; };
 		342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */; };
 		342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */; };
@@ -72,6 +71,9 @@
 		3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3E2C0CF71900916598 /* SideBar.swift */; };
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
 		348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348211232C275B4800505A2F /* BatchProcessingView.swift */; };
+		3482112D2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
+		3482112E2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
+		3482112F2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
 		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
 		348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80E2C1C189700C112C3 /* ChartView.swift */; };
 		349246CA2C20554800638047 /* MLmediaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246C92C20554800638047 /* MLmediaApp.swift */; };
@@ -81,7 +83,6 @@
 		349246D72C20557100638047 /* MainVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D62C20557100638047 /* MainVideoView.swift */; };
 		349246D92C20558700638047 /* VideoToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* VideoToolsView.swift */; };
 		349246DB2C20565700638047 /* MediaModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246DA2C20565700638047 /* MediaModel.swift */; };
-		349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
 		3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5492BFDCF3900E70B0F /* VideoPicker.swift */; };
@@ -91,7 +92,6 @@
 		3497714B2BFEF1DB00533EEA /* FilterControlsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3497714A2BFEF1DB00533EEA /* FilterControlsOverlay.swift */; };
 		3497714F2BFEF1F800533EEA /* HistogramView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3497714E2BFEF1F800533EEA /* HistogramView.swift */; };
 		349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349771502BFEF4AB00533EEA /* OverlayWindow.swift */; };
-		349ECA462C1B503500C29D1B /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */; };
 		349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA472C1B510F00C29D1B /* GalleryModel.swift */; };
 		349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA492C1B6B9200C29D1B /* DetectionStats.swift */; };
 		349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */; };
@@ -190,6 +190,7 @@
 		3471ED3E2C0CF71900916598 /* SideBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideBar.swift; sourceTree = "<group>"; };
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
 		348211232C275B4800505A2F /* BatchProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchProcessingView.swift; sourceTree = "<group>"; };
+		3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
 		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
 		348EA80E2C1C189700C112C3 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		349246C72C20554800638047 /* MLmedia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MLmedia.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -210,7 +211,6 @@
 		3497714A2BFEF1DB00533EEA /* FilterControlsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterControlsOverlay.swift; sourceTree = "<group>"; };
 		3497714E2BFEF1F800533EEA /* HistogramView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistogramView.swift; sourceTree = "<group>"; };
 		349771502BFEF4AB00533EEA /* OverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = OverlayWindow.swift; path = FilmForensics/OverlayWindow.swift; sourceTree = "<group>"; };
-		349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
 		349ECA472C1B510F00C29D1B /* GalleryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryModel.swift; sourceTree = "<group>"; };
 		349ECA492C1B6B9200C29D1B /* DetectionStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStats.swift; sourceTree = "<group>"; };
 		349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewContainer.swift; sourceTree = "<group>"; };
@@ -347,7 +347,6 @@
 				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
-				349ECA452C1B503500C29D1B /* IO_cashtrack.mlpackage */,
 				342D0CF22C1D3D7A00ECDA36 /* best.mlpackage */,
 				342D0CF32C1D3D7A00ECDA36 /* epoch59.mlpackage */,
 				342D0CF12C1D3D7A00ECDA36 /* epoch70.mlpackage */,
@@ -417,6 +416,7 @@
 				340047752C267F990055418A /* Logs.swift */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
+				3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */,
 				349246D02C20554900638047 /* Preview Content */,
 			);
 			path = MLmedia;
@@ -737,6 +737,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
+				3482112E2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */,
 				342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
@@ -744,7 +745,6 @@
 				342D0D0F2C1D57AB00ECDA36 /* cctrack23090.mlmodel in Sources */,
 				342D0D0C2C1D52F400ECDA36 /* best.mlpackage in Sources */,
 				34278E052C1F135300E3D6AA /* ContentView.swift in Sources */,
-				342D0D0E2C1D554D00ECDA36 /* IO_cashtrack.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -758,7 +758,6 @@
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
 				349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */,
 				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
-				349ECA462C1B503500C29D1B /* IO_cashtrack.mlpackage in Sources */,
 				34C825AC2C0FA5150006E453 /* BoundingBoxView.swift in Sources */,
 				34C825B12C0FAF0E0006E453 /* cctrack23090.mlmodel in Sources */,
 				34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */,
@@ -771,6 +770,7 @@
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
+				3482112D2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
 				348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */,
@@ -785,8 +785,8 @@
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
+				3482112F2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
-				349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */,
 				348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
