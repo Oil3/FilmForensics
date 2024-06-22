@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		340047762C267F990055418A /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340047752C267F990055418A /* Logs.swift */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -120,6 +121,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		340047752C267F990055418A /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
 		341AD8B52BFFA3D900BF3CE3 /* MPRNetDebluring.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MPRNetDebluring.mlmodel; sourceTree = "<group>"; };
 		341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = bsrgan.mlmodel; sourceTree = "<group>"; };
 		341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = realesrgan512.mlmodel; sourceTree = "<group>"; };
@@ -409,6 +411,7 @@
 				349246DA2C20565700638047 /* MediaModel.swift */,
 				349246D62C20557100638047 /* MainVideoView.swift */,
 				349246D82C20558700638047 /* VideoToolsView.swift */,
+				340047752C267F990055418A /* Logs.swift */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				349246D02C20554900638047 /* Preview Content */,
@@ -778,6 +781,7 @@
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
+				340047762C267F990055418A /* Logs.swift in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
 				349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,

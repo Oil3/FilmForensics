@@ -14,6 +14,7 @@ struct MainVideoView: View {
     @State private var objectDetectionEnabled = false
     @State private var saveLabels = false
     @State private var saveFrames = false
+    @State private var saveJsonLog = false
     @State private var videoOutput: AVPlayerItemVideoOutput?
     @State private var isProcessing = false
     @State private var fpsMode = false
@@ -27,7 +28,7 @@ struct MainVideoView: View {
     @State private var droppedFrames = 0
     @State private var corruptedFrames = 0
     @State private var detectionFPS: Double = 0.0
-    @State private var selectedSize: CGSize = CGSize(width: 1000, height: 800)
+    @State private var selectedSize: CGSize = CGSize(width: 1280, height: 720)
 
     var body: some View {
         NavigationView {
@@ -69,24 +70,26 @@ struct MainVideoView: View {
                 mediaModel.clearVideos()
                 player.replaceCurrentItem(with: nil)
             }
-                    HStack {
-                        Text("Select Placeholder Size:")
-                        Menu("Select Size") {
-                            Button("640x640") { selectedSize = CGSize(width: 640, height: 640) }
-                            Button("1024x1024") { selectedSize = CGSize(width: 1024, height: 1024) }
-                            Button("1280x720") { selectedSize = CGSize(width: 1280, height: 720) }
-                            Button("720x1280") { selectedSize = CGSize(width: 720, height: 1280) }
-                        }
-                    }            .padding()
+            .padding()
+
+            HStack {
+                Text("Select Placeholder Size:")
+                Menu("Select Size") {
+                    Button("640x640") { selectedSize = CGSize(width: 640, height: 640) }
+                    Button("1024x576") { selectedSize = CGSize(width: 1024, height: 576) }
+                    Button("576x1024") { selectedSize = CGSize(width: 576, height: 1024) }
+                    Button("1280x720") { selectedSize = CGSize(width: 1280, height: 720) }
+                }
+            }
+            .padding()
         }
         .frame(minWidth: 200)
     }
 
     private var videoPreview: some View {
-        ScrollView{
+        ScrollView {
             if mediaModel.selectedVideoURL != nil {
                 VStack {
-
                     HStack {
                         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
                         Text("Model: IO_cashtrack.mlmodel")
@@ -131,6 +134,7 @@ struct MainVideoView: View {
                             Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
                             Toggle("Save Labels", isOn: $saveLabels)
                             Toggle("Save Frames", isOn: $saveFrames)
+                            Toggle("Save JSON Log", isOn: $saveJsonLog)
                             Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
                         }
                         HStack {
@@ -196,14 +200,13 @@ struct MainVideoView: View {
                             Text("Load a video to start")
                                 .foregroundColor(.white)
                         )
-                    .padding()
+                        .padding()
                 }
                 .padding()
             }
         }
-                .scrollIndicators(.never)
-                .scrollDisabled(false)
-
+        .scrollIndicators(.never)
+        .scrollDisabled(false)
     }
 
     private func getVideoFrameRate() -> Float {
@@ -213,7 +216,7 @@ struct MainVideoView: View {
     private func getCurrentFrameNumber() -> Int {
         guard let currentItem = player.currentItem else { return 0 }
         let currentTime = currentItem.currentTime()
-        let frameRate = currentItem.asset.tracks.first?.nominalFrameRate ?? 0
+        let frameRate = getVideoFrameRate()
         return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
     }
 
@@ -263,25 +266,44 @@ struct MainVideoView: View {
         guard let savePath = savePath else { return }
 
         let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
-        let labelFileName = "\(savePath.path)/frame_\(frameNumber).txt"
-        let frameFileName = "\(savePath.path)/frame_\(frameNumber).jpg"
+        let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
+        let folderName = "\(videoFilename)"
+        let folderURL = savePath.appendingPathComponent(folderName)
+        let labelsFolderURL = folderURL.appendingPathComponent("labels")
+        let imagesFolderURL = folderURL.appendingPathComponent("images")
+
+        createFolderIfNotExists(at: folderURL)
+        createFolderIfNotExists(at: labelsFolderURL)
+        createFolderIfNotExists(at: imagesFolderURL)
+
+        let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
+        let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
 
         var labelText = ""
+                var detectionLog = [Detection]()
+
         for detection in detections {
             let boundingBox = detection.boundingBox
+            let identifier = detection.labels.first?.identifier ?? "unknown"
+            let confidence = detection.labels.first?.confidence ?? 0.0
             labelText += "0 \(boundingBox.midX) \(1 - boundingBox.midY) \(boundingBox.width) \(boundingBox.height)\n"
+          detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
         }
 
         if !labelText.isEmpty {
             do {
-                try labelText.write(toFile: labelFileName, atomically: true, encoding: .utf8)
+                try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
             } catch {
                 print("Error saving labels: \(error)")
             }
 
             if saveFrames {
-                saveCurrentFrame(fileName: frameFileName)
+                saveCurrentFrame(fileName: frameFileName.path)
             }
+        }
+
+        if saveJsonLog {
+            logDetections(detections: detections, time: time, folderURL: folderURL)
         }
     }
 
@@ -316,10 +338,8 @@ struct MainVideoView: View {
     private func startFrameExtraction() {
         let interval = CMTime(value: 1, timescale: 40)
         player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { time in
-            if let currentItem = player.currentItem,
-               let videoOutput = self.videoOutput,
+            if let videoOutput = self.videoOutput,
                videoOutput.hasNewPixelBuffer(forItemTime: time) {
-                
                 var presentationTime = CMTime()
                 if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: &presentationTime) {
                     mediaModel.currentFrame = pixelBuffer
@@ -376,7 +396,7 @@ struct MainVideoView: View {
         let savePanel = NSSavePanel()
         savePanel.nameFieldStringValue = fileName
         savePanel.canCreateDirectories = true
-        savePanel.allowedFileTypes = ["m4v"]
+        savePanel.allowedContentTypes = [.movie]
         if savePanel.runModal() == .OK {
             return savePanel.url ?? URL(fileURLWithPath: "/dev/null")
         }
@@ -394,6 +414,41 @@ struct MainVideoView: View {
         }
     }
 
+    private func createFolderIfNotExists(at url: URL) {
+        let fileManager = FileManager.default
+        if !fileManager.fileExists(atPath: url.path) {
+            do {
+                try fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("Error creating folder: \(error)")
+            }
+        }
+    }
+
+    private func logDetections(detections: [VNRecognizedObjectObservation], time: CMTime, folderURL: URL) {
+        let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
+        let logFileName = folderURL.appendingPathComponent("log_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+
+        var log = DetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+
+        if let data = try? Data(contentsOf: logFileName),
+           let existingLog = try? JSONDecoder().decode(DetectionLog.self, from: data) {
+            log = existingLog
+        }
+
+    let frameLog = FrameLog(frameNumber: frameNumber, detections: detections.map {
+      Detection(boundingBox: $0.boundingBox, identifier: $0.labels.first!.identifier, confidence: $0.confidence)
+    })
+        log.frames.append(frameLog)
+
+        do {
+            let data = try JSONEncoder().encode(log)
+            try data.write(to: logFileName)
+        } catch {
+            print("Error saving log: \(error)")
+        }
+    }
+
     private func loadAllLabels() {
         guard let savePath = savePath else { return }
 
@@ -401,7 +456,7 @@ struct MainVideoView: View {
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
             var allDetections: [VNRecognizedObjectObservation] = []
-            
+
             for fileURL in fileURLs where fileURL.pathExtension == "txt" {
                 let content = try String(contentsOf: fileURL)
                 let lines = content.split(separator: "\n")
@@ -427,13 +482,13 @@ struct MainVideoView: View {
         do {
             let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
             var frameDetections: [Int: [VNRecognizedObjectObservation]] = [:]
-            
+
             for fileURL in fileURLs where fileURL.pathExtension == "txt" {
                 let frameNumber = Int(fileURL.deletingPathExtension().lastPathComponent.split(separator: "_").last ?? "") ?? 0
                 let content = try String(contentsOf: fileURL)
                 let lines = content.split(separator: "\n")
                 var detections: [VNRecognizedObjectObservation] = []
-                
+
                 for line in lines {
                     let components = line.split(separator: " ")
                     if components.count == 5, let x = Double(components[1]), let y = Double(components[2]), let width = Double(components[3]), let height = Double(components[4]) {
