@@ -71,6 +71,7 @@
 		3471ED6E2C0CF71900916598 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3D2C0CF71900916598 /* CameraView.swift */; };
 		3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3E2C0CF71900916598 /* SideBar.swift */; };
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
+		348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348211232C275B4800505A2F /* BatchProcessingView.swift */; };
 		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
 		348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80E2C1C189700C112C3 /* ChartView.swift */; };
 		349246CA2C20554800638047 /* MLmediaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246C92C20554800638047 /* MLmediaApp.swift */; };
@@ -188,6 +189,7 @@
 		3471ED3D2C0CF71900916598 /* CameraView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		3471ED3E2C0CF71900916598 /* SideBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideBar.swift; sourceTree = "<group>"; };
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
+		348211232C275B4800505A2F /* BatchProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchProcessingView.swift; sourceTree = "<group>"; };
 		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
 		348EA80E2C1C189700C112C3 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		349246C72C20554800638047 /* MLmedia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MLmedia.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -411,6 +413,7 @@
 				349246DA2C20565700638047 /* MediaModel.swift */,
 				349246D62C20557100638047 /* MainVideoView.swift */,
 				349246D82C20558700638047 /* VideoToolsView.swift */,
+				348211232C275B4800505A2F /* BatchProcessingView.swift */,
 				340047752C267F990055418A /* Logs.swift */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
@@ -784,6 +787,7 @@
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
 				349246DC2C207E4900638047 /* IO_cashtrack.mlpackage in Sources */,
+				348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

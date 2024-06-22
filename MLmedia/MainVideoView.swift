@@ -109,7 +109,7 @@ struct MainVideoView: View {
   
   private var videoPreview: some View {
     ScrollView {
-      if mediaModel.selectedVideoURL != nil {
+     
         VStack {
           HStack {
             Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
@@ -131,6 +131,7 @@ struct MainVideoView: View {
           }
           
           VStack {
+            if mediaModel.selectedVideoURL != nil {
             VideoPlayerViewMain(player: player, detections: $detectedObjects)
               .frame(width: selectedSize.width, height: selectedSize.height)
               .background(Color.black)
@@ -149,9 +150,23 @@ struct MainVideoView: View {
                   )
                 }
               )
+            } else {
+              VStack {
+                Rectangle()
+                  .stroke(Color.gray, lineWidth: 2)
+                  .frame(width: 1024, height: 576)
+                  .background(Color.black)
+                  .overlay(
+                    Text("Load a video to start")
+                      .foregroundColor(.white)
+                  )
+              }
+              .padding()
+            }
           }
           
           VStack {
+            
             HStack {
               Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
               Toggle("Save Labels", isOn: $saveLabels)
@@ -213,20 +228,7 @@ struct MainVideoView: View {
             }
           }
         }
-      } else {
-        VStack {
-          Rectangle()
-            .stroke(Color.gray, lineWidth: 2)
-            .frame(width: selectedSize.width, height: selectedSize.height)
-            .background(Color.black)
-            .overlay(
-              Text("Load a video to start")
-                .foregroundColor(.white)
-            )
-            .padding()
-        }
-        .padding()
-      }
+
     }
     .scrollIndicators(.never)
     .scrollDisabled(false)
@@ -331,7 +333,7 @@ struct MainVideoView: View {
     }
   }
   
-  private func saveCurrentFrame(fileName: String) {
+  func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
     let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
@@ -449,7 +451,7 @@ struct MainVideoView: View {
     }
   }
   
-  private func logDetections(detections: [Detection], frameNumber: Int, folderURL: URL) {
+   func logDetections(detections: [Detection], frameNumber: Int, folderURL: URL) {
     let logFileName = folderURL.appendingPathComponent("log_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
     
     var log = DetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
@@ -672,8 +674,9 @@ struct VideoPlayerViewMain: NSViewRepresentable {
     playerView.allowsMagnification = true
     playerView.allowsPictureInPicturePlayback = true
     playerView.controlsStyle = .floating
-    playerView.autoresizingMask = .none
-    playerView.videoFrameAnalysisTypes = .subject
+    //playerView.autoresizingMask = .none
+    playerView.showsFrameSteppingButtons = true
+    playerView.allowsVideoFrameAnalysis = false
     return playerView
   }
   
