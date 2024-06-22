@@ -19,10 +19,10 @@ MainVideoView()
         .tabItem {
             Label("VideoToolsView", systemImage: "tray.and.arrow.up.fill")
         }
-//            MainView() //placeholder
-//        .tabItem {
-//            Label("Settings", systemImage: "tray.and.arrow.up.fill")
-//        }
+            BatchProcessingView() //placeholder
+        .tabItem {
+            Label("BatchProcessingView", systemImage: "cube.box")
+        }
 }
    }
 }
