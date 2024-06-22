@@ -27,7 +27,7 @@ struct MainVideoView: View {
     @State private var droppedFrames = 0
     @State private var corruptedFrames = 0
     @State private var detectionFPS: Double = 0.0
-    @State private var presentationSize: CGSize = .zero
+    @State private var selectedSize: CGSize = CGSize(width: 1000, height: 800)
 
     var body: some View {
         NavigationView {
@@ -69,21 +69,27 @@ struct MainVideoView: View {
                 mediaModel.clearVideos()
                 player.replaceCurrentItem(with: nil)
             }
-            .padding()
+                    HStack {
+                        Text("Select Placeholder Size:")
+                        Menu("Select Size") {
+                            Button("640x640") { selectedSize = CGSize(width: 640, height: 640) }
+                            Button("1024x1024") { selectedSize = CGSize(width: 1024, height: 1024) }
+                            Button("1280x720") { selectedSize = CGSize(width: 1280, height: 720) }
+                            Button("720x1280") { selectedSize = CGSize(width: 720, height: 1280) }
+                        }
+                    }            .padding()
         }
         .frame(minWidth: 200)
     }
 
     private var videoPreview: some View {
-        VStack {
+        ScrollView{
             if mediaModel.selectedVideoURL != nil {
                 VStack {
-                                    ZStack {
 
                     HStack {
                         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
                         Text("Model: IO_cashtrack.mlmodel")
-                        // Text("Input Shape: \(getModelInputShape())")
                     }
                     HStack {
                         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
@@ -98,18 +104,18 @@ struct MainVideoView: View {
                         Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
                         Text("Total Objects Detected: \(totalObjectsDetected)")
                     }
-                    }
+
                     VStack {
-                    HStack {
                         VideoPlayerViewMain(player: player, detections: $detectedObjects)
-                        .frame(minWidth: 360, idealWidth: presentationSize.width, minHeight: 360, idealHeight:presentationSize.height)
+                            .frame(width: selectedSize.width, height: selectedSize.height)
+                            .background(Color.black)
+                            .clipped()
                             .overlay(
                                 GeometryReader { geo -> AnyView in
                                     DispatchQueue.main.async {
                                         self.videoSize = geo.size
                                     }
                                     return AnyView(
-                                    
                                         ForEach(detectedObjects, id: \.self) { object in
                                             if showBoundingBoxes {
                                                 drawBoundingBox(for: object, in: geo.size)
@@ -119,10 +125,6 @@ struct MainVideoView: View {
                                 }
                             )
                     }
-                    }                            .scaledToFit()
-                                               .layoutPriority(.greatestFiniteMagnitude)
-                                               
-                                               // .aspectRatio((videoSize.width / videoSize.height), contentMode: .fit)
 
                     VStack {
                         HStack {
@@ -140,7 +142,7 @@ struct MainVideoView: View {
                             }
                         }
                         HStack {
-                            Toggle("FPS Mode", isOn: $fpsMode)
+                            Toggle("Matrix Mode", isOn: $fpsMode)
                             Toggle("Frame Per Frame Mode", isOn: $framePerFrameMode)
                             Toggle("Loop", isOn: $loopMode)
                             Toggle("Play Backward", isOn: $playBackward)
@@ -185,11 +187,23 @@ struct MainVideoView: View {
                     }
                 }
             } else {
-                Text("Select a video to preview")
+                VStack {
+                    Rectangle()
+                        .stroke(Color.gray, lineWidth: 2)
+                        .frame(width: selectedSize.width, height: selectedSize.height)
+                        .background(Color.black)
+                        .overlay(
+                            Text("Load a video to start")
+                                .foregroundColor(.white)
+                        )
                     .padding()
+                }
+                .padding()
             }
         }
-        .frame(minWidth: 640)
+                .scrollIndicators(.never)
+                .scrollDisabled(false)
+
     }
 
     private func getVideoFrameRate() -> Float {
@@ -451,7 +465,7 @@ struct MainVideoView: View {
             // runModel(on: currentFrame)
             let endTime = CFAbsoluteTimeGetCurrent()
             detectionTime = endTime - startTime
-            let newRate = 1.0 / detectionTime //- 1.0
+            let newRate = 1.0 / detectionTime
             player.rate = Float(newRate)
         }
     }

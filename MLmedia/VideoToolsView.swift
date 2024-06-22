@@ -258,7 +258,7 @@ else {
 
 struct VideoPlayerView: NSViewRepresentable {
     var playerView: AVPlayerView
-
+  
     func makeNSView(context: Context) -> AVPlayerView {
         return playerView
     }
