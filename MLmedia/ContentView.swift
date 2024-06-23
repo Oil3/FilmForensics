@@ -6,23 +6,21 @@
 //
 import SwiftUI
 
-struct ContentView:  View {
-    var body: some View {
-
-TabView {
-MainVideoView()
-        .badge(2)
+struct ContentView: View {
+  var body: some View {
+    TabView {
+      MainVideoView()
         .tabItem {
-            Label("MainVideoView", systemImage: "tray.and.arrow.down.fill")
+          Label("Main Video View", systemImage: "video")
         }
-    VideoToolsView()
+      VideoToolsView()
         .tabItem {
-            Label("VideoToolsView", systemImage: "tray.and.arrow.up.fill")
+          Label("Video Tools View", systemImage: "wrench")
         }
-            BatchProcessingView() //placeholder
-        .tabItem {
-            Label("BatchProcessingView", systemImage: "cube.box")
-        }
-}
-   }
+//      ProcessorView()
+//        .tabItem {
+//          Label("Processor View", systemImage: "bolt")
+//        }
+    }
+  }
 }

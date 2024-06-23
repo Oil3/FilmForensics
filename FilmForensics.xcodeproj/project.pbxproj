@@ -70,10 +70,6 @@
 		3471ED6E2C0CF71900916598 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3D2C0CF71900916598 /* CameraView.swift */; };
 		3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3E2C0CF71900916598 /* SideBar.swift */; };
 		3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */; };
-		348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348211232C275B4800505A2F /* BatchProcessingView.swift */; };
-		3482112D2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
-		3482112E2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
-		3482112F2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */; };
 		348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */; };
 		348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 348EA80E2C1C189700C112C3 /* ChartView.swift */; };
 		349246CA2C20554800638047 /* MLmediaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246C92C20554800638047 /* MLmediaApp.swift */; };
@@ -114,6 +110,7 @@
 		34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
 		34C825B42C102B7D0006E453 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B32C102B7D0006E453 /* LogView.swift */; };
 		34C825B62C115DA00006E453 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B52C115DA00006E453 /* SettingsView.swift */; };
+		34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
 		34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
@@ -189,8 +186,6 @@
 		3471ED3D2C0CF71900916598 /* CameraView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		3471ED3E2C0CF71900916598 /* SideBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SideBar.swift; sourceTree = "<group>"; };
 		3471ED3F2C0CF71900916598 /* yolov5s.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = yolov5s.mlmodel; sourceTree = "<group>"; };
-		348211232C275B4800505A2F /* BatchProcessingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchProcessingView.swift; sourceTree = "<group>"; };
-		3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
 		348EA80C2C1C0FF800C112C3 /* DetectionStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStatsView.swift; sourceTree = "<group>"; };
 		348EA80E2C1C189700C112C3 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
 		349246C72C20554800638047 /* MLmedia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MLmedia.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -235,6 +230,7 @@
 		34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccashier3.mlmodel; sourceTree = "<group>"; };
 		34C825B32C102B7D0006E453 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		34C825B52C115DA00006E453 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
 		34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MachineSystemSecurity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E11DD62C0CA68200A7B857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -412,11 +408,10 @@
 				349246DA2C20565700638047 /* MediaModel.swift */,
 				349246D62C20557100638047 /* MainVideoView.swift */,
 				349246D82C20558700638047 /* VideoToolsView.swift */,
-				348211232C275B4800505A2F /* BatchProcessingView.swift */,
 				340047752C267F990055418A /* Logs.swift */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
-				3482112C2C276D6700505A2F /* IO_cashtrack.mlpackage */,
+				34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */,
 				349246D02C20554900638047 /* Preview Content */,
 			);
 			path = MLmedia;
@@ -737,7 +732,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
-				3482112E2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */,
 				342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
@@ -770,7 +764,6 @@
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
-				3482112D2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
 				348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */,
@@ -784,10 +777,9 @@
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
+				34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
-				3482112F2C276D6700505A2F /* IO_cashtrack.mlpackage in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
-				348211242C275B4800505A2F /* BatchProcessingView.swift in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
