@@ -752,16 +752,19 @@ struct VideoPlayerViewMain: NSViewRepresentable {
     playerView.player = player
     playerView.allowsMagnification = true
     playerView.allowsPictureInPicturePlayback = true
-    playerView.controlsStyle = .floating
+//    playerView.controlsStyle = .floating
     //playerView.autoresizingMask = .none
     playerView.showsFrameSteppingButtons = true
-    playerView.allowsVideoFrameAnalysis = false
+    playerView.allowsVideoFrameAnalysis = true
+    playerView.videoFrameAnalysisTypes = .subject
+    playerView.controlsStyle = .inline
     return playerView
   }
   func updateNSView(_ nsView: AVPlayerView, context: Context) {
     if let playerView = nsView as? AVPlayerView {
       playerView.player = player
-    }
+//    }
   }
 }
 
+}

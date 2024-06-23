@@ -17,10 +17,10 @@ struct ContentView: View {
         .tabItem {
           Label("Video Tools View", systemImage: "wrench")
         }
-//      ProcessorView()
-//        .tabItem {
-//          Label("Processor View", systemImage: "bolt")
-//        }
+      MLcaptureMainView()
+        .tabItem {
+          Label("MLcaptureMainView", systemImage: "bolt")
+        }
     }
   }
 }
