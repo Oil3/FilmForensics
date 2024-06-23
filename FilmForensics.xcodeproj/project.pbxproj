@@ -8,6 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		340047762C267F990055418A /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340047752C267F990055418A /* Logs.swift */; };
+		34097CCF2C28D73E0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34097CD02C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34097CD12C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34097CD22C28D7400078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34097CD42C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34097CD52C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34097CF12C28DE370078EF63 /* MLcapture2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34097CEF2C28DA610078EF63 /* MLcapture2.swift */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -120,6 +130,9 @@
 
 /* Begin PBXFileReference section */
 		340047752C267F990055418A /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
+		34097CD32C28D7630078EF63 /* MLresizer.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MLresizer.mlmodel; sourceTree = "<group>"; };
+		34097CE92C28D7EE0078EF63 /* MLcapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLcapture.swift; sourceTree = "<group>"; };
+		34097CEF2C28DA610078EF63 /* MLcapture2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLcapture2.swift; sourceTree = "<group>"; };
 		341AD8B52BFFA3D900BF3CE3 /* MPRNetDebluring.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MPRNetDebluring.mlmodel; sourceTree = "<group>"; };
 		341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = bsrgan.mlmodel; sourceTree = "<group>"; };
 		341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = realesrgan512.mlmodel; sourceTree = "<group>"; };
@@ -292,6 +305,7 @@
 				341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */,
 				341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */,
 				341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */,
+				34097CD32C28D7630078EF63 /* MLresizer.mlmodel */,
 			);
 			path = MLmodelImage;
 			sourceTree = "<group>";
@@ -413,6 +427,8 @@
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */,
 				349246D02C20554900638047 /* Preview Content */,
+				34097CEF2C28DA610078EF63 /* MLcapture2.swift */,
+				34097CE92C28D7EE0078EF63 /* MLcapture.swift */,
 			);
 			path = MLmedia;
 			sourceTree = "<group>";
@@ -731,7 +747,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
+				34097CD12C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */,
 				342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */,
 				342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
@@ -764,6 +782,8 @@
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
+				34097CD02C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */,
+				34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
 				348EA80F2C1C189700C112C3 /* ChartView.swift in Sources */,
@@ -775,11 +795,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
+				34097CF12C28DE370078EF63 /* MLcapture2.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
 				34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
+				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -792,6 +814,7 @@
 				3497714F2BFEF1F800533EEA /* HistogramView.swift in Sources */,
 				34E4C0602C0BBEE5007D3A05 /* FiltersImageControlsView.swift in Sources */,
 				34E4C05E2C0BBAB5007D3A05 /* ImageViewerModel.swift in Sources */,
+				34097CD22C28D7400078EF63 /* IO_cashtrack.mlpackage in Sources */,
 				3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */,
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
@@ -802,6 +825,7 @@
 				3494C54A2BFDCF3900E70B0F /* VideoPicker.swift in Sources */,
 				342D0CE72C1D3C5000ECDA36 /* cashtrack416.mlmodel in Sources */,
 				342D0CE82C1D3C5000ECDA36 /* cashtrack704x416.mlmodel in Sources */,
+				34097CD42C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				342D0CF82C1D3D7A00ECDA36 /* lastE8.mlpackage in Sources */,
 				342D0CF52C1D3D7A00ECDA36 /* epoch70.mlpackage in Sources */,
 				34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */,
@@ -822,6 +846,7 @@
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
 				3471ED422C0CF71900916598 /* VideoPreviewView.swift in Sources */,
+				34097CCF2C28D73E0078EF63 /* IO_cashtrack.mlpackage in Sources */,
 				3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */,
 				3471ED532C0CF71900916598 /* VideoViewControllerWrapper.swift in Sources */,
 				3471ED5B2C0CF71900916598 /* GalleryView.swift in Sources */,
@@ -838,6 +863,7 @@
 				3471ED4A2C0CF71900916598 /* ViewController.swift in Sources */,
 				3471ED672C0CF71900916598 /* LogView.swift in Sources */,
 				3471ED4B2C0CF71900916598 /* CoreMLView.swift in Sources */,
+				34097CD52C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				34B83A162C0D002000A0E4BD /* yolov8x2AAA.mlpackage in Sources */,
 				3471ED6D2C0CF71900916598 /* MediaFile.swift in Sources */,
 				3471ED702C0CF71900916598 /* yolov5s.mlmodel in Sources */,
