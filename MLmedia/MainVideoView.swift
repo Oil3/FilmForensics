@@ -76,9 +76,19 @@ struct MainVideoView: View {
               Button("Open in New Window") {
                 openInNewWindow(url: url)
               }
+              Button(action: {
+                copyCurrentFrame()
+              }) {
+                Text("Copy Frame")
+              }
+              Button(action: {
+                saveCurrentFrame(fileName: "\(url.lastPathComponent)_frame.jpg")
+              }) {
+                Text("Save Frame")
             }
           }
         }
+          }
         .onMove(perform: move)
       }
       .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDrop)
@@ -216,9 +226,14 @@ struct MainVideoView: View {
                 stopFramePerFrameMode()
                 stopPlayBackwardMode()
               }
+              
             }
             .padding()
             HStack {
+              Button("Post-Viewing Detection") {
+                runPredictionWithoutPlaying()
+              }
+              
               Button("Load All Labels") {
                 loadAllLabels()
               }
@@ -635,7 +650,28 @@ struct MainVideoView: View {
     }
     return true
   }
-  
+  private func runPredictionWithoutPlaying() {
+    guard let currentItem = player.currentItem else { return }
+    let duration = currentItem.duration
+    let step = CMTime(value: 1, timescale: 30)
+    var currentTime = CMTime.zero
+    
+    while currentTime <= duration {
+      if let videoOutput = self.videoOutput,
+         videoOutput.hasNewPixelBuffer(forItemTime: currentTime) {
+        var presentationTime = CMTime()
+        if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: &presentationTime) {
+          mediaModel.currentFrame = pixelBuffer
+          mediaModel.currentPixelBuffer = pixelBuffer
+          if objectDetectionEnabled {
+            runModel(on: pixelBuffer)
+          }
+        }
+      }
+      currentTime = currentTime + step
+    }
+    }
+
   private func selectVideo(url: URL) {
     mediaModel.selectedVideoURL = url
     let asset = AVAsset(url: url)
@@ -662,6 +698,49 @@ struct MainVideoView: View {
     newWindow.makeKeyAndOrderFront(nil)
     newWindow.contentViewController?.view.window?.title = url.lastPathComponent
   }
+  
+  func copyCurrentFrame() {
+    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+    let nsImage = NSImage(cgImage: cgImage, size: .zero)
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.writeObjects([nsImage])
+  }
+
+private func saveCurrentFrame() {
+  guard let savePath = savePath else { return }
+  guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+  
+  let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+  let context = CIContext()
+  guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+  let nsImage = NSImage(cgImage: cgImage, size: .zero)
+  
+  let frameNumber = Int(CMTimeGetSeconds(player.currentTime()) * 100) // Assuming 100 FPS for simplicity
+  let fileName = "\(savePath.path)/frame_\(frameNumber).jpg"
+  
+  guard let tiffData = nsImage.tiffRepresentation,
+        let bitmap = NSBitmapImageRep(data: tiffData),
+        let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+  
+  do {
+    try jpegData.write(to: URL(fileURLWithPath: fileName))
+  } catch {
+    print("Error saving frame: \(error)")
+  }
+}
+
+
+  
+  
+  
+  
+  
+  
+  
+  
 }
 
 struct VideoPlayerViewMain: NSViewRepresentable {
@@ -679,7 +758,6 @@ struct VideoPlayerViewMain: NSViewRepresentable {
     playerView.allowsVideoFrameAnalysis = false
     return playerView
   }
-  
   func updateNSView(_ nsView: AVPlayerView, context: Context) {
     if let playerView = nsView as? AVPlayerView {
       playerView.player = player
