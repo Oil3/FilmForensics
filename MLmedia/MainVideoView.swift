@@ -10,10 +10,15 @@ struct MainVideoView: View {
   @State private var playerView = AVPlayerView()
   @State private var detectedObjects: [VNRecognizedObjectObservation] = []
   @State private var detectedFaces: [VNFaceObservation] = []
+  @State private var detectedHumans: [VNHumanObservation] = [] // New state for human detection
+  @State private var detectedHands: [VNHumanHandPoseObservation] = [] // New state for hand detection
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
   @State private var objectDetectionEnabled = false
   @State private var faceDetectionEnabled = true // New state for face detection
+  @State private var humanRectangleDetectionEnabled = true // New state for human rectangle detection
+  @State private var handDetectionEnabled = false // New state for hand detection
+  @State private var numberOfHandsToTrack = 2 // New state for number of hands to track
   @State private var saveLabels = false
   @State private var saveFrames = false
   @State private var saveJsonLog = false
@@ -28,6 +33,8 @@ struct MainVideoView: View {
   @State private var savePath: URL?
   @State private var totalObjectsDetected = 0
   @State private var totalFacesDetected = 0 // New state for face detection count
+  @State private var totalHumansDetected = 0 // New state for human detection count
+  @State private var totalHandsDetected = 0 // New state for hand detection count
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
@@ -178,6 +185,8 @@ struct MainVideoView: View {
         Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
         Text("Total Objects Detected: \(totalObjectsDetected)")
         Text("Total Faces Detected: \(totalFacesDetected)")
+        Text("Total Humans Detected: \(totalHumansDetected)")
+        Text("Total Hands Detected: \(totalHandsDetected)")
       }
       if mediaModel.selectedVideoURL != nil {
         VStack {
@@ -210,6 +219,28 @@ struct MainVideoView: View {
                 )
               }
             )
+            .overlay(
+              GeometryReader { geo -> AnyView in
+                return AnyView(
+                  ForEach(detectedHumans, id: \.self) { human in
+                    if showBoundingBoxes {
+                      drawBoundingBox(for: human, in: geo.size, color: .green)
+                    }
+                  }
+                )
+              }
+            )
+            .overlay(
+              GeometryReader { geo -> AnyView in
+                return AnyView(
+                  ForEach(detectedHands, id: \.self) { hand in
+                    if showBoundingBoxes {
+                      drawBoundingBox(for: hand, in: geo.size, color: .yellow)
+                    }
+                  }
+                )
+              }
+            )
         }
       } else {
         VStack {
@@ -229,10 +260,26 @@ struct MainVideoView: View {
         HStack {
           Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
           Toggle("Enable Face Detection", isOn: $faceDetectionEnabled) // New toggle for face detection
+          Toggle("Enable Human Detection", isOn: $humanRectangleDetectionEnabled) // New toggle for human detection
           Toggle("Save Labels", isOn: $saveLabels)
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
           Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
+        }
+        HStack {
+          Text("Hand Detection:")
+          Picker("Number of Hands", selection: $numberOfHandsToTrack) {
+            Text("0").tag(0)
+            Text("1").tag(1)
+            Text("2").tag(2)
+            Text("4").tag(4)
+            Text("6").tag(6)
+            Text("Max (10)").tag(10)
+          }
+          .pickerStyle(MenuPickerStyle())
+          .onChange(of: numberOfHandsToTrack) { newValue in
+            handDetectionEnabled = newValue > 0
+          }
         }
         HStack {
           Button("Select Save Path") {
@@ -367,6 +414,45 @@ struct MainVideoView: View {
     try? handler.perform([faceRequest])
   }
   
+  private func runHumanDetection(on pixelBuffer: CVPixelBuffer) {
+    let humanRequest = VNDetectHumanRectanglesRequest { request, error in
+      if let results = request.results as? [VNHumanObservation] {
+        DispatchQueue.main.async {
+          self.detectedHumans = results
+          self.totalHumansDetected += results.count
+          if saveLabels || saveFrames {
+            Task {
+              await processAndSaveHumans(results, at: player.currentItem?.currentTime())
+            }
+          }
+        }
+      }
+    }
+    
+    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    try? handler.perform([humanRequest])
+  }
+  
+  private func runHandDetection(on pixelBuffer: CVPixelBuffer) {
+    let handRequest = VNDetectHumanHandPoseRequest { request, error in
+      if let results = request.results as? [VNHumanHandPoseObservation] {
+        DispatchQueue.main.async {
+          self.detectedHands = results
+          self.totalHandsDetected += results.count
+          if saveLabels || saveFrames {
+            Task {
+              await processAndSaveHands(results, at: player.currentItem?.currentTime())
+            }
+          }
+        }
+      }
+    }
+    handRequest.maximumHandCount = numberOfHandsToTrack
+    
+    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    try? handler.perform([handRequest])
+  }
+  
   private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
@@ -455,6 +541,91 @@ struct MainVideoView: View {
     }
   }
   
+  private func processAndSaveHumans(_ humans: [VNHumanObservation], at time: CMTime?) async {
+    guard let time = time, let savePath = savePath else { return }
+    
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
+    let folderName = "\(videoFilename)"
+    let folderURL = savePath.appendingPathComponent(folderName)
+    let labelsFolderURL = folderURL.appendingPathComponent("labels_humans")
+    let imagesFolderURL = folderURL.appendingPathComponent("images_humans")
+    
+    createFolderIfNotExists(at: folderURL)
+    createFolderIfNotExists(at: labelsFolderURL)
+    createFolderIfNotExists(at: imagesFolderURL)
+    
+    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
+    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
+    
+    var labelText = ""
+    var humanLog = [HumanDetection]()
+    
+    for human in humans {
+      let boundingBox = human.boundingBox
+      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
+      humanLog.append(HumanDetection(boundingBox: boundingBox))
+    }
+    
+    if !labelText.isEmpty {
+      do {
+        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
+      } catch {
+        print("Error saving labels: \(error)")
+      }
+      
+      if saveFrames {
+        saveCurrentFrame(fileName: frameFileName.path)
+      }
+    }
+    
+    if saveJsonLog {
+      logHumanDetections(detections: humanLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
+  
+  private func processAndSaveHands(_ hands: [VNHumanHandPoseObservation], at time: CMTime?) async {
+    guard let time = time, let savePath = savePath else { return }
+    
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
+    let folderName = "\(videoFilename)"
+    let folderURL = savePath.appendingPathComponent(folderName)
+    let labelsFolderURL = folderURL.appendingPathComponent("labels_hands")
+    let imagesFolderURL = folderURL.appendingPathComponent("images_hands")
+    
+    createFolderIfNotExists(at: folderURL)
+    createFolderIfNotExists(at: labelsFolderURL)
+    createFolderIfNotExists(at: imagesFolderURL)
+    
+    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
+    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
+    
+    var labelText = ""
+    var handLog = [HandDetection]()
+    for hand in hands {
+      let boundingBox = hand. boundingBox
+      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
+      handLog.append(HandDetection(boundingBox: boundingBox))
+    }
+    
+    if !labelText.isEmpty {
+      do {
+        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
+      } catch {
+        print("Error saving labels: \(error)")
+      }
+      
+      if saveFrames {
+        saveCurrentFrame(fileName: frameFileName.path)
+      }
+    }
+    
+    if saveJsonLog {
+      logHandDetections(detections: handLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
+  
   private func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
@@ -497,6 +668,12 @@ struct MainVideoView: View {
           }
           if faceDetectionEnabled {
             runFaceDetection(on: pixelBuffer)
+          }
+          if humanRectangleDetectionEnabled {
+            runHumanDetection(on: pixelBuffer)
+          }
+          if handDetectionEnabled {
+            runHandDetection(on: pixelBuffer)
           }
         }
       }
@@ -606,6 +783,46 @@ struct MainVideoView: View {
     }
     
     let frameLog = FaceFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
+    log.frames.append(frameLog)
+    
+    do {
+      let data = try JSONEncoder().encode(log)
+      try data.write(to: logFileName)
+    } catch {
+      print("Error saving log: \(error)")
+    }
+  }
+  
+  private func logHumanDetections(detections: [HumanDetection], frameNumber: Int, folderURL: URL) {
+    let logFileName = folderURL.appendingPathComponent("log_humans_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+    
+    var log = HumanDetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+    
+    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(HumanDetectionLog.self, from: data) {
+      log = existingLog
+    }
+    
+    let frameLog = HumanFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
+    log.frames.append(frameLog)
+    
+    do {
+      let data = try JSONEncoder().encode(log)
+      try data.write(to: logFileName)
+    } catch {
+      print("Error saving log: \(error)")
+    }
+  }
+  
+  private func logHandDetections(detections: [HandDetection], frameNumber: Int, folderURL: URL) {
+    let logFileName = folderURL.appendingPathComponent("log_hands_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+    
+    var log = HandDetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+    
+    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(HandDetectionLog.self, from: data) {
+      log = existingLog
+    }
+    
+    let frameLog = HandFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
     log.frames.append(frameLog)
     
     do {
@@ -730,6 +947,12 @@ struct MainVideoView: View {
           if faceDetectionEnabled {
             runFaceDetection(on: pixelBuffer)
           }
+          if humanRectangleDetectionEnabled {
+            runHumanDetection(on: pixelBuffer)
+          }
+          if handDetectionEnabled {
+            runHandDetection(on: pixelBuffer)
+          }
         }
       }
       
@@ -764,7 +987,6 @@ struct MainVideoView: View {
       }
     }
     return false
-    
   }
   
   private func openInNewWindow(url: URL) {
@@ -789,46 +1011,23 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
-  private var trackingRequests: [VNTrackObjectRequest] = []
-  
-  private mutating func setupObjectTracking(for observation: VNRecognizedObjectObservation) {
-    let trackingRequest = VNTrackObjectRequest(detectedObjectObservation: observation)
-    trackingRequests.append(trackingRequest)
-  }
-  
-  private func startObjectTracking() {
-    guard !trackingRequests.isEmpty else { return }
-    
-    let requestHandler = VNSequenceRequestHandler()
-    
-    player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
-      guard let currentPixelBuffer = self.mediaModel.currentPixelBuffer else { return }
-      
-      try? requestHandler.perform(self.trackingRequests, on: currentPixelBuffer)
-      
-      DispatchQueue.main.async {
-        for trackingRequest in self.trackingRequests {
-          if let newObservation = trackingRequest.results?.first as? VNDetectedObjectObservation {
-            // Update your bounding boxes or other UI elements with the newObservation
-          }
-        }
-      }
-    }
-  }
 }
+
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+struct HandDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct HandFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HandDetection]?
+}
+
+struct HandDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HandFrameLog]
+}
