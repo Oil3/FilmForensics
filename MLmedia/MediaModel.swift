@@ -23,3 +23,22 @@ class MediaModel: ObservableObject {
         currentPixelBuffer = nil
     }
 }
+
+
+
+
+struct FaceDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct FaceDetectionLog: Codable {
+  let videoURL: String
+  let creationDate: String
+  var frames: [FaceFrameLog]
+}
+
+struct FaceFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [FaceDetection]?
+}
