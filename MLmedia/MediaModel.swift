@@ -42,44 +42,6 @@ extension CFAbsoluteTime {
     return formatter.string(from: self)
   }
 }
-
-
-
-struct FaceDetection: Codable, Identifiable {
-  var id = UUID()
-  var boundingBox: CGRect
-}
-
-struct FaceDetectionLog: Codable {
-  let videoURL: String
-  let creationDate: String
-  var frames: [FaceFrameLog]
-}
-
-struct FaceFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [FaceDetection]?
-}
-
-struct HumanDetection: Codable, Identifiable {
-  var id = UUID()
-
-  var boundingBox: CGRect
-}
-
-struct HumanFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [HumanDetection]?
-}
-
-struct HumanDetectionLog: Codable {
-  var videoURL: String
-  var creationDate: String
-  var frames: [HumanFrameLog]
-}
-
-
-
 import Vision
 import AVFoundation
 import AVKit
@@ -103,4 +65,58 @@ struct VideoPlayerViewMain: NSViewRepresentable {
       playerView.player = player
     }
   }
+}
+
+struct HandDetection: Codable, Identifiable {
+  var id = UUID()
+  //var jointName: VNHumanHandPoseObservation.JointName
+  var location: CGPoint
+}
+
+struct HandFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HandDetection]?
+}
+
+struct HandDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HandFrameLog]
+}
+
+
+
+
+
+
+struct FaceDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct FaceFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [FaceDetection]?
+}
+
+struct FaceDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [FaceFrameLog]
+}
+
+struct HumanDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct HumanFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HumanDetection]?
+}
+
+struct HumanDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HumanFrameLog]
 }
