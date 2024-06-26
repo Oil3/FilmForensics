@@ -18,6 +18,7 @@ struct MLcaptureMainView: View {
         
         Button("Stop Capture") {
           viewModel.stopCapture()
+          
         }
         .padding()
         
@@ -67,7 +68,7 @@ struct CaptureContentView: NSViewRepresentable {
   private func setupWindowProperties(for imageView: NSImageView) {
     DispatchQueue.main.async {
       if let window = imageView.window {
-        window.isOpaque = false
+        window.isOpaque = true
         window.backgroundColor = .clear
         window.styleMask = [.borderless]
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -93,15 +94,18 @@ class ScreenCaptureViewModel: NSObject, ObservableObject {
         let excludedApps = content.applications.filter { app in
           Bundle.main.bundleIdentifier == app.bundleIdentifier
         }
-        guard let screen = NSScreen.main else { return }
+       // guard let screen = NSScreen.main else { return }
         guard let display = content.displays.first else { return }
         
         let filter = SCContentFilter(display: display, excludingApplications: excludedApps, exceptingWindows: [])
         
         captureConfig = SCStreamConfiguration()
         captureConfig?.queueDepth = 5
-        captureConfig?.width = 1024
-        captureConfig?.height = 576
+        captureConfig?.width = display.width - 10
+        captureConfig?.height = display.height - 100
+        captureConfig?.capturesAudio = false
+        captureConfig?.ignoreShadowsDisplay = true
+        captureConfig?.presenterOverlayPrivacyAlertSetting = .always
         captureConfig?.pixelFormat = kCVPixelFormatType_32BGRA
         
         captureProcessor = MLcaptureCaptureProcessor(viewModel: self, model: model)
