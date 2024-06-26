@@ -9,9 +9,11 @@ struct MainVideoView: View {
   @State private var player = AVPlayer()
   @State private var playerView = AVPlayerView()
   @State private var detectedObjects: [VNRecognizedObjectObservation] = []
+  @State private var detectedFaces: [VNFaceObservation] = []
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
   @State private var objectDetectionEnabled = false
+  @State private var faceDetectionEnabled = true // New state for face detection
   @State private var saveLabels = false
   @State private var saveFrames = false
   @State private var saveJsonLog = false
@@ -25,6 +27,7 @@ struct MainVideoView: View {
   @State private var showBoundingBoxes = true
   @State private var savePath: URL?
   @State private var totalObjectsDetected = 0
+  @State private var totalFacesDetected = 0 // New state for face detection count
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
@@ -158,128 +161,137 @@ struct MainVideoView: View {
   
   private var videoPreview: some View {
     ScrollView {
-      ScrollView {
-          HStack {
-            Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
-            Text("Frame: \(getCurrentFrameNumber())")
-            Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
-            Text("Dropped Frames: \(droppedFrames)")
-            Text("Corrupted Frames: \(corruptedFrames)")
-          }
-          HStack {
-            Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
-            Text("Detection FPS: \(detectionFPS, specifier: "%.2f")")
-            Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
-            Text("Total Objects Detected: \(totalObjectsDetected)")
-          }
-          if mediaModel.selectedVideoURL != nil {
-
-          VStack {
-            VideoPlayerViewMain(player: player, detections: $detectedObjects)
-              .frame(width: selectedSize.width, height: selectedSize.height)
-              .background(Color.black)
-              .clipped()
-              .overlay(
-                GeometryReader { geo -> AnyView in
-                  DispatchQueue.main.async {
-                    self.videoSize = geo.size
-                  }
-                  return AnyView(
-                    ForEach(detectedObjects, id: \.self) { object in
-                      if showBoundingBoxes {
-                        drawBoundingBox(for: object, in: geo.size)
-                      }
+      HStack {
+        Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
+        Text("Model: IO_cashtrack.mlmodel")
+      }
+      HStack {
+        Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
+        Text("Frame: \(getCurrentFrameNumber())")
+        Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
+        Text("Dropped Frames: \(droppedFrames)")
+        Text("Corrupted Frames: \(corruptedFrames)")
+      }
+      HStack {
+        Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
+        Text("Detection FPS: \(detectionFPS, specifier: "%.2f")")
+        Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
+        Text("Total Objects Detected: \(totalObjectsDetected)")
+        Text("Total Faces Detected: \(totalFacesDetected)")
+      }
+      if mediaModel.selectedVideoURL != nil {
+        VStack {
+          VideoPlayerViewMain(player: player, detections: $detectedObjects)
+            .frame(width: selectedSize.width, height: selectedSize.height)
+            .background(Color.black)
+            .clipped()
+            .overlay(
+              GeometryReader { geo -> AnyView in
+                DispatchQueue.main.async {
+                  self.videoSize = geo.size
+                }
+                return AnyView(
+                  ForEach(detectedObjects, id: \.self) { object in
+                    if showBoundingBoxes {
+                      drawBoundingBox(for: object, in: geo.size, color: .red)
                     }
-                  )
-                }
-              )
-          }
-        } else {
-          VStack {
-            Rectangle()
-              .stroke(Color.gray, lineWidth: 2)
-              .frame(width: selectedSize.width, height: selectedSize.height)
-              .background(Color.black)
-              .overlay(
-                Text("Load a video to start")
-                  .foregroundColor(.white)
-              )
-              .padding()
-          }
-          .padding()
-        }
-          VStack {
-            HStack {
-              Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
-              Toggle("Save Labels", isOn: $saveLabels)
-              Toggle("Save Frames", isOn: $saveFrames)
-              Toggle("Save JSON Log", isOn: $saveJsonLog)
-              Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
-            }
-            HStack {
-              Toggle("Matrix Mode", isOn: $fpsMode)
-              Toggle("Frame Per Frame Mode", isOn: $framePerFrameMode)
-              Toggle("Loop", isOn: $loopMode)
-              Toggle("Play Backward", isOn: $playBackward)
-              Toggle("Show Bounding Boxes", isOn: $showBoundingBoxes)
-            }
-            HStack {
-              Button("Play") {
-                player.play()
-                if fpsMode {
-                  startFPSMode()
-                }
-                if framePerFrameMode {
-                  startFramePerFrameMode()
-                }
-                if loopMode {
-                  player.actionAtItemEnd = .none
-                  NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
-                    player.seek(to: .zero)
-                    player.play()
                   }
-                }
-                if playBackward {
-                  startPlayBackwardMode()
-                }
+                )
               }
-              Button("Pause") {
-                player.pause()
-                stopFPSMode()
-                stopFramePerFrameMode()
-                stopPlayBackwardMode()
+            )
+            .overlay(
+              GeometryReader { geo -> AnyView in
+                return AnyView(
+                  ForEach(detectedFaces, id: \.self) { face in
+                    if showBoundingBoxes {
+                      drawBoundingBox(for: face, in: geo.size, color: .blue)
+                    }
+                  }
+                )
               }
-                Button("Background run") {
-                  runPredictionsWithoutPlaying()
-                }
-          
-            }
+            )
+        }
+      } else {
+        VStack {
+          Rectangle()
+            .stroke(Color.gray, lineWidth: 2)
+            .frame(width: selectedSize.width, height: selectedSize.height)
+            .background(Color.black)
+            .overlay(
+              Text("Load a video to start")
+                .foregroundColor(.white)
+            )
             .padding()
-            HStack {
-              Button("Select Save Path") {
-                selectSavePath()
-              }
-              if let savePath = savePath {
-                Text("Save Path: \(savePath.path)")
-              }
-              Button("Load All Labels") {
-                loadAllLabels()
-              }
-              Button("Load and Sync Labels") {
-                loadAndSyncLabels()
-              }
-            }
-            HStack {
-              Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
-              Text("Model: IO_cashtrack.mlmodel")
-            }
-
+        }
+        .padding()
+      }
+      VStack {
+        HStack {
+          Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
+          Toggle("Enable Face Detection", isOn: $faceDetectionEnabled) // New toggle for face detection
+          Toggle("Save Labels", isOn: $saveLabels)
+          Toggle("Save Frames", isOn: $saveFrames)
+          Toggle("Save JSON Log", isOn: $saveJsonLog)
+          Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
+        }
+        HStack {
+          Button("Select Save Path") {
+            selectSavePath()
+          }
+          if let savePath = savePath {
+            Text("Save Path: \(savePath.path)")
           }
         }
-
+        HStack {
+          Toggle("Matrix Mode", isOn: $fpsMode)
+          Toggle("Frame Per Frame Mode", isOn: $framePerFrameMode)
+          Toggle("Loop", isOn: $loopMode)
+          Toggle("Play Backward", isOn: $playBackward)
+          Toggle("Show Bounding Boxes", isOn: $showBoundingBoxes)
+        }
+        HStack {
+          Button("Play") {
+            player.play()
+            if fpsMode {
+              startFPSMode()
+            }
+            if framePerFrameMode {
+              startFramePerFrameMode()
+            }
+            if loopMode {
+              player.actionAtItemEnd = .none
+              NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: player.currentItem, queue: .main) { _ in
+                player.seek(to: .zero)
+                player.play()
+              }
+            }
+            if playBackward {
+              startPlayBackwardMode()
+            }
+          }
+          Button("Pause") {
+            player.pause()
+            stopFPSMode()
+            stopFramePerFrameMode()
+            stopPlayBackwardMode()
+          }
+        }
+        .padding()
+        HStack {
+          Button("Load All Labels") {
+            loadAllLabels()
+          }
+          Button("Load and Sync Labels") {
+            loadAndSyncLabels()
+          }
+        }
+        HStack {
+          Button("Run Predictions") {
+            runPredictionsWithoutPlaying()
+          }
+        }
+      }
     }
-    .scrollIndicators(.never)
-    .scrollDisabled(false)
   }
   
   private func getVideoFrameRate() -> Float {
@@ -293,7 +305,7 @@ struct MainVideoView: View {
     return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
   }
   
-  private func drawBoundingBox(for observation: VNRecognizedObjectObservation, in parentSize: CGSize) -> some View {
+  private func drawBoundingBox(for observation: VNDetectedObjectObservation, in parentSize: CGSize, color: NSColor) -> some View {
     let boundingBox = observation.boundingBox
     let videoWidth = parentSize.width
     let videoHeight = parentSize.height
@@ -305,7 +317,7 @@ struct MainVideoView: View {
     )
     
     return Rectangle()
-      .stroke(Color.red, lineWidth: 2)
+      .stroke(Color(color), lineWidth: 2)
       .frame(width: normalizedRect.width, height: normalizedRect.height)
       .position(x: normalizedRect.midX, y: normalizedRect.midY)
   }
@@ -334,6 +346,25 @@ struct MainVideoView: View {
     
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([request])
+  }
+  
+  private func runFaceDetection(on pixelBuffer: CVPixelBuffer) {
+    let faceRequest = VNDetectFaceRectanglesRequest { request, error in
+      if let results = request.results as? [VNFaceObservation] {
+        DispatchQueue.main.async {
+          self.detectedFaces = results
+          self.totalFacesDetected += results.count
+          if saveLabels || saveFrames {
+            Task {
+              await processAndSaveFaces(results, at: player.currentItem?.currentTime())
+            }
+          }
+        }
+      }
+    }
+    
+    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    try? handler.perform([faceRequest])
   }
   
   private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
@@ -381,6 +412,49 @@ struct MainVideoView: View {
     }
   }
   
+  private func processAndSaveFaces(_ faces: [VNFaceObservation], at time: CMTime?) async {
+    guard let time = time, let savePath = savePath else { return }
+    
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
+    let folderName = "\(videoFilename)"
+    let folderURL = savePath.appendingPathComponent(folderName)
+    let labelsFolderURL = folderURL.appendingPathComponent("labels_faces")
+    let imagesFolderURL = folderURL.appendingPathComponent("images_faces")
+    
+    createFolderIfNotExists(at: folderURL)
+    createFolderIfNotExists(at: labelsFolderURL)
+    createFolderIfNotExists(at: imagesFolderURL)
+    
+    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
+    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
+    
+    var labelText = ""
+    var faceLog = [FaceDetection]()
+    
+    for face in faces {
+      let boundingBox = face.boundingBox
+      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
+      faceLog.append(FaceDetection(boundingBox: boundingBox))
+    }
+    
+    if !labelText.isEmpty {
+      do {
+        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
+      } catch {
+        print("Error saving labels: \(error)")
+      }
+      
+      if saveFrames {
+        saveCurrentFrame(fileName: frameFileName.path)
+      }
+    }
+    
+    if saveJsonLog {
+      logFaceDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
+  
   private func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
@@ -420,6 +494,9 @@ struct MainVideoView: View {
           mediaModel.currentPixelBuffer = pixelBuffer
           if objectDetectionEnabled {
             runModel(on: pixelBuffer)
+          }
+          if faceDetectionEnabled {
+            runFaceDetection(on: pixelBuffer)
           }
         }
       }
@@ -509,6 +586,26 @@ struct MainVideoView: View {
     }
     
     let frameLog = FrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
+    log.frames.append(frameLog)
+    
+    do {
+      let data = try JSONEncoder().encode(log)
+      try data.write(to: logFileName)
+    } catch {
+      print("Error saving log: \(error)")
+    }
+  }
+  
+  private func logFaceDetections(detections: [FaceDetection], frameNumber: Int, folderURL: URL) {
+    let logFileName = folderURL.appendingPathComponent("log_faces_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+    
+    var log = FaceDetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+    
+    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(FaceDetectionLog.self, from: data) {
+      log = existingLog
+    }
+    
+    let frameLog = FaceFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
     log.frames.append(frameLog)
     
     do {
@@ -630,6 +727,9 @@ struct MainVideoView: View {
         var presentationTime = CMTime()
         if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: &presentationTime) {
           runModel(on: pixelBuffer)
+          if faceDetectionEnabled {
+            runFaceDetection(on: pixelBuffer)
+          }
         }
       }
       
@@ -646,8 +746,6 @@ struct MainVideoView: View {
       return false
     }
   }
-
-
   
   private func move(from source: IndexSet, to destination: Int) {
     mediaModel.videos.move(fromOffsets: source, toOffset: destination)
@@ -666,6 +764,7 @@ struct MainVideoView: View {
       }
     }
     return false
+    
   }
   
   private func openInNewWindow(url: URL) {
@@ -690,42 +789,46 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
-
-}
-
-extension URL {
-  func bookmarkData() -> Data {
-    return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
-  }
-}
-
-extension CFAbsoluteTime {
-  var asTimeString: String? {
-    let formatter = DateComponentsFormatter()
-    formatter.allowedUnits = [.hour, .minute, .second]
-    formatter.unitsStyle = .positional
-    return formatter.string(from: self)
-  }
-}
-
-struct VideoPlayerViewMain: NSViewRepresentable {
-  var player: AVPlayer
-  @Binding var detections: [VNRecognizedObjectObservation]
+  private var trackingRequests: [VNTrackObjectRequest] = []
   
-  func makeNSView(context: Context) -> AVPlayerView {
-    let playerView = AVPlayerView()
-    playerView.player = player
-    playerView.allowsMagnification = true
-    playerView.allowsPictureInPicturePlayback = true
-    playerView.controlsStyle = .floating
-    playerView.autoresizingMask = .none
-    playerView.videoFrameAnalysisTypes = .subject
-    return playerView
+  private mutating func setupObjectTracking(for observation: VNRecognizedObjectObservation) {
+    let trackingRequest = VNTrackObjectRequest(detectedObjectObservation: observation)
+    trackingRequests.append(trackingRequest)
   }
   
-  func updateNSView(_ nsView: AVPlayerView, context: Context) {
-    if let playerView = nsView as? AVPlayerView {
-      playerView.player = player
+  private func startObjectTracking() {
+    guard !trackingRequests.isEmpty else { return }
+    
+    let requestHandler = VNSequenceRequestHandler()
+    
+    player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
+      guard let currentPixelBuffer = self.mediaModel.currentPixelBuffer else { return }
+      
+      try? requestHandler.perform(self.trackingRequests, on: currentPixelBuffer)
+      
+      DispatchQueue.main.async {
+        for trackingRequest in self.trackingRequests {
+          if let newObservation = trackingRequest.results?.first as? VNDetectedObjectObservation {
+            // Update your bounding boxes or other UI elements with the newObservation
+          }
+        }
+      }
     }
   }
 }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

@@ -23,3 +23,67 @@ class MediaModel: ObservableObject {
         currentPixelBuffer = nil
     }
 }
+
+
+import Vision
+import AVFoundation
+
+
+struct FaceDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct FaceDetectionLog: Codable {
+  let videoURL: String
+  let creationDate: String
+  var frames: [FaceFrameLog]
+}
+
+struct FaceFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [FaceDetection]?
+}
+
+
+
+extension URL {
+  func bookmarkData() -> Data {
+    return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
+  }
+}
+
+extension CFAbsoluteTime {
+  var asTimeString: String? {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.unitsStyle = .positional
+    return formatter.string(from: self)
+  }
+}
+import Vision
+import AVFoundation
+import AVKit
+struct VideoPlayerViewMain: NSViewRepresentable {
+  var player: AVPlayer
+  @Binding var detections: [VNRecognizedObjectObservation]
+  
+  func makeNSView(context: Context) -> AVPlayerView {
+    let playerView = AVPlayerView()
+    playerView.player = player
+    playerView.allowsMagnification = true
+    playerView.allowsPictureInPicturePlayback = true
+    playerView.controlsStyle = .floating
+    playerView.autoresizingMask = .none
+    playerView.videoFrameAnalysisTypes = .subject
+    return playerView
+  }
+  
+  func updateNSView(_ nsView: AVPlayerView, context: Context) {
+    if let playerView = nsView as? AVPlayerView {
+      playerView.player = player
+    }
+  }
+}
+
+
