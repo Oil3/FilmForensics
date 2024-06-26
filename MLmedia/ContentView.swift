@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct ContentView: View {
+//  @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
   var body: some View {
     TabView {
       MainVideoView()
@@ -17,10 +19,14 @@ struct ContentView: View {
         .tabItem {
           Label("Video Tools View", systemImage: "wrench")
         }
-      MLcaptureMainView()
-        .tabItem {
-          Label("MLcaptureMainView", systemImage: "bolt")
+//      MLcaptureMainView()
+//        .environmentObject(appDelegate.viewModel)
+//
+//        .tabItem {
+//          Label("MLcaptureMainView", systemImage: "bolt")
+//
+          
         }
     }
   }
-}
+//}

@@ -619,7 +619,7 @@ struct MainVideoView: View {
     NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue: .main) { _ in
       objectDetectionEnabled = false
     }
-    player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
+    player.addPeriodicTimeObserver(forInterval: CMTime(value: 15, timescale: 2), queue: .main) { time in
       if player.rate == 0.0 && objectDetectionEnabled {
         objectDetectionEnabled = false
       }

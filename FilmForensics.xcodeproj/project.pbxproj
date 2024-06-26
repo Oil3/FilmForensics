@@ -17,7 +17,6 @@
 		34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
-		34097CF12C28DE370078EF63 /* MLcapture2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34097CEF2C28DA610078EF63 /* MLcapture2.swift */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -41,6 +40,8 @@
 		342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342D0CE32C1D3C5000ECDA36 /* cashtrack416.mlmodel */; };
 		342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0D122C1D5D8E00ECDA36 /* MainView.swift */; };
 		342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342D0D182C1E1D0900ECDA36 /* MediaModel.swift */; };
+		3441A8D22C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3441A8D12C2A30E500809478 /* goodZeroDCE.mlmodel */; };
+		3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3441A8D12C2A30E500809478 /* goodZeroDCE.mlmodel */; };
 		344D22E22C0EF86100C6966E /* VApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E12C0EF86100C6966E /* VApp.swift */; };
 		344D22E42C0EF86100C6966E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 344D22E32C0EF86100C6966E /* ContentView.swift */; };
 		344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 344D22E52C0EF86200C6966E /* Assets.xcassets */; };
@@ -156,6 +157,7 @@
 		342D0D082C1D52D600ECDA36 /* ToolML.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ToolML.entitlements; sourceTree = "<group>"; };
 		342D0D122C1D5D8E00ECDA36 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		342D0D182C1E1D0900ECDA36 /* MediaModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaModel.swift; sourceTree = "<group>"; };
+		3441A8D12C2A30E500809478 /* goodZeroDCE.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = goodZeroDCE.mlmodel; sourceTree = "<group>"; };
 		344D22DF2C0EF86100C6966E /* V.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = V.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		344D22E12C0EF86100C6966E /* VApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VApp.swift; sourceTree = "<group>"; };
 		344D22E32C0EF86100C6966E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -408,6 +410,7 @@
 		3471ED3B2C0CF71900916598 /* models */ = {
 			isa = PBXGroup;
 			children = (
+				3441A8D12C2A30E500809478 /* goodZeroDCE.mlmodel */,
 				3471ED392C0CF71900916598 /* sampleVideo.mp4 */,
 				3471ED3A2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel */,
 			);
@@ -795,11 +798,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
-				34097CF12C28DE370078EF63 /* MLcapture2.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
 				34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
+				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
 				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
@@ -842,6 +845,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3441A8D22C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				3471ED412C0CF71900916598 /* ImageViewer.swift in Sources */,
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
