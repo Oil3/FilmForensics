@@ -40,59 +40,101 @@ struct MainVideoView: View {
     }
     .onAppear {
       if let savedPath = UserDefaults.standard.url(forKey: "savePath") {
-        savePath = savedPath
+        if checkAccessToPath(url: savedPath) {
+          savePath = savedPath
+        } else {
+          selectSavePath()
+        }
       }
-      addKeyboardShortcuts()
-      addPlaybackObservers()
     }
   }
   
   private var videoGallery: some View {
     VStack {
       Button("Add Video") {
-        openFile()
+        mediaModel.addVideos()
       }
       .padding()
       
       List {
         ForEach(Array(mediaModel.videos.enumerated()), id: \.element) { index, url in
-          HStack {
-            Text("\(index + 1).")
+          Button(action: {
+            mediaModel.selectedVideoURL = url
+            let asset = AVAsset(url: url)
+            let playerItem = AVPlayerItem(asset: asset)
+            setupVideoOutput(for: playerItem)
+            player.replaceCurrentItem(with: playerItem)
+            playerView.player = player
+            startFrameExtraction()
+          }) {
+            Text("\(index + 1)/\(mediaModel.videos.count) - \(url.lastPathComponent)")
+          }
+          .contextMenu {
             Button(action: {
-              selectVideo(url: url)
+              // Play/Pause toggle
+              if player.timeControlStatus == .playing {
+                player.pause()
+              } else {
+                player.play()
+              }
             }) {
-              Text(url.lastPathComponent)
+              Text(player.timeControlStatus == .playing ? "Pause" : "Play")
             }
-            .contextMenu {
-              Button("Delete from List") {
-                mediaModel.videos.remove(at: index)
+            Button(action: {
+              // Copy frame to clipboard
+              if let currentPixelBuffer = mediaModel.currentPixelBuffer {
+                let ciImage = CIImage(cvPixelBuffer: currentPixelBuffer)
+                let context = CIContext()
+                if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+                  let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: ciImage.extent.width, height: ciImage.extent.height))
+                  NSPasteboard.general.clearContents()
+                  NSPasteboard.general.writeObjects([nsImage])
+                }
               }
-              Button("Show in Finder") {
-                showInFinder(url: url)
+            }) {
+              Text("Copy Frame")
+            }
+            Button(action: {
+              // Save current frame
+              if let currentPixelBuffer = mediaModel.currentPixelBuffer {
+                saveCurrentFrame(fileName: getSaveURL(fileName: "current_frame.jpg").path)
               }
-              Button("Show Results in Finder") {
-                showResultsInFinder(url: url)
+            }) {
+              Text("Save Frame")
+            }
+            Button(action: {
+              // Open in new window
+              openInNewWindow(url: url)
+            }) {
+              Text("Open in New Window")
+            }
+            Button(action: {
+              // Show in Finder
+              NSWorkspace.shared.activateFileViewerSelecting([url])
+            }) {
+              Text("Show in Finder")
+            }
+            Button(action: {
+              // Show results folder in Finder
+              if let savePath = savePath {
+                let resultsFolder = savePath.appendingPathComponent(url.lastPathComponent)
+                NSWorkspace.shared.activateFileViewerSelecting([resultsFolder])
               }
-              Button("Open in New Window") {
-                openInNewWindow(url: url)
-              }
-              Button(action: {
-                copyCurrentFrame()
-              }) {
-                Text("Copy Frame")
-              }
-              Button(action: {
-                saveCurrentFrame(fileName: "\(url.lastPathComponent)_frame.jpg")
-              }) {
-                Text("Save Frame")
+            }) {
+              Text("Show Results Folder in Finder")
+            }
+            Button(action: {
+              // Delete from list
+              mediaModel.videos.removeAll { $0 == url }
+            }) {
+              Text("Delete from List")
             }
           }
         }
-          }
         .onMove(perform: move)
       }
-      .onDrop(of: [.fileURL], isTargeted: nil, perform: handleDrop)
-      .frame(minWidth: 200)
+      .onDrop(of: ["public.file-url"], isTargeted: nil, perform: addVideoFromDrop)
+      .padding()
       
       Button("Clear All") {
         mediaModel.clearVideos()
@@ -112,36 +154,27 @@ struct MainVideoView: View {
       .padding()
     }
     .frame(minWidth: 200)
-    .toolbar {
-//      EditButton()
-    }
   }
   
   private var videoPreview: some View {
     ScrollView {
-     
-        VStack {
-          HStack {
-            Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
-            Text("Model: IO_cashtrack.mlmodel")
-          }
+      ScrollView {
           HStack {
             Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
             Text("Frame: \(getCurrentFrameNumber())")
-            
             Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
             Text("Dropped Frames: \(droppedFrames)")
             Text("Corrupted Frames: \(corruptedFrames)")
           }
           HStack {
             Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
-            Text("Detection FPPS: \(detectionFPS, specifier: "%.2f")")
+            Text("Detection FPS: \(detectionFPS, specifier: "%.2f")")
             Text("Video FPS: \(getVideoFrameRate(), specifier: "%.2f")")
             Text("Total Objects Detected: \(totalObjectsDetected)")
           }
-          
+          if mediaModel.selectedVideoURL != nil {
+
           VStack {
-            if mediaModel.selectedVideoURL != nil {
             VideoPlayerViewMain(player: player, detections: $detectedObjects)
               .frame(width: selectedSize.width, height: selectedSize.height)
               .background(Color.black)
@@ -160,37 +193,28 @@ struct MainVideoView: View {
                   )
                 }
               )
-            } else {
-              VStack {
-                Rectangle()
-                  .stroke(Color.gray, lineWidth: 2)
-                  .frame(width: 1024, height: 576)
-                  .background(Color.black)
-                  .overlay(
-                    Text("Load a video to start")
-                      .foregroundColor(.white)
-                  )
-              }
-              .padding()
-            }
           }
-          
+        } else {
           VStack {
-            
+            Rectangle()
+              .stroke(Color.gray, lineWidth: 2)
+              .frame(width: selectedSize.width, height: selectedSize.height)
+              .background(Color.black)
+              .overlay(
+                Text("Load a video to start")
+                  .foregroundColor(.white)
+              )
+              .padding()
+          }
+          .padding()
+        }
+          VStack {
             HStack {
               Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
               Toggle("Save Labels", isOn: $saveLabels)
               Toggle("Save Frames", isOn: $saveFrames)
               Toggle("Save JSON Log", isOn: $saveJsonLog)
               Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
-            }
-            HStack {
-              Button("Select Save Path") {
-                selectSavePath()
-              }
-              if let savePath = savePath {
-                Text("Save Path: \(savePath.path)")
-              }
             }
             HStack {
               Toggle("Matrix Mode", isOn: $fpsMode)
@@ -202,7 +226,6 @@ struct MainVideoView: View {
             HStack {
               Button("Play") {
                 player.play()
-                triggerDetectionIfNeeded()
                 if fpsMode {
                   startFPSMode()
                 }
@@ -226,14 +249,19 @@ struct MainVideoView: View {
                 stopFramePerFrameMode()
                 stopPlayBackwardMode()
               }
-              
+                Button("Background run") {
+                  runPredictionsWithoutPlaying()
+                }
+          
             }
             .padding()
             HStack {
-              Button("Post-Viewing Detection") {
-                runPredictionWithoutPlaying()
+              Button("Select Save Path") {
+                selectSavePath()
               }
-              
+              if let savePath = savePath {
+                Text("Save Path: \(savePath.path)")
+              }
               Button("Load All Labels") {
                 loadAllLabels()
               }
@@ -241,6 +269,11 @@ struct MainVideoView: View {
                 loadAndSyncLabels()
               }
             }
+            HStack {
+              Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
+              Text("Model: IO_cashtrack.mlmodel")
+            }
+
           }
         }
 
@@ -348,7 +381,7 @@ struct MainVideoView: View {
     }
   }
   
-  func saveCurrentFrame(fileName: String) {
+  private func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
     let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
@@ -466,7 +499,7 @@ struct MainVideoView: View {
     }
   }
   
-   func logDetections(detections: [Detection], frameNumber: Int, folderURL: URL) {
+  private func logDetections(detections: [Detection], frameNumber: Int, folderURL: URL) {
     let logFileName = folderURL.appendingPathComponent("log_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
     
     var log = DetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
@@ -536,6 +569,7 @@ struct MainVideoView: View {
         }
         frameDetections[frameNumber] = detections
       }
+      
       self.detectedObjects = []
       player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
         let frameNumber = Int(CMTimeGetSeconds(time) * Double(self.getVideoFrameRate()))
@@ -547,14 +581,11 @@ struct MainVideoView: View {
   }
   
   private func startFPSMode() {
-    // Implement FPS mode: video speed ≤ detection speed (FPPS), and video framerate/playbackspeed increases gradually until we can't satisfy the condition
     player.rate = 1.0 // Start with normal speed
     var detectionTime: Double = 1.0
     
     player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
       let startTime = CFAbsoluteTimeGetCurrent()
-      // Run detection model (pseudo-code)
-      // runModel(on: currentFrame)
       let endTime = CFAbsoluteTimeGetCurrent()
       detectionTime = endTime - startTime
       let newRate = 1.0 / detectionTime
@@ -563,184 +594,118 @@ struct MainVideoView: View {
   }
   
   private func stopFPSMode() {
-    // Stop FPS mode
     player.rate = 1.0
   }
   
   private func startFramePerFrameMode() {
-    // Implement frame-per-frame mode: reduces video speed to play one frame per second
     player.rate = 1.0 / Float(player.currentItem?.tracks.first?.currentVideoFrameRate ?? 1.0)
   }
   
   private func stopFramePerFrameMode() {
-    // Stop frame-per-frame mode
     player.rate = 1.0
   }
   
   private func startPlayBackwardMode() {
-    // Implement play backward mode
     player.rate = -1.0
   }
   
   private func stopPlayBackwardMode() {
-    // Stop play backward mode
     player.rate = 1.0
   }
   
-  // Helper methods
-  private func openFile() {
-    let panel = NSOpenPanel()
-    panel.canChooseFiles = true
-    panel.canChooseDirectories = false
-    panel.allowsMultipleSelection = true
-    panel.allowedFileTypes = ["mp4", "mov", "m4v"]
+  private func runPredictionsWithoutPlaying() {
+    guard let playerItem = player.currentItem else { return }
+    let duration = playerItem.duration
+    let frameRate = getVideoFrameRate()
+    let totalFrames = Int(CMTimeGetSeconds(duration) * Double(frameRate))
     
-    if panel.runModal() == .OK {
-      mediaModel.videos.append(contentsOf: panel.urls)
-    }
-  }
-  
-  private func addKeyboardShortcuts() {
-    NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
-      if $0.modifierFlags.contains(.command) {
-        switch $0.charactersIgnoringModifiers {
-        case "o":
-          openFile()
-          return nil
-        default:
-          return $0
+    var currentFrame = 0
+    var currentTime = CMTime.zero
+    
+    while currentFrame < totalFrames {
+      let interval = CMTime(value: 1, timescale: Int32(frameRate))
+      currentTime = CMTimeMultiplyByFloat64(interval, multiplier: Float64(currentFrame))
+      
+      if let videoOutput = videoOutput, videoOutput.hasNewPixelBuffer(forItemTime: currentTime) {
+        var presentationTime = CMTime()
+        if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: &presentationTime) {
+          runModel(on: pixelBuffer)
         }
       }
-      return $0
+      
+      currentFrame += 1
     }
   }
   
-  private func addPlaybackObservers() {
-    NotificationCenter.default.addObserver(forName: .AVPlayerItemDidPlayToEndTime, object: nil, queue: .main) { _ in
-      objectDetectionEnabled = false
-    }
-    player.addPeriodicTimeObserver(forInterval: CMTime(value: 15, timescale: 2), queue: .main) { time in
-      if player.rate == 0.0 && objectDetectionEnabled {
-        objectDetectionEnabled = false
-      }
-    }
-  }
-  
-  private func triggerDetectionIfNeeded() {
-    if objectDetectionEnabled {
-      startFrameExtraction()
+  private func checkAccessToPath(url: URL) -> Bool {
+    var bookmarkDataIsStale: Bool = false
+    do {
+      _ = try URL(resolvingBookmarkData: url.bookmarkData(), options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &bookmarkDataIsStale)
+      return !bookmarkDataIsStale
+    } catch {
+      return false
     }
   }
+
+
   
   private func move(from source: IndexSet, to destination: Int) {
     mediaModel.videos.move(fromOffsets: source, toOffset: destination)
   }
   
-  private func handleDrop(providers: [NSItemProvider]) -> Bool {
+  private func addVideoFromDrop(providers: [NSItemProvider]) -> Bool {
     for provider in providers {
       if provider.hasItemConformingToTypeIdentifier("public.file-url") {
-        provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { (urlData, error) in
+        provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { (item, error) in
+          guard let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
           DispatchQueue.main.async {
-            if let data = urlData as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
-              self.mediaModel.videos.append(url)
-            }
+            self.mediaModel.videos.append(url)
           }
         }
+        return true
       }
     }
-    return true
-  }
-  private func runPredictionWithoutPlaying() {
-    guard let currentItem = player.currentItem else { return }
-    let duration = currentItem.duration
-    let step = CMTime(value: 1, timescale: 30)
-    var currentTime = CMTime.zero
-    
-    while currentTime <= duration {
-      if let videoOutput = self.videoOutput,
-         videoOutput.hasNewPixelBuffer(forItemTime: currentTime) {
-        var presentationTime = CMTime()
-        if let pixelBuffer = videoOutput.copyPixelBuffer(forItemTime: currentTime, itemTimeForDisplay: &presentationTime) {
-          mediaModel.currentFrame = pixelBuffer
-          mediaModel.currentPixelBuffer = pixelBuffer
-          if objectDetectionEnabled {
-            runModel(on: pixelBuffer)
-          }
-        }
-      }
-      currentTime = currentTime + step
-    }
-    }
-
-  private func selectVideo(url: URL) {
-    mediaModel.selectedVideoURL = url
-    let asset = AVAsset(url: url)
-    let playerItem = AVPlayerItem(asset: asset)
-    setupVideoOutput(for: playerItem)
-    player.replaceCurrentItem(with: playerItem)
-    playerView.player = player
-    startFrameExtraction()
-  }
-  
-  private func showInFinder(url: URL) {
-    NSWorkspace.shared.activateFileViewerSelecting([url])
-  }
-  
-  private func showResultsInFinder(url: URL) {
-    guard let savePath = savePath else { return }
-    let folderName = "\(url.lastPathComponent)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    NSWorkspace.shared.activateFileViewerSelecting([folderURL])
+    return false
   }
   
   private func openInNewWindow(url: URL) {
-    let newWindow = NSWindow(contentViewController: NSHostingController(rootView: MainVideoView()))
-    newWindow.makeKeyAndOrderFront(nil)
-    newWindow.contentViewController?.view.window?.title = url.lastPathComponent
-  }
-  
-  func copyCurrentFrame() {
-    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-    let context = CIContext()
-    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
-    let nsImage = NSImage(cgImage: cgImage, size: .zero)
-    NSPasteboard.general.clearContents()
-    NSPasteboard.general.writeObjects([nsImage])
+    let newWindow = NSWindow(
+      contentRect: NSMakeRect(0, 0, 800, 600),
+      styleMask: [.titled, .closable, .resizable, .miniaturizable],
+      backing: .buffered, defer: false)
+    newWindow.title = "Video Player"
+    let newWindowController = NSWindowController(window: newWindow)
+    newWindowController.showWindow(self)
+    
+    let mainVideoView = MainVideoView()
+    let contentView = NSHostingView(rootView: mainVideoView)
+    newWindow.contentView = contentView
+    
+    mainVideoView.mediaModel.videos = [url]
+    mainVideoView.mediaModel.selectedVideoURL = url
+    let asset = AVAsset(url: url)
+    let playerItem = AVPlayerItem(asset: asset)
+    mainVideoView.setupVideoOutput(for: playerItem)
+    mainVideoView.player.replaceCurrentItem(with: playerItem)
+    mainVideoView.playerView.player = mainVideoView.player
+    mainVideoView.startFrameExtraction()
   }
 
-private func saveCurrentFrame() {
-  guard let savePath = savePath else { return }
-  guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
-  
-  let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-  let context = CIContext()
-  guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
-  let nsImage = NSImage(cgImage: cgImage, size: .zero)
-  
-  let frameNumber = Int(CMTimeGetSeconds(player.currentTime()) * 100) // Assuming 100 FPS for simplicity
-  let fileName = "\(savePath.path)/frame_\(frameNumber).jpg"
-  
-  guard let tiffData = nsImage.tiffRepresentation,
-        let bitmap = NSBitmapImageRep(data: tiffData),
-        let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
-  
-  do {
-    try jpegData.write(to: URL(fileURLWithPath: fileName))
-  } catch {
-    print("Error saving frame: \(error)")
+}
+
+extension URL {
+  func bookmarkData() -> Data {
+    return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
   }
 }
 
-
-  
-  
-  
-  
-  
-  
-  
-  
+extension CFAbsoluteTime {
+  var asTimeString: String? {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.unitsStyle = .positional
+    return formatter.string(from: self)
+  }
 }
 
 struct VideoPlayerViewMain: NSViewRepresentable {
@@ -752,19 +717,15 @@ struct VideoPlayerViewMain: NSViewRepresentable {
     playerView.player = player
     playerView.allowsMagnification = true
     playerView.allowsPictureInPicturePlayback = true
-//    playerView.controlsStyle = .floating
-    //playerView.autoresizingMask = .none
-    playerView.showsFrameSteppingButtons = true
-    playerView.allowsVideoFrameAnalysis = true
+    playerView.controlsStyle = .floating
+    playerView.autoresizingMask = .none
     playerView.videoFrameAnalysisTypes = .subject
-    playerView.controlsStyle = .inline
     return playerView
   }
+  
   func updateNSView(_ nsView: AVPlayerView, context: Context) {
     if let playerView = nsView as? AVPlayerView {
       playerView.player = player
-//    }
+    }
   }
-}
-
 }
