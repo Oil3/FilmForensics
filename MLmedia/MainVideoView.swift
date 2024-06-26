@@ -10,15 +10,15 @@ struct MainVideoView: View {
   @State private var playerView = AVPlayerView()
   @State private var detectedObjects: [VNRecognizedObjectObservation] = []
   @State private var detectedFaces: [VNFaceObservation] = []
-  @State private var detectedHumans: [VNHumanObservation] = [] // New state for human detection
-  @State private var detectedHands: [VNHumanHandPoseObservation] = [] // New state for hand detection
+  @State private var detectedHumans: [VNHumanObservation] = []
+  @State private var detectedHands: [VNHumanHandPoseObservation] = []
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
   @State private var objectDetectionEnabled = false
-  @State private var faceDetectionEnabled = true // New state for face detection
-  @State private var humanRectangleDetectionEnabled = true // New state for human rectangle detection
-  @State private var handDetectionEnabled = false // New state for hand detection
-  @State private var numberOfHandsToTrack = 2 // New state for number of hands to track
+  @State private var faceDetectionEnabled = true
+  @State private var humanDetectionEnabled = true
+  @State private var handDetectionEnabled = false
+  @State private var handDetectionMax = 2
   @State private var saveLabels = false
   @State private var saveFrames = false
   @State private var saveJsonLog = false
@@ -32,14 +32,15 @@ struct MainVideoView: View {
   @State private var showBoundingBoxes = true
   @State private var savePath: URL?
   @State private var totalObjectsDetected = 0
-  @State private var totalFacesDetected = 0 // New state for face detection count
-  @State private var totalHumansDetected = 0 // New state for human detection count
-  @State private var totalHandsDetected = 0 // New state for hand detection count
+  @State private var totalFacesDetected = 0
+  @State private var totalHumansDetected = 0
+  @State private var totalHandsDetected = 0
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
   @State private var selectedSize: CGSize = CGSize(width: 1280, height: 720)
-  
+  let configuration = MLModelConfiguration()
+
   var body: some View {
     NavigationView {
       videoGallery
@@ -234,8 +235,13 @@ struct MainVideoView: View {
               GeometryReader { geo -> AnyView in
                 return AnyView(
                   ForEach(detectedHands, id: \.self) { hand in
-                    if showBoundingBoxes {
-                      drawBoundingBox(for: hand, in: geo.size, color: .yellow)
+                    ForEach(hand.availableJointNames, id: \.self) { jointName in
+                      if let point = try? hand.recognizedPoint(jointName) {
+                        Circle()
+                          .fill(Color.yellow)
+                          .frame(width: 5, height: 5)
+                          .position(x: point.location.x * geo.size.width, y: (1 - point.location.y) * geo.size.height)
+                      }
                     }
                   }
                 )
@@ -259,27 +265,23 @@ struct MainVideoView: View {
       VStack {
         HStack {
           Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
-          Toggle("Enable Face Detection", isOn: $faceDetectionEnabled) // New toggle for face detection
-          Toggle("Enable Human Detection", isOn: $humanRectangleDetectionEnabled) // New toggle for human detection
-          Toggle("Save Labels", isOn: $saveLabels)
-          Toggle("Save Frames", isOn: $saveFrames)
-          Toggle("Save JSON Log", isOn: $saveJsonLog)
-          Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
-        }
-        HStack {
-          Text("Hand Detection:")
-          Picker("Number of Hands", selection: $numberOfHandsToTrack) {
-            Text("0").tag(0)
+          Toggle("Enable Face Detection", isOn: $faceDetectionEnabled)
+          Toggle("Enable Human Detection", isOn: $humanDetectionEnabled)
+          Picker("Hand Detection", selection: $handDetectionMax) {
+            Text("Off").tag(0)
             Text("1").tag(1)
             Text("2").tag(2)
             Text("4").tag(4)
             Text("6").tag(6)
-            Text("Max (10)").tag(10)
+            Text("Max").tag(10)
           }
-          .pickerStyle(MenuPickerStyle())
-          .onChange(of: numberOfHandsToTrack) { newValue in
+          .onChange(of: handDetectionMax) { newValue in
             handDetectionEnabled = newValue > 0
           }
+          Toggle("Save Labels", isOn: $saveLabels)
+          Toggle("Save Frames", isOn: $saveFrames)
+          Toggle("Save JSON Log", isOn: $saveJsonLog)
+          Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
         }
         HStack {
           Button("Select Save Path") {
@@ -370,8 +372,11 @@ struct MainVideoView: View {
   }
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: IO_cashtrack().model)
-    let request = VNCoreMLRequest(model: model) { request, error in
+    let configuration = MLModelConfiguration()
+    configuration.allowLowPrecisionAccumulationOnGPU = true
+    configuration.computeUnits = .cpuAndGPU
+    let modelVN = try! VNCoreMLModel(for: IO_cashtrack(configuration: configuration).model)
+    let request = VNCoreMLRequest(model: modelVN) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
         DispatchQueue.main.async {
@@ -382,6 +387,7 @@ struct MainVideoView: View {
               await processAndSaveDetections(results, at: player.currentItem?.currentTime())
             }
           }
+        
           if autoPauseOnNewDetection && !results.isEmpty {
             player.pause()
           }
@@ -447,7 +453,7 @@ struct MainVideoView: View {
         }
       }
     }
-    handRequest.maximumHandCount = numberOfHandsToTrack
+    handRequest.maximumHandCount = handDetectionMax
     
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([handRequest])
@@ -456,7 +462,7 @@ struct MainVideoView: View {
   private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
     let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
     let folderName = "\(videoFilename)"
     let folderURL = savePath.appendingPathComponent(folderName)
@@ -501,7 +507,7 @@ struct MainVideoView: View {
   private func processAndSaveFaces(_ faces: [VNFaceObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
     let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
     let folderName = "\(videoFilename)"
     let folderURL = savePath.appendingPathComponent(folderName)
@@ -544,7 +550,7 @@ struct MainVideoView: View {
   private func processAndSaveHumans(_ humans: [VNHumanObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
     let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
     let folderName = "\(videoFilename)"
     let folderURL = savePath.appendingPathComponent(folderName)
@@ -587,7 +593,7 @@ struct MainVideoView: View {
   private func processAndSaveHands(_ hands: [VNHumanHandPoseObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate())) // Calculate frame number based on actual video FPS
+    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
     let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
     let folderName = "\(videoFilename)"
     let folderURL = savePath.appendingPathComponent(folderName)
@@ -603,10 +609,14 @@ struct MainVideoView: View {
     
     var labelText = ""
     var handLog = [HandDetection]()
+    
     for hand in hands {
-      let boundingBox = hand. boundingBox
-      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
-      handLog.append(HandDetection(boundingBox: boundingBox))
+      for jointName in hand.availableJointNames {
+        if let point = try? hand.recognizedPoint(jointName).location {
+          labelText += "\(jointName) \(point.x.rounded(toPlaces: 5)) \(1 - point.y.rounded(toPlaces: 5))\n"
+          handLog.append(HandDetection(location: point))
+        }
+      }
     }
     
     if !labelText.isEmpty {
@@ -669,7 +679,7 @@ struct MainVideoView: View {
           if faceDetectionEnabled {
             runFaceDetection(on: pixelBuffer)
           }
-          if humanRectangleDetectionEnabled {
+          if humanDetectionEnabled {
             runHumanDetection(on: pixelBuffer)
           }
           if handDetectionEnabled {
@@ -895,7 +905,7 @@ struct MainVideoView: View {
   }
   
   private func startFPSMode() {
-    player.rate = 1.0 // Start with normal speed
+    player.rate = 1.0
     var detectionTime: Double = 1.0
     
     player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
@@ -947,7 +957,7 @@ struct MainVideoView: View {
           if faceDetectionEnabled {
             runFaceDetection(on: pixelBuffer)
           }
-          if humanRectangleDetectionEnabled {
+          if humanDetectionEnabled {
             runHumanDetection(on: pixelBuffer)
           }
           if handDetectionEnabled {
@@ -988,7 +998,7 @@ struct MainVideoView: View {
     }
     return false
   }
-  
+
   private func openInNewWindow(url: URL) {
     let newWindow = NSWindow(
       contentRect: NSMakeRect(0, 0, 800, 600),
@@ -1011,23 +1021,4 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
-}
-
-  
-
-
-struct HandDetection: Codable, Identifiable {
-  var id = UUID()
-  var boundingBox: CGRect
-}
-
-struct HandFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [HandDetection]?
-}
-
-struct HandDetectionLog: Codable {
-  var videoURL: String
-  var creationDate: String
-  var frames: [HandFrameLog]
 }

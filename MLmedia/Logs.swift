@@ -5,7 +5,7 @@
 //  Created by Almahdi Morris on 21/6/24.
 //
 import SwiftUI
-
+import Vision
 struct DetectionLog: Codable {
   var videoURL: String
   var creationDate: String
@@ -39,12 +39,18 @@ struct FrameLog: Codable {
   var frameNumber: Int
   var detections: [Detection]?
 }
-
-struct Detection: Codable {
+struct Detection: Codable, Identifiable {
+  var id = UUID()
   var boundingBox: CGRect
   var identifier: String
-  var confidence: Float
+  var confidence: VNConfidence
 }
+
+//struct Detection: Codable {
+//  var boundingBox: CGRect
+//  var identifier: String
+//  var confidence: Float
+//}
 extension CGFloat {
   func rounded(toPlaces places: Int) -> CGFloat {
     let divisor = pow(10.0, CGFloat(places))
