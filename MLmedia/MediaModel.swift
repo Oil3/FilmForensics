@@ -28,6 +28,22 @@ class MediaModel: ObservableObject {
 import Vision
 import AVFoundation
 
+extension URL {
+  func bookmarkData() -> Data {
+    return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
+  }
+}
+
+extension CFAbsoluteTime {
+  var asTimeString: String? {
+    let formatter = DateComponentsFormatter()
+    formatter.allowedUnits = [.hour, .minute, .second]
+    formatter.unitsStyle = .positional
+    return formatter.string(from: self)
+  }
+}
+
+
 
 struct FaceDetection: Codable, Identifiable {
   var id = UUID()
@@ -45,22 +61,25 @@ struct FaceFrameLog: Codable {
   var detections: [FaceDetection]?
 }
 
+struct HumanDetection: Codable, Identifiable {
+  var id = UUID()
 
-
-extension URL {
-  func bookmarkData() -> Data {
-    return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
-  }
+  var boundingBox: CGRect
 }
 
-extension CFAbsoluteTime {
-  var asTimeString: String? {
-    let formatter = DateComponentsFormatter()
-    formatter.allowedUnits = [.hour, .minute, .second]
-    formatter.unitsStyle = .positional
-    return formatter.string(from: self)
-  }
+struct HumanFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HumanDetection]?
 }
+
+struct HumanDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HumanFrameLog]
+}
+
+
+
 import Vision
 import AVFoundation
 import AVKit
@@ -85,5 +104,3 @@ struct VideoPlayerViewMain: NSViewRepresentable {
     }
   }
 }
-
-
