@@ -6,6 +6,7 @@
 //
 import SwiftUI
 import Vision
+
 struct DetectionLog: Codable {
   var videoURL: String
   var creationDate: String
@@ -34,11 +35,11 @@ struct DetectionLog: Codable {
   var metadata: Metadata?
 }
 
-
 struct FrameLog: Codable {
   var frameNumber: Int
   var detections: [Detection]?
 }
+
 struct Detection: Codable, Identifiable {
   var id = UUID()
   var boundingBox: CGRect
@@ -46,15 +47,56 @@ struct Detection: Codable, Identifiable {
   var confidence: VNConfidence
 }
 
-//struct Detection: Codable {
-//  var boundingBox: CGRect
-//  var identifier: String
-//  var confidence: Float
-//}
+struct HandDetection: Codable, Identifiable {
+  var id = UUID()
+  var location: CGPoint
+}
+
+struct HandFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HandDetection]?
+}
+
+struct HandDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HandFrameLog]
+}
+
+struct FaceDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct FaceFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [FaceDetection]?
+}
+
+struct FaceDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [FaceFrameLog]
+}
+
+struct HumanDetection: Codable, Identifiable {
+  var id = UUID()
+  var boundingBox: CGRect
+}
+
+struct HumanFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [HumanDetection]?
+}
+
+struct HumanDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [HumanFrameLog]
+}
 extension CGFloat {
   func rounded(toPlaces places: Int) -> CGFloat {
     let divisor = pow(10.0, CGFloat(places))
     return (self * divisor).rounded() / divisor
   }
 }
-

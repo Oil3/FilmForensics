@@ -1,33 +1,33 @@
 import SwiftUI
 
 class MediaModel: ObservableObject {
-    @Published var videos: [URL] = []
-    @Published var selectedVideoURL: URL?
-    @Published var currentFrame: CVPixelBuffer?
-    @Published var currentPixelBuffer: CVPixelBuffer?
-    
-    func addVideos() {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = true
-        panel.canChooseFiles = true
-        panel.allowedFileTypes = ["mp4", "mov"]
-        if panel.runModal() == .OK {
-            videos.append(contentsOf: panel.urls)
-        }
+  @Published var videos: [URL] = []
+  @Published var selectedVideoURL: URL?
+  @Published var currentFrame: CVPixelBuffer?
+  @Published var currentPixelBuffer: CVPixelBuffer?
+  
+  func addVideos() {
+    let panel = NSOpenPanel()
+    panel.allowsMultipleSelection = true
+    panel.canChooseFiles = true
+    panel.allowedFileTypes = ["mp4", "mov"]
+    if panel.runModal() == .OK {
+      videos.append(contentsOf: panel.urls)
     }
-    
-    func clearVideos() {
-        videos.removeAll()
-        selectedVideoURL = nil
-        currentFrame = nil
-        currentPixelBuffer = nil
-    }
+  }
+  
+  func clearVideos() {
+    videos.removeAll()
+    selectedVideoURL = nil
+    currentFrame = nil
+    currentPixelBuffer = nil
+  }
 }
-
 
 import Vision
 import AVFoundation
 import AVKit
+
 extension URL {
   func bookmarkData() -> Data {
     return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
@@ -65,56 +65,13 @@ struct VideoPlayerViewMain: NSViewRepresentable {
   }
 }
 
-struct HandDetection: Codable, Identifiable {
-  var id = UUID()
-  //var jointName: VNHumanHandPoseObservation.JointName
-  var location: CGPoint
-}
-
-struct HandFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [HandDetection]?
-}
-
-struct HandDetectionLog: Codable {
-  var videoURL: String
-  var creationDate: String
-  var frames: [HandFrameLog]
-}
-
-
-
-
-
-
-struct FaceDetection: Codable, Identifiable {
-  var id = UUID()
-  var boundingBox: CGRect
-}
-
-struct FaceFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [FaceDetection]?
-}
-
-struct FaceDetectionLog: Codable {
-  var videoURL: String
-  var creationDate: String
-  var frames: [FaceFrameLog]
-}
-
-struct HumanDetection: Codable, Identifiable {
-  var id = UUID()
-  var boundingBox: CGRect
-}
-
-struct HumanFrameLog: Codable {
-  var frameNumber: Int
-  var detections: [HumanDetection]?
-}
-
-struct HumanDetectionLog: Codable {
-  var videoURL: String
-  var creationDate: String
-  var frames: [HumanFrameLog]
+extension CGRect {
+  func scaled(to size: CGSize) -> CGRect {
+    let scaleX = size.width / self.width
+    let scaleY = size.height / self.height
+    return CGRect(x: self.origin.x * scaleX,
+                  y: self.origin.y * scaleY,
+                  width: self.width * scaleX,
+                  height: self.height * scaleY)
+  }
 }
