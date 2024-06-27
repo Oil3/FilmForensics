@@ -92,122 +92,122 @@ struct ForensicImageProcessor {
     return nil
   }
 }
-import SwiftUI
-
-class ImageModel: ObservableObject {
-  @Published var images: [NSImage] = []
-  @Published var processedImage: NSImage?
-  @Published var threshold: Float = 50.0 // Default threshold value
-  @Published var outputDirectory: URL?
-  
-  let processor = ForensicImageProcessor()
-  
-  func compareNextImage() {
-    guard images.count > 1 else { return }
-    
-    for i in 0..<(images.count - 1) {
-      let ciImage1 = CIImage(data: images[i].tiffRepresentation!)
-      let ciImage2 = CIImage(data: images[i + 1].tiffRepresentation!)
-      
-      if let result = processor.compareImages(image1: ciImage1!, image2: ciImage2!, threshold: threshold) {
-        processedImage = result
-        break
-      }
-    }
-  }
-  
-  func alignAndCropFaces() {
-    guard let outputDirectory = outputDirectory else { return }
-    for image in images {
-      let ciImage = CIImage(data: image.tiffRepresentation!)!
-      processor.detectFaceLandmarks(image: ciImage) { [weak self] faceObservation in
-        guard let self = self, let faceObservation = faceObservation else { return }
-        if let alignedImage = self.processor.alignAndCropFace(image: ciImage, faceObservation: faceObservation) {
-          let outputPath = outputDirectory.appendingPathComponent(UUID().uuidString + ".png")
-          if let cgImage = self.processor.context.createCGImage(alignedImage, from: alignedImage.extent) {
-            let nsImage = NSImage(cgImage: cgImage, size: alignedImage.extent.size)
-            if let tiffData = nsImage.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffData) {
-              let pngData = bitmapImage.representation(using: .png, properties: [:])
-              try? pngData?.write(to: outputPath)
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-struct ForensicView: View {
-  @StateObject var imageModel = ImageModel()
-  
-  var body: some View {
-    VStack {
-      ScrollView(.horizontal) {
-        HStack {
-          ForEach(imageModel.images, id: \.self) { image in
-            Image(nsImage: image)
-              .resizable()
-              .scaledToFit()
-              .frame(width: 100, height: 100)
-          }
-        }
-      }
-      HStack {
-        Button("Select Images") {
-          selectImages { images in
-            imageModel.images = images
-          }
-        }
-        Button("Select Output Directory") {
-          selectOutputDirectory { url in
-            imageModel.outputDirectory = url
-          }
-        }
-      }
-      VStack {
-        Text("Threshold: \(Int(imageModel.threshold))")
-        Slider(value: $imageModel.threshold, in: 0...100)
-      }
-      .padding()
-      Button("Compare Next Images") {
-        imageModel.compareNextImage()
-      }
-      Button("Align and Crop Faces") {
-        imageModel.alignAndCropFaces()
-      }
-      if let processedImage = imageModel.processedImage {
-        Image(nsImage: processedImage)
-          .resizable()
-          .scaledToFit()
-          .frame(width: 400, height: 400)
-      }
-    }
-    .padding()
-  }
-  
-  func selectImages(completion: @escaping ([NSImage]) -> Void) {
-    let panel = NSOpenPanel()
-    panel.allowedFileTypes = ["png", "jpg", "jpeg"]
-    panel.allowsMultipleSelection = true
-    panel.begin { response in
-      if response == .OK {
-        let images = panel.urls.compactMap { url -> NSImage? in
-          return NSImage(contentsOf: url)
-        }
-        completion(images)
-      }
-    }
-  }
-  
-  func selectOutputDirectory(completion: @escaping (URL) -> Void) {
-    let panel = NSOpenPanel()
-    panel.canChooseDirectories = true
-    panel.canCreateDirectories = true
-    panel.allowsMultipleSelection = false
-    panel.begin { response in
-      if response == .OK, let url = panel.url {
-        completion(url)
-      }
-    }
-  }
-}
+//import SwiftUI
+//
+//class ImageModel: ObservableObject {
+//  @Published var images: [NSImage] = []
+//  @Published var processedImage: NSImage?
+//  @Published var threshold: Float = 50.0 // Default threshold value
+//  @Published var outputDirectory: URL?
+//  
+//  let processor = ForensicImageProcessor()
+//  
+//  func compareNextImage() {
+//    guard images.count > 1 else { return }
+//    
+//    for i in 0..<(images.count - 1) {
+//      let ciImage1 = CIImage(data: images[i].tiffRepresentation!)
+//      let ciImage2 = CIImage(data: images[i + 1].tiffRepresentation!)
+//      
+//      if let result = processor.compareImages(image1: ciImage1!, image2: ciImage2!, threshold: threshold) {
+//        processedImage = result
+//        break
+//      }
+//    }
+//  }
+//  
+//  func alignAndCropFaces() {
+//    guard let outputDirectory = outputDirectory else { return }
+//    for image in images {
+//      let ciImage = CIImage(data: image.tiffRepresentation!)!
+//      processor.detectFaceLandmarks(image: ciImage) { [weak self] faceObservation in
+//        guard let self = self, let faceObservation = faceObservation else { return }
+//        if let alignedImage = self.processor.alignAndCropFace(image: ciImage, faceObservation: faceObservation) {
+//          let outputPath = outputDirectory.appendingPathComponent(UUID().uuidString + ".png")
+//          if let cgImage = self.processor.context.createCGImage(alignedImage, from: alignedImage.extent) {
+//            let nsImage = NSImage(cgImage: cgImage, size: alignedImage.extent.size)
+//            if let tiffData = nsImage.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffData) {
+//              let pngData = bitmapImage.representation(using: .png, properties: [:])
+//              try? pngData?.write(to: outputPath)
+//            }
+//          }
+//        }
+//      }
+//    }
+//  }
+//}
+//
+//struct ForensicView: View {
+//  @StateObject var imageModel = ImageModel()
+//  
+//  var body: some View {
+//    VStack {
+//      ScrollView(.horizontal) {
+//        HStack {
+//          ForEach(imageModel.images, id: \.self) { image in
+//            Image(nsImage: image)
+//              .resizable()
+//              .scaledToFit()
+//              .frame(width: 100, height: 100)
+//          }
+//        }
+//      }
+//      HStack {
+//        Button("Select Images") {
+//          selectImages { images in
+//            imageModel.images = images
+//          }
+//        }
+//        Button("Select Output Directory") {
+//          selectOutputDirectory { url in
+//            imageModel.outputDirectory = url
+//          }
+//        }
+//      }
+//      VStack {
+//        Text("Threshold: \(Int(imageModel.threshold))")
+//        Slider(value: $imageModel.threshold, in: 0...100)
+//      }
+//      .padding()
+//      Button("Compare Next Images") {
+//        imageModel.compareNextImage()
+//      }
+//      Button("Align and Crop Faces") {
+//        imageModel.alignAndCropFaces()
+//      }
+//      if let processedImage = imageModel.processedImage {
+//        Image(nsImage: processedImage)
+//          .resizable()
+//          .scaledToFit()
+//          .frame(width: 400, height: 400)
+//      }
+//    }
+//    .padding()
+//  }
+//  
+//  func selectImages(completion: @escaping ([NSImage]) -> Void) {
+//    let panel = NSOpenPanel()
+//    panel.allowedFileTypes = ["png", "jpg", "jpeg"]
+//    panel.allowsMultipleSelection = true
+//    panel.begin { response in
+//      if response == .OK {
+//        let images = panel.urls.compactMap { url -> NSImage? in
+//          return NSImage(contentsOf: url)
+//        }
+//        completion(images)
+//      }
+//    }
+//  }
+//  
+//  func selectOutputDirectory(completion: @escaping (URL) -> Void) {
+//    let panel = NSOpenPanel()
+//    panel.canChooseDirectories = true
+////    panel.canCreateDirectories = true
+////    panel.allowsMultipleSelection = false
+////    panel.begin { response in
+////      if response == .OK, let url = panel.url {
+////        completion(url)
+////      }
+////    }
+////  }
+////}
