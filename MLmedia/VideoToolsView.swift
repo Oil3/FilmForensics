@@ -298,3 +298,75 @@ extension AVAsset {
         return self.tracks(withMediaType: .video).first?.nominalFrameRate ?? 0
     }
 }
+
+
+//private func loadAllLabels() {
+//  guard let savePath = savePath else { return }
+//  
+//  let fileManager = FileManager.default
+//  do {
+//    let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
+//    var allDetections: [VNRecognizedObjectObservation] = []
+//    
+//    for fileURL in fileURLs where fileURL.pathExtension == "txt" {
+//      let content = try String(contentsOf: fileURL)
+//      let lines = content.split(separator: "\n")
+//      for line in lines {
+//        let components = line.split(separator: " ")
+//        if components.count == 5, let x = Double(components[1]), let y = Double(components[2]), let width = Double(components[3]), let height = Double(components[4]) {
+//          let boundingBox = CGRect(x: x, y: y, width: width, height: height)
+//          let observation = VNRecognizedObjectObservation(boundingBox: boundingBox)
+//          allDetections.append(observation)
+//        }
+//      }
+//    }
+//    self.detectedObjects = allDetections
+//  } catch {
+//    print("Error loading labels: \(error)")
+//  }
+//}
+
+
+//HStack {
+//  Button("Load All Labels") {
+//    loadAllLabels()
+//  }
+//  Button("Load and Sync Labels") {
+//    loadAndSyncLabels()
+//  }
+//}
+//
+//private func loadAndSyncLabels() {
+//  guard let savePath = savePath else { return }
+//  
+//  let fileManager = FileManager.default
+//  do {
+//    let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
+//    var frameDetections: [Int: [VNRecognizedObjectObservation]] = [:]
+//    
+//    for fileURL in fileURLs where fileURL.pathExtension == "txt" {
+//      let frameNumber = Int(fileURL.deletingPathExtension().lastPathComponent.split(separator: "_").last ?? "") ?? 0
+//      let content = try String(contentsOf: fileURL)
+//      let lines = content.split(separator: "\n")
+//      var detections: [VNRecognizedObjectObservation] = []
+//      
+//      for line in lines {
+//        let components = line.split(separator: " ")
+//        if components.count == 5, let x = Double(components[1]), let y = Double(components[2]), let width = Double(components[3]), let height = Double(components[4]) {
+//          let boundingBox = CGRect(x: x, y: y, width: width, height: height)
+//          let observation = VNRecognizedObjectObservation(boundingBox: boundingBox)
+//          detections.append(observation)
+//        }
+//      }
+//      frameDetections[frameNumber] = detections
+//    }
+//    
+//    self.detectedObjects = []
+//    player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
+//      let frameNumber = Int(CMTimeGetSeconds(time) * Double(self.getVideoFrameRate()))
+//      self.detectedObjects = frameDetections[frameNumber] ?? []
+//    }
+//  } catch {
+//    print("Error loading labels: \(error)")
+//  }
+//  }

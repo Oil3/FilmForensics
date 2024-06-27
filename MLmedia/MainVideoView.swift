@@ -14,10 +14,10 @@ struct MainVideoView: View {
   @State private var detectedHands: [VNHumanHandPoseObservation] = []
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
-  @State private var objectDetectionEnabled = false
+  @State private var objectDetectionEnabled = true
   @State private var faceDetectionEnabled = true
-  @State private var humanDetectionEnabled = true
-  @State private var handDetectionEnabled = true
+  @State private var humanDetectionEnabled = false
+  @State private var handDetectionEnabled = false
   @State private var maxRequestsMode = false
   @State private var framePerFrameMode = false
   @State private var loopMode = false
@@ -37,7 +37,11 @@ struct MainVideoView: View {
   @State private var saveJsonLog = false
   @State private var saveLabels = false
   @State private var saveFrames = false
-
+  @State private var faceExtractionEnabled = false
+  @State private var bodyPoseDetectionEnabled = false
+  @State private var boundingBoxScale: CGFloat = 1.0
+  var imageCropAndScaleOption: VNImageCropAndScaleOption = .scaleFill
+  
   var body: some View {
     NavigationView {
       videoGallery
@@ -167,7 +171,7 @@ struct MainVideoView: View {
         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
         Text("Frame: \(getCurrentFrameNumber())")
         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
-        Text("Dropped Frames: \(droppedFrames)")
+        Text("Dropped Frames: \( droppedFrames)")
         Text("Corrupted Frames: \(corruptedFrames)")
       }
       HStack {
@@ -193,7 +197,7 @@ struct MainVideoView: View {
                 return AnyView(
                   ForEach(detectedObjects, id: \.self) { object in
                     if showBoundingBoxes {
-                      drawBoundingBox(for: object, in: geo.size, color: .red)
+                      drawBoundingBox(for: object, in: geo.size, color: .red, scale: boundingBoxScale)
                     }
                   }
                 )
@@ -204,7 +208,7 @@ struct MainVideoView: View {
                 return AnyView(
                   ForEach(detectedFaces, id: \.self) { face in
                     if showBoundingBoxes {
-                      drawBoundingBox(for: face, in: geo.size, color: .blue)
+                      drawBoundingBox(for: face, in: geo.size, color: .blue, scale: boundingBoxScale)
                     }
                   }
                 )
@@ -215,7 +219,7 @@ struct MainVideoView: View {
                 return AnyView(
                   ForEach(detectedHumans, id: \.self) { human in
                     if showBoundingBoxes {
-                      drawBoundingBox(for: human, in: geo.size, color: .green)
+                      drawBoundingBox(for: human, in: geo.size, color: .green, scale: boundingBoxScale)
                     }
                   }
                 )
@@ -257,6 +261,8 @@ struct MainVideoView: View {
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
           Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
+          Toggle("Enable Face Extraction", isOn: $faceExtractionEnabled)
+          Toggle("Enable Body Pose Detection", isOn: $bodyPoseDetectionEnabled)
         }
         HStack {
           Button("Select Save Path") {
@@ -295,18 +301,7 @@ struct MainVideoView: View {
             stopFramePerFrameMode()
             stopPlayBackwardMode()
           }
-        }
-        .padding()
-        HStack {
-          Button("Load All Labels") {
-            loadAllLabels()
-          }
-          Button("Load and Sync Labels") {
-            loadAndSyncLabels()
-          }
-        }
-        HStack {
-          Button("Run Predictions") {
+          Button("Background Run") {
             runPredictionsWithoutPlaying()
           }
         }
@@ -325,21 +320,38 @@ struct MainVideoView: View {
     return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
   }
   
-  private func drawBoundingBox(for observation: VNDetectedObjectObservation, in parentSize: CGSize, color: NSColor) -> some View {
+  private func drawBoundingBox(for observation: VNDetectedObjectObservation, in parentSize: CGSize, color: NSColor, scale: CGFloat = 1.0) -> some View {
     let boundingBox = observation.boundingBox
     let videoWidth = parentSize.width
     let videoHeight = parentSize.height
-    let normalizedRect = CGRect(
+    let scaledRect = CGRect(
       x: boundingBox.minX * videoWidth,
       y: (1 - boundingBox.maxY) * videoHeight,
-      width: boundingBox.width * videoWidth,
-      height: boundingBox.height * videoHeight
+      width: boundingBox.width * videoWidth * scale,
+      height: boundingBox.height * videoHeight * scale
     )
     
     return Rectangle()
       .stroke(Color(color), lineWidth: 2)
-      .frame(width: normalizedRect.width, height: normalizedRect.height)
-      .position(x: normalizedRect.midX, y: normalizedRect.midY)
+      .frame(width: scaledRect.width, height: scaledRect.height)
+      .position(x: scaledRect.midX, y: scaledRect.midY)
+  }
+  
+  private func drawBoundingBox(for observation: VNFaceObservation, in parentSize: CGSize, color: NSColor, scale: CGFloat = 1.0) -> some View {
+    let boundingBox = observation.boundingBox
+    let videoWidth = parentSize.width
+    let videoHeight = parentSize.height
+    let scaledRect = CGRect(
+      x: boundingBox.minX * videoWidth,
+      y: (1 - boundingBox.maxY) * videoHeight,
+      width: boundingBox.width * videoWidth * scale,
+      height: boundingBox.height * videoHeight * scale
+    )
+    
+    return Rectangle()
+      .stroke(Color(color), lineWidth: 2)
+      .frame(width: scaledRect.width, height: scaledRect.height)
+      .position(x: scaledRect.midX, y: scaledRect.midY)
   }
   
   private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
@@ -356,8 +368,10 @@ struct MainVideoView: View {
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
     let model = try! VNCoreMLModel(for: IO_cashtrack().model)
+    
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
+      
       if let results = request.results as? [VNRecognizedObjectObservation] {
         DispatchQueue.main.async {
           self.detectedObjects = results
@@ -375,7 +389,7 @@ struct MainVideoView: View {
         }
       }
     }
-    
+    request.imageCropAndScaleOption = .scaleFill
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([request])
   }
@@ -495,10 +509,14 @@ struct MainVideoView: View {
     let folderURL = savePath.appendingPathComponent(folderName)
     let labelsFolderURL = folderURL.appendingPathComponent("labels_faces")
     let imagesFolderURL = folderURL.appendingPathComponent("images_faces")
+    let facesFolderURL = folderURL.appendingPathComponent("extracted_faces")
     
     createFolderIfNotExists(at: folderURL)
     createFolderIfNotExists(at: labelsFolderURL)
     createFolderIfNotExists(at: imagesFolderURL)
+    if faceExtractionEnabled {
+      createFolderIfNotExists(at: facesFolderURL)
+    }
     
     let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
     let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
@@ -506,7 +524,7 @@ struct MainVideoView: View {
     var labelText = ""
     var faceLog = [FaceDetection]()
     
-    for face in faces {
+    for (index, face) in faces.enumerated() {
       let boundingBox = face.boundingBox
       let scaledBoundingBox = CGRect(
         x: boundingBox.origin.x - boundingBox.size.width / 2,
@@ -516,6 +534,10 @@ struct MainVideoView: View {
       )
       labelText += "0 \(scaledBoundingBox.midX.rounded(toPlaces: 5)) \(1 - scaledBoundingBox.midY.rounded(toPlaces: 5)) \(scaledBoundingBox.width.rounded(toPlaces: 5)) \(scaledBoundingBox.height.rounded(toPlaces: 5))\n"
       faceLog.append(FaceDetection(boundingBox: scaledBoundingBox))
+      
+      if faceExtractionEnabled, let pixelBuffer = mediaModel.currentPixelBuffer {
+        extractAndSaveFace(from: pixelBuffer, boundingBox: scaledBoundingBox, at: facesFolderURL.appendingPathComponent("\(videoFilename)_face_\(frameNumber)_\(index).jpg"))
+      }
     }
     
     if !labelText.isEmpty {
@@ -532,6 +554,24 @@ struct MainVideoView: View {
     
     if saveJsonLog {
       logFaceDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
+  
+  private func extractAndSaveFace(from pixelBuffer: CVPixelBuffer, boundingBox: CGRect, at url: URL) {
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    let scaledRect = boundingBox.scaled(to: CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer)))
+    guard let faceImage = context.createCGImage(ciImage, from: scaledRect) else { return }
+    let nsImage = NSImage(cgImage: faceImage, size: .zero)
+    
+    guard let tiffData = nsImage.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiffData),
+          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+    
+    do {
+      try jpegData.write(to: url)
+    } catch {
+      print("Error saving face: \(error)")
     }
   }
   
@@ -649,6 +689,7 @@ struct MainVideoView: View {
     ]
     let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
     playerItem.add(videoOutput)
+    
     self.videoOutput = videoOutput
   }
   
@@ -674,46 +715,6 @@ struct MainVideoView: View {
             runHandDetection(on: pixelBuffer)
           }
         }
-      }
-    }
-  }
-  
-  private func beginTrimming() {
-    guard playerView.canBeginTrimming else { return }
-    playerView.beginTrimming { result in
-      if result == .okButton {
-        exportTrimmedAsset()
-      } else {
-        print("Trimming canceled")
-      }
-    }
-  }
-  
-  private func exportTrimmedAsset() {
-    guard let playerItem = player.currentItem else { return }
-    let preset = AVAssetExportPresetAppleM4V720pHD
-    guard let exportSession = AVAssetExportSession(asset: playerItem.asset, presetName: preset) else {
-      print("Error creating export session")
-      return
-    }
-    exportSession.outputFileType = .m4v
-    let outputURL = getSaveURL(fileName: "trimmed.m4v")
-    exportSession.outputURL = outputURL
-    let startTime = playerItem.reversePlaybackEndTime
-    let endTime = playerItem.forwardPlaybackEndTime
-    let timeRange = CMTimeRangeFromTimeToTime(start: startTime, end: endTime)
-    exportSession.timeRange = timeRange
-    exportSession.exportAsynchronously {
-      switch exportSession.status {
-      case .completed:
-        print("Export completed")
-        DispatchQueue.main.async {
-          self.mediaModel.videos.append(outputURL)
-        }
-      case .failed:
-        print("Export failed: \(String(describing: exportSession.error))")
-      default:
-        print("Export status: \(exportSession.status)")
       }
     }
   }
@@ -831,66 +832,6 @@ struct MainVideoView: View {
     }
   }
   
-  private func loadAllLabels() {
-    guard let savePath = savePath else { return }
-    
-    let fileManager = FileManager.default
-    do {
-      let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
-      var allDetections: [VNRecognizedObjectObservation] = []
-      
-      for fileURL in fileURLs where fileURL.pathExtension == "txt" {
-        let content = try String(contentsOf: fileURL)
-        let lines = content.split(separator: "\n")
-        for line in lines {
-          let components = line.split(separator: " ")
-          if components.count == 5, let x = Double(components[1]), let y = Double(components[2]), let width = Double(components[3]), let height = Double(components[4]) {
-            let boundingBox = CGRect(x: x, y: y, width: width, height: height)
-            let observation = VNRecognizedObjectObservation(boundingBox: boundingBox)
-            allDetections.append(observation)
-          }
-        }
-      }
-      self.detectedObjects = allDetections
-    } catch {
-      print("Error loading labels: \(error)")
-    }
-  }
-  
-  private func loadAndSyncLabels() {
-    guard let savePath = savePath else { return }
-    
-    let fileManager = FileManager.default
-    do {
-      let fileURLs = try fileManager.contentsOfDirectory(at: savePath, includingPropertiesForKeys: nil)
-      var frameDetections: [Int: [VNRecognizedObjectObservation]] = [:]
-      
-      for fileURL in fileURLs where fileURL.pathExtension == "txt" {
-        let frameNumber = Int(fileURL.deletingPathExtension().lastPathComponent.split(separator: "_").last ?? "") ?? 0
-        let content = try String(contentsOf: fileURL)
-        let lines = content.split(separator: "\n")
-        var detections: [VNRecognizedObjectObservation] = []
-        
-        for line in lines {
-          let components = line.split(separator: " ")
-          if components.count == 5, let x = Double(components[1]), let y = Double(components[2]), let width = Double(components[3]), let height = Double(components[4]) {
-            let boundingBox = CGRect(x: x, y: y, width: width, height: height)
-            let observation = VNRecognizedObjectObservation(boundingBox: boundingBox)
-            detections.append(observation)
-          }
-        }
-        frameDetections[frameNumber] = detections
-      }
-      
-      self.detectedObjects = []
-      player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
-        let frameNumber = Int(CMTimeGetSeconds(time) * Double(self.getVideoFrameRate()))
-        self.detectedObjects = frameDetections[frameNumber] ?? []
-      }
-    } catch {
-      print("Error loading labels: \(error)")
-    }
-  }
   
   private func startFramePerFrameMode() {
     player.rate = 1.0 / Float(player.currentItem?.tracks.first?.currentVideoFrameRate ?? 1.0)
@@ -992,4 +933,5 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
-}
+
+  }
