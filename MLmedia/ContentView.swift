@@ -20,7 +20,7 @@ struct ContentView: View {
         }
       ForensicView()
         .tabItem {
-          Label("Video Tools View", systemImage: "wrench")
+          Label("ForensicView", systemImage: "wrench")
         }
 }
     }
