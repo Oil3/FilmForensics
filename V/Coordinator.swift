@@ -10,7 +10,7 @@ class Coordinator: NSObject, ObservableObject {
     var videoOutput: AVPlayerItemVideoOutput?
     var displayLink: CVDisplayLink?
     private var bufferSize: CGSize = .zero
-    var yoloModel: IO_cashtrack?
+    var yoloModel: forensics?
     private var audioPlayer: AVAudioPlayer?
 
     @EnvironmentObject var detectionStats: DetectionStats
@@ -21,12 +21,12 @@ class Coordinator: NSObject, ObservableObject {
     }
 
     func loadModel() {
-        guard let modelUrl = Bundle.main.url(forResource: "IO_cashtrack", withExtension: "mlmodelc") else {
+        guard let modelUrl = Bundle.main.url(forResource: "forensics", withExtension: "mlmodelc") else {
             fatalError("Model file not found")
         }
 
         do {
-            yoloModel = try? IO_cashtrack(contentsOf: modelUrl)
+            yoloModel = try? forensics(contentsOf: modelUrl)
         } catch {
             fatalError("Error loading model: \(error)")
         }
@@ -84,7 +84,7 @@ class Coordinator: NSObject, ObservableObject {
     private func processFrame(pixelBuffer: CVPixelBuffer) {
         guard let model = yoloModel else { return }
 
-        let input = IO_cashtrackInput(image: pixelBuffer, iouThreshold: 0.45, confidenceThreshold: 0.25)
+        let input = forensicsInput(image: pixelBuffer, iouThreshold: 0.45, confidenceThreshold: 0.25)
         guard let output = try? model.prediction(input: input) else {
             DispatchQueue.main.async {
                 self.detectionStats.recordFrame()
@@ -98,7 +98,7 @@ class Coordinator: NSObject, ObservableObject {
         }
     }
 
-    private func handleDetectionOutput(_ output: IO_cashtrackOutput) {
+    private func handleDetectionOutput(_ output: forensicsOutput) {
         let confidence = output.confidence
         let coordinates = output.coordinates
 

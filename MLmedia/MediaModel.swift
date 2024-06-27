@@ -75,3 +75,40 @@ extension CGRect {
                   height: self.height * scaleY)
   }
 }
+extension AVAsset {
+  var totalNumberOfFrames: Int {
+    let duration = CMTimeGetSeconds(self.duration)
+    let frameRate = self.nominalFrameRate
+    return Int(duration * Double(frameRate))
+  }
+  
+  var nominalFrameRate: Float {
+    return self.tracks(withMediaType: .video).first?.nominalFrameRate ?? 0
+  }
+}
+
+extension NSImage {
+  var cgImage: CGImage? {
+    guard let data = tiffRepresentation else { return nil }
+    guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+    return CGImageSourceCreateImageAtIndex(source, 0, nil)
+  }
+}
+
+extension CMTime {
+  func asTimeString() -> String? {
+    let totalSeconds = CMTimeGetSeconds(self)
+    guard !(totalSeconds.isNaN || totalSeconds.isInfinite) else { return nil }
+    let hours = Int(totalSeconds) / 3600
+    let minutes = Int(totalSeconds) % 3600 / 60
+    let seconds = Int(totalSeconds) % 60
+    return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+  }
+}
+
+
+extension Array where Element == Double {
+  func distance(to vector: [Double]) -> Double {
+    return zip(self, vector).map { pow($0 - $1, 2) }.reduce(0, +)
+  }
+}

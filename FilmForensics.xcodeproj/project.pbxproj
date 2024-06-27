@@ -8,15 +8,24 @@
 
 /* Begin PBXBuildFile section */
 		340047762C267F990055418A /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340047752C267F990055418A /* Logs.swift */; };
-		34097CCF2C28D73E0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
-		34097CD02C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
-		34097CD12C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
-		34097CD22C28D7400078EF63 /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34097CCF2C28D73E0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34097CD02C28D73F0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34097CD12C28D73F0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
 		34097CD42C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD52C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
+		34170B222C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34170B212C2D724800FAC79D /* facenetfromtf.mlmodel */; };
+		34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34170B212C2D724800FAC79D /* facenetfromtf.mlmodel */; };
+		34170B252C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */; };
+		34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */; };
+		34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* FaceContentView.swift */; };
+		34170B282C2DA4F200FAC79D /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34170B2B2C2DAD0000FAC79D /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B292C2DAD0000FAC79D /* image2.png */; };
+		34170B2C2C2DAD0000FAC79D /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B292C2DAD0000FAC79D /* image2.png */; };
+		34170B2D2C2DAD0000FAC79D /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B2A2C2DAD0000FAC79D /* image1.png */; };
+		34170B2E2C2DAD0000FAC79D /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B2A2C2DAD0000FAC79D /* image1.png */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -88,7 +97,6 @@
 		349246CE2C20554900638047 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 349246CD2C20554900638047 /* Assets.xcassets */; };
 		349246D22C20554900638047 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 349246D12C20554900638047 /* Preview Assets.xcassets */; };
 		349246D72C20557100638047 /* MainVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D62C20557100638047 /* MainVideoView.swift */; };
-		349246D92C20558700638047 /* VideoToolsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* VideoToolsView.swift */; };
 		349246DB2C20565700638047 /* MediaModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246DA2C20565700638047 /* MediaModel.swift */; };
 		3494C5462BFDCB8600E70B0F /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */; };
 		3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */; };
@@ -121,7 +129,8 @@
 		34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
 		34C825B42C102B7D0006E453 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B32C102B7D0006E453 /* LogView.swift */; };
 		34C825B62C115DA00006E453 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B52C115DA00006E453 /* SettingsView.swift */; };
-		34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */; };
+		34D0C1A22C2D516D004E8182 /* cashtoadd59_9650.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */; };
+		34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
 		34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
@@ -134,6 +143,10 @@
 		34097CD32C28D7630078EF63 /* MLresizer.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MLresizer.mlmodel; sourceTree = "<group>"; };
 		34097CE92C28D7EE0078EF63 /* MLcapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLcapture.swift; sourceTree = "<group>"; };
 		34097CEF2C28DA610078EF63 /* MLcapture2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MLcapture2.swift; sourceTree = "<group>"; };
+		34170B212C2D724800FAC79D /* facenetfromtf.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = facenetfromtf.mlmodel; sourceTree = "<group>"; };
+		34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForensicImageProcessor.swift; sourceTree = "<group>"; };
+		34170B292C2DAD0000FAC79D /* image2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image2.png; sourceTree = "<group>"; };
+		34170B2A2C2DAD0000FAC79D /* image1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = image1.png; sourceTree = "<group>"; };
 		341AD8B52BFFA3D900BF3CE3 /* MPRNetDebluring.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = MPRNetDebluring.mlmodel; sourceTree = "<group>"; };
 		341AD8B72BFFA5EB00BF3CE3 /* bsrgan.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = bsrgan.mlmodel; sourceTree = "<group>"; };
 		341AD8B92BFFA61300BF3CE3 /* realesrgan512.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = realesrgan512.mlmodel; sourceTree = "<group>"; };
@@ -210,7 +223,7 @@
 		349246CF2C20554900638047 /* MLmedia.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MLmedia.entitlements; sourceTree = "<group>"; };
 		349246D12C20554900638047 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		349246D62C20557100638047 /* MainVideoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainVideoView.swift; sourceTree = "<group>"; };
-		349246D82C20558700638047 /* VideoToolsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoToolsView.swift; sourceTree = "<group>"; };
+		349246D82C20558700638047 /* FaceContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceContentView.swift; sourceTree = "<group>"; };
 		349246DA2C20565700638047 /* MediaModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaModel.swift; sourceTree = "<group>"; };
 		3494C5452BFDCB8600E70B0F /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		3494C5472BFDCF2F00E70B0F /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -245,7 +258,8 @@
 		34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccashier3.mlmodel; sourceTree = "<group>"; };
 		34C825B32C102B7D0006E453 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		34C825B52C115DA00006E453 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = IO_cashtrack.mlpackage; sourceTree = "<group>"; };
+		34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashtoadd59_9650.mlmodel; sourceTree = "<group>"; };
+		34D718F02C276E5C00C0219C /* forensics.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = forensics.mlpackage; sourceTree = "<group>"; };
 		34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MachineSystemSecurity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E11DD62C0CA68200A7B857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -356,6 +370,7 @@
 				349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */,
 				344D22EA2C0EF86200C6966E /* V.entitlements */,
 				3471ED062C0CF71800916598 /* detFX.m4a */,
+				34170B212C2D724800FAC79D /* facenetfromtf.mlmodel */,
 				34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */,
 				34C825AD2C0FAF0E0006E453 /* ccontrol4.mlmodel */,
 				34C825AE2C0FAF0E0006E453 /* cctrack23090.mlmodel */,
@@ -420,18 +435,22 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
-				349246C92C20554800638047 /* MLmediaApp.swift */,
-				349246CB2C20554800638047 /* ContentView.swift */,
-				349246DA2C20565700638047 /* MediaModel.swift */,
-				349246D62C20557100638047 /* MainVideoView.swift */,
-				349246D82C20558700638047 /* VideoToolsView.swift */,
-				340047752C267F990055418A /* Logs.swift */,
-				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
-				34D718F02C276E5C00C0219C /* IO_cashtrack.mlpackage */,
-				349246D02C20554900638047 /* Preview Content */,
-				34097CEF2C28DA610078EF63 /* MLcapture2.swift */,
+				34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */,
+				34D718F02C276E5C00C0219C /* forensics.mlpackage */,
+				34170B2A2C2DAD0000FAC79D /* image1.png */,
+				34170B292C2DAD0000FAC79D /* image2.png */,
+				349246CB2C20554800638047 /* ContentView.swift */,
+				349246D82C20558700638047 /* FaceContentView.swift */,
+				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
+				340047752C267F990055418A /* Logs.swift */,
+				349246D62C20557100638047 /* MainVideoView.swift */,
+				349246DA2C20565700638047 /* MediaModel.swift */,
 				34097CE92C28D7EE0078EF63 /* MLcapture.swift */,
+				34097CEF2C28DA610078EF63 /* MLcapture2.swift */,
+				349246C92C20554800638047 /* MLmediaApp.swift */,
+				349246CD2C20554900638047 /* Assets.xcassets */,
+				349246D02C20554900638047 /* Preview Content */,
 			);
 			path = MLmedia;
 			sourceTree = "<group>";
@@ -702,7 +721,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				349ECA4D2C1BCFBF00C29D1B /* detFX.m4a in Resources */,
+				34170B2B2C2DAD0000FAC79D /* image2.png in Resources */,
 				344D22E92C0EF86200C6966E /* Preview Assets.xcassets in Resources */,
+				34170B2D2C2DAD0000FAC79D /* image1.png in Resources */,
 				344D22E62C0EF86200C6966E /* Assets.xcassets in Resources */,
 				344D22FD2C0F17E700C6966E /* matrix.mov in Resources */,
 			);
@@ -713,7 +734,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				349246D22C20554900638047 /* Preview Assets.xcassets in Resources */,
+				34170B2E2C2DAD0000FAC79D /* image1.png in Resources */,
 				349246CE2C20554900638047 /* Assets.xcassets in Resources */,
+				34170B2C2C2DAD0000FAC79D /* image2.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -752,7 +775,7 @@
 			files = (
 				34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
-				34097CD12C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */,
+				34097CD12C28D73F0078EF63 /* forensics.mlpackage in Sources */,
 				342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */,
 				342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
@@ -770,6 +793,7 @@
 				34AA94B22C19394500CEFB75 /* Coordinator.swift in Sources */,
 				348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */,
 				349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */,
+				34170B252C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
 				344D22F62C0F046900C6966E /* MetalProcessor.swift in Sources */,
 				349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */,
 				34C825A42C0F9A070006E453 /* CoreMLProcessView.swift in Sources */,
@@ -784,8 +808,9 @@
 				34C825A22C0F98E70006E453 /* CoreMLProcessor.swift in Sources */,
 				344D22E22C0EF86100C6966E /* VApp.swift in Sources */,
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
+				34170B222C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
-				34097CD02C28D73F0078EF63 /* IO_cashtrack.mlpackage in Sources */,
+				34097CD02C28D73F0078EF63 /* forensics.mlpackage in Sources */,
 				34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
 				34AA94B42C1951D300CEFB75 /* GalleryView.swift in Sources */,
@@ -797,12 +822,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34D0C1A22C2D516D004E8182 /* cashtoadd59_9650.mlmodel in Sources */,
+				34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */,
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
-				349246D92C20558700638047 /* VideoToolsView.swift in Sources */,
-				34D718F12C276E5C00C0219C /* IO_cashtrack.mlpackage in Sources */,
+				34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
+				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
+				34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
 				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
@@ -817,11 +845,11 @@
 				3497714F2BFEF1F800533EEA /* HistogramView.swift in Sources */,
 				34E4C0602C0BBEE5007D3A05 /* FiltersImageControlsView.swift in Sources */,
 				34E4C05E2C0BBAB5007D3A05 /* ImageViewerModel.swift in Sources */,
-				34097CD22C28D7400078EF63 /* IO_cashtrack.mlpackage in Sources */,
 				3494C54E2BFDD1B300E70B0F /* MLcopycontrol25k.mlmodel in Sources */,
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
 				342D0CE62C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel in Sources */,
+				34170B282C2DA4F200FAC79D /* forensics.mlpackage in Sources */,
 				349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */,
 				34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */,
 				3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */,
@@ -850,7 +878,7 @@
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
 				3471ED422C0CF71900916598 /* VideoPreviewView.swift in Sources */,
-				34097CCF2C28D73E0078EF63 /* IO_cashtrack.mlpackage in Sources */,
+				34097CCF2C28D73E0078EF63 /* forensics.mlpackage in Sources */,
 				3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */,
 				3471ED532C0CF71900916598 /* VideoViewControllerWrapper.swift in Sources */,
 				3471ED5B2C0CF71900916598 /* GalleryView.swift in Sources */,

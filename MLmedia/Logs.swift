@@ -100,3 +100,18 @@ extension CGFloat {
     return (self * divisor).rounded() / divisor
   }
 }
+struct BodyPoseDetection: Codable, Identifiable {
+  var id = UUID()
+  var location: CGPoint
+}
+
+struct BodyPoseFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [BodyPoseDetection]?
+}
+
+struct BodyPoseDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [BodyPoseFrameLog]
+}
