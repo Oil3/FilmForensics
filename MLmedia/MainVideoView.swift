@@ -41,7 +41,10 @@ struct MainVideoView: View {
   @State private var bodyPoseDetectionEnabled = false
   @State private var boundingBoxScale: CGFloat = 1.0
   var imageCropAndScaleOption: VNImageCropAndScaleOption = .scaleFill
-  
+  @State private var useBuiltInModel = true
+  @State private var useCustomModel = false
+  @State private var customModelURL: URL?
+
   var body: some View {
     NavigationView {
       videoGallery
@@ -165,7 +168,7 @@ struct MainVideoView: View {
     ScrollView {
       HStack {
         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
-        Text("Model: IO_cashtrack.mlmodel")
+        Text("Model: forensics.mlmodel")
       }
       HStack {
         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
@@ -270,6 +273,7 @@ struct MainVideoView: View {
           }
           if let savePath = savePath {
             Text("Save Path: \(savePath.path)")
+            
           }
         }
         HStack {
@@ -304,9 +308,15 @@ struct MainVideoView: View {
           Button("Background Run") {
             runPredictionsWithoutPlaying()
           }
+          Toggle("Use Built-in Model", isOn: $useBuiltInModel)
+          Toggle("Use Custom Model", isOn: $useCustomModel)
+          Button("Select Custom Model") {
+          }
+
         }
       }
     }
+    .textSelection(.enabled)
   }
   
   private func getVideoFrameRate() -> Float {
@@ -367,7 +377,7 @@ struct MainVideoView: View {
   }
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: IO_cashtrack().model)
+    let model = try! VNCoreMLModel(for: forensics().model)
     
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
@@ -527,8 +537,9 @@ struct MainVideoView: View {
     for (index, face) in faces.enumerated() {
       let boundingBox = face.boundingBox
       let scaledBoundingBox = CGRect(
-        x: boundingBox.origin.x - boundingBox.size.width / 2,
-        y: boundingBox.origin.y - boundingBox.size.height / 2,
+        x: boundingBox.origin.x + boundingBox.size.width / 2 - boundingBox.size.width,
+        y: boundingBox.origin.y + boundingBox.size.height / 2 - boundingBox.size.height,
+        
         width: boundingBox.size.width * 2,
         height: boundingBox.size.height * 2
       )
@@ -933,5 +944,6 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
+  
+}
 
-  }

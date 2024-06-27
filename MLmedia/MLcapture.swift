@@ -214,7 +214,7 @@ class ScreenCaptureViewModel: NSObject, ObservableObject {
   @Published var boundingBoxes: [BoundingBox] = []
   
   var captureProcessor: MLcaptureCaptureProcessor?
-  let model = try! VNCoreMLModel(for: IO_cashtrack().model)
+  let model = try! VNCoreMLModel(for: forensics().model)
   var captureStream: SCStream?
   var captureConfig: SCStreamConfiguration?
   

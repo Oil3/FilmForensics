@@ -14,18 +14,15 @@ struct ContentView: View {
         .tabItem {
           Label("Main Video View", systemImage: "video")
         }
-      VideoToolsView()
+      FaceContentView()
         .tabItem {
           Label("Video Tools View", systemImage: "wrench")
         }
-//      MLcaptureMainView()
-//        .environmentObject(appDelegate.viewModel)
-//
-//        .tabItem {
-//          Label("MLcaptureMainView", systemImage: "bolt")
-//
-          
+      ForensicView()
+        .tabItem {
+          Label("Video Tools View", systemImage: "wrench")
         }
+}
     }
   }
 //}
