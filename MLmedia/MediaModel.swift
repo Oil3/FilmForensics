@@ -27,7 +27,7 @@ class MediaModel: ObservableObject {
 
 import Vision
 import AVFoundation
-
+import AVKit
 extension URL {
   func bookmarkData() -> Data {
     return (try? self.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)) ?? Data()
@@ -42,9 +42,7 @@ extension CFAbsoluteTime {
     return formatter.string(from: self)
   }
 }
-import Vision
-import AVFoundation
-import AVKit
+
 struct VideoPlayerViewMain: NSViewRepresentable {
   var player: AVPlayer
   @Binding var detections: [VNRecognizedObjectObservation]

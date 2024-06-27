@@ -17,14 +17,8 @@ struct MainVideoView: View {
   @State private var objectDetectionEnabled = false
   @State private var faceDetectionEnabled = true
   @State private var humanDetectionEnabled = true
-  @State private var handDetectionEnabled = false
-  @State private var handDetectionMax = 2
-  @State private var saveLabels = false
-  @State private var saveFrames = false
-  @State private var saveJsonLog = false
-  @State private var videoOutput: AVPlayerItemVideoOutput?
-  @State private var isProcessing = false
-  @State private var fpsMode = false
+  @State private var handDetectionEnabled = true
+  @State private var maxRequestsMode = false
   @State private var framePerFrameMode = false
   @State private var loopMode = false
   @State private var playBackward = false
@@ -39,7 +33,10 @@ struct MainVideoView: View {
   @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
   @State private var selectedSize: CGSize = CGSize(width: 1280, height: 720)
-  let configuration = MLModelConfiguration()
+  @State private var videoOutput: AVPlayerItemVideoOutput?
+  @State private var saveJsonLog = false
+  @State private var saveLabels = false
+  @State private var saveFrames = false
 
   var body: some View {
     NavigationView {
@@ -82,7 +79,6 @@ struct MainVideoView: View {
           }
           .contextMenu {
             Button(action: {
-              // Play/Pause toggle
               if player.timeControlStatus == .playing {
                 player.pause()
               } else {
@@ -92,7 +88,6 @@ struct MainVideoView: View {
               Text(player.timeControlStatus == .playing ? "Pause" : "Play")
             }
             Button(action: {
-              // Copy frame to clipboard
               if let currentPixelBuffer = mediaModel.currentPixelBuffer {
                 let ciImage = CIImage(cvPixelBuffer: currentPixelBuffer)
                 let context = CIContext()
@@ -106,7 +101,6 @@ struct MainVideoView: View {
               Text("Copy Frame")
             }
             Button(action: {
-              // Save current frame
               if let currentPixelBuffer = mediaModel.currentPixelBuffer {
                 saveCurrentFrame(fileName: getSaveURL(fileName: "current_frame.jpg").path)
               }
@@ -114,19 +108,16 @@ struct MainVideoView: View {
               Text("Save Frame")
             }
             Button(action: {
-              // Open in new window
               openInNewWindow(url: url)
             }) {
               Text("Open in New Window")
             }
             Button(action: {
-              // Show in Finder
               NSWorkspace.shared.activateFileViewerSelecting([url])
             }) {
               Text("Show in Finder")
             }
             Button(action: {
-              // Show results folder in Finder
               if let savePath = savePath {
                 let resultsFolder = savePath.appendingPathComponent(url.lastPathComponent)
                 NSWorkspace.shared.activateFileViewerSelecting([resultsFolder])
@@ -135,7 +126,6 @@ struct MainVideoView: View {
               Text("Show Results Folder in Finder")
             }
             Button(action: {
-              // Delete from list
               mediaModel.videos.removeAll { $0 == url }
             }) {
               Text("Delete from List")
@@ -235,13 +225,8 @@ struct MainVideoView: View {
               GeometryReader { geo -> AnyView in
                 return AnyView(
                   ForEach(detectedHands, id: \.self) { hand in
-                    ForEach(hand.availableJointNames, id: \.self) { jointName in
-                      if let point = try? hand.recognizedPoint(jointName) {
-                        Circle()
-                          .fill(Color.yellow)
-                          .frame(width: 5, height: 5)
-                          .position(x: point.location.x * geo.size.width, y: (1 - point.location.y) * geo.size.height)
-                      }
+                    if showBoundingBoxes {
+                      drawHandJoints(for: hand, in: geo.size, color: .yellow)
                     }
                   }
                 )
@@ -267,17 +252,7 @@ struct MainVideoView: View {
           Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
           Toggle("Enable Face Detection", isOn: $faceDetectionEnabled)
           Toggle("Enable Human Detection", isOn: $humanDetectionEnabled)
-          Picker("Hand Detection", selection: $handDetectionMax) {
-            Text("Off").tag(0)
-            Text("1").tag(1)
-            Text("2").tag(2)
-            Text("4").tag(4)
-            Text("6").tag(6)
-            Text("Max").tag(10)
-          }
-          .onChange(of: handDetectionMax) { newValue in
-            handDetectionEnabled = newValue > 0
-          }
+          Toggle("Enable Hand Detection", isOn: $handDetectionEnabled)
           Toggle("Save Labels", isOn: $saveLabels)
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
@@ -292,7 +267,7 @@ struct MainVideoView: View {
           }
         }
         HStack {
-          Toggle("Matrix Mode", isOn: $fpsMode)
+          Toggle("Max Requests Mode", isOn: $maxRequestsMode)
           Toggle("Frame Per Frame Mode", isOn: $framePerFrameMode)
           Toggle("Loop", isOn: $loopMode)
           Toggle("Play Backward", isOn: $playBackward)
@@ -301,9 +276,6 @@ struct MainVideoView: View {
         HStack {
           Button("Play") {
             player.play()
-            if fpsMode {
-              startFPSMode()
-            }
             if framePerFrameMode {
               startFramePerFrameMode()
             }
@@ -320,7 +292,6 @@ struct MainVideoView: View {
           }
           Button("Pause") {
             player.pause()
-            stopFPSMode()
             stopFramePerFrameMode()
             stopPlayBackwardMode()
           }
@@ -371,12 +342,21 @@ struct MainVideoView: View {
       .position(x: normalizedRect.midX, y: normalizedRect.midY)
   }
   
+  private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
+    let points = observation.availableJointNames.compactMap { try? observation.recognizedPoint($0) }
+    let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
+    
+    return ForEach(normalizedPoints.indices, id: \.self) { index in
+      Circle()
+        .fill(Color(color))
+        .frame(width: 5, height: 5)
+        .position(normalizedPoints[index])
+    }
+  }
+  
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let configuration = MLModelConfiguration()
-    configuration.allowLowPrecisionAccumulationOnGPU = true
-    configuration.computeUnits = .cpuAndGPU
-    let modelVN = try! VNCoreMLModel(for: IO_cashtrack(configuration: configuration).model)
-    let request = VNCoreMLRequest(model: modelVN) { request, error in
+    let model = try! VNCoreMLModel(for: IO_cashtrack().model)
+    let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
         DispatchQueue.main.async {
@@ -387,7 +367,6 @@ struct MainVideoView: View {
               await processAndSaveDetections(results, at: player.currentItem?.currentTime())
             }
           }
-        
           if autoPauseOnNewDetection && !results.isEmpty {
             player.pause()
           }
@@ -435,6 +414,8 @@ struct MainVideoView: View {
       }
     }
     
+    humanRequest.upperBodyOnly = true
+    
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([humanRequest])
   }
@@ -453,7 +434,8 @@ struct MainVideoView: View {
         }
       }
     }
-    handRequest.maximumHandCount = handDetectionMax
+    
+    handRequest.maximumHandCount = handDetectionEnabled ? 10 : 0
     
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([handRequest])
@@ -526,8 +508,14 @@ struct MainVideoView: View {
     
     for face in faces {
       let boundingBox = face.boundingBox
-      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
-      faceLog.append(FaceDetection(boundingBox: boundingBox))
+      let scaledBoundingBox = CGRect(
+        x: boundingBox.origin.x - boundingBox.size.width / 2,
+        y: boundingBox.origin.y - boundingBox.size.height / 2,
+        width: boundingBox.size.width * 2,
+        height: boundingBox.size.height * 2
+      )
+      labelText += "0 \(scaledBoundingBox.midX.rounded(toPlaces: 5)) \(1 - scaledBoundingBox.midY.rounded(toPlaces: 5)) \(scaledBoundingBox.width.rounded(toPlaces: 5)) \(scaledBoundingBox.height.rounded(toPlaces: 5))\n"
+      faceLog.append(FaceDetection(boundingBox: scaledBoundingBox))
     }
     
     if !labelText.isEmpty {
@@ -904,23 +892,6 @@ struct MainVideoView: View {
     }
   }
   
-  private func startFPSMode() {
-    player.rate = 1.0
-    var detectionTime: Double = 1.0
-    
-    player.addPeriodicTimeObserver(forInterval: CMTime(value: 1, timescale: 30), queue: .main) { time in
-      let startTime = CFAbsoluteTimeGetCurrent()
-      let endTime = CFAbsoluteTimeGetCurrent()
-      detectionTime = endTime - startTime
-      let newRate = 1.0 / detectionTime
-      player.rate = Float(newRate)
-    }
-  }
-  
-  private func stopFPSMode() {
-    player.rate = 1.0
-  }
-  
   private func startFramePerFrameMode() {
     player.rate = 1.0 / Float(player.currentItem?.tracks.first?.currentVideoFrameRate ?? 1.0)
   }
@@ -998,7 +969,7 @@ struct MainVideoView: View {
     }
     return false
   }
-
+  
   private func openInNewWindow(url: URL) {
     let newWindow = NSWindow(
       contentRect: NSMakeRect(0, 0, 800, 600),
