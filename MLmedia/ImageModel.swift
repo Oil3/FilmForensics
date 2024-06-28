@@ -5,35 +5,38 @@ import CoreImage.CIFilterBuiltins
 class ImageModel: ObservableObject {
   @Published var images: [NSImage] = []
   @Published var processedImage: NSImage?
+  @Published var previewImage: NSImage?
   @Published var outputDirectory: URL?
   @Published var statusText: String = ""
   @Published var isProcessing: Bool = false
   
-  // Filter settings
-  @Published var exposure: CGFloat = 0.0
-  @Published var brightness: CGFloat = 0.0
-  @Published var contrast: CGFloat = 1.0
-  @Published var saturation: CGFloat = 1.0
-  @Published var sharpness: CGFloat = 0.4
-  @Published var highlights: CGFloat = 1.0
-  @Published var shadows: CGFloat = 0.0
-  @Published var temperature: CGFloat = 6500.0
-  @Published var tint: CGFloat = 0.0
-  @Published var sepia: CGFloat = 0.0
-  @Published var gamma: CGFloat = 1.0
-  @Published var hue: CGFloat = 0.0
-  @Published var whitePoint: CGFloat = 1.0
-  @Published var bumpRadius: CGFloat = 300.0
-  @Published var bumpScale: CGFloat = 0.5
-  @Published var pixelate: CGFloat = 10.0
-  @Published var convolution: [CGFloat] = [0, 0, 0, 0, 1, 0, 0, 0, 0]
+  // Filter settings as regular properties
+  var exposure: CGFloat = 0.0
+  var brightness: CGFloat = 0.0
+  var contrast: CGFloat = 1.0
+  var saturation: CGFloat = 1.0
+  var sharpness: CGFloat = 0.4
+  var highlights: CGFloat = 1.0
+  var shadows: CGFloat = 0.0
+  var temperature: CGFloat = 6500.0
+  var tint: CGFloat = 0.0
+  var sepia: CGFloat = 0.0
+  var gamma: CGFloat = 1.0
+  var hue: CGFloat = 0.0
+  var whitePoint: CGFloat = 1.0
+  var bumpRadius: CGFloat = 300.0
+  var bumpScale: CGFloat = 0.5
+  var pixelate: CGFloat = 10.0
+  var convolution: [CGFloat] = [0, 0, 0, 0, 1, 0, 0, 0, 0]
   
-  let context = CIContext()
+  let context: CIContext = CIContext()
   
   func applyFilters() {
-    guard let originalImage = images.first, let ciImage = CIImage(data: originalImage.tiffRepresentation!) else { return }
+    guard let originalImage: NSImage = images.first,
+          let tiffData: Data = originalImage.tiffRepresentation,
+          let ciImage: CIImage = CIImage(data: tiffData) else { return }
     
-    var currentImage = ciImage
+    var currentImage: CIImage = ciImage
     
     currentImage = applyColorControls(inputImage: currentImage)
     currentImage = applyExposure(inputImage: currentImage)
@@ -48,7 +51,7 @@ class ImageModel: ObservableObject {
     currentImage = applyPixelate(inputImage: currentImage)
     currentImage = applyConvolution(inputImage: currentImage)
     
-    if let cgImage = context.createCGImage(currentImage, from: currentImage.extent) {
+    if let cgImage: CGImage = context.createCGImage(currentImage, from: currentImage.extent) {
       processedImage = NSImage(cgImage: cgImage, size: currentImage.extent.size)
     }
   }
@@ -86,15 +89,15 @@ class ImageModel: ObservableObject {
   private func applyTemperatureAndTint(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.temperatureAndTint()
     filter.inputImage = inputImage
-    filter.neutral = CIVector(x: temperature, y: 0)
-    filter.targetNeutral = CIVector(x: tint, y: 0)
+    filter.neutral = CIVector(x: CGFloat(Float(temperature)), y: 0)
+    filter.targetNeutral = CIVector(x: CGFloat(Float(tint)), y: 0)
     return filter.outputImage ?? inputImage
   }
-  
+
   private func applyWhitePoint(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.whitePointAdjust()
     filter.inputImage = inputImage
-    filter.color = CIColor(red: whitePoint, green: whitePoint, blue: whitePoint)
+    filter.color = CIColor(red: CGFloat(whitePoint), green: CGFloat(whitePoint), blue: CGFloat(whitePoint))
     return filter.outputImage ?? inputImage
   }
   
@@ -137,9 +140,15 @@ class ImageModel: ObservableObject {
   
   private func applyConvolution(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.convolution3X3()
-    let convolutionFloat = convolution.map { CGFloat($0) }
+    let convolutionFloat: [CGFloat] = convolution.map { CGFloat($0) }
     filter.inputImage = inputImage
     filter.weights = CIVector(values: convolutionFloat, count: 9)
     return filter.outputImage ?? inputImage
+  }
+  
+  // Manually update the filters
+  func updateFilters() {
+    self.objectWillChange.send()
+    applyFilters()
   }
 }
