@@ -14,9 +14,9 @@ struct ContentView: View {
         .tabItem {
           Label("Main Video View", systemImage: "video")
         }
-      FaceContentView()
+      MainImageView()
         .tabItem {
-          Label("Video Tools View", systemImage: "wrench")
+          Label("Main Image View", systemImage: "wrench")
         }
       ForensicView()
         .tabItem {
