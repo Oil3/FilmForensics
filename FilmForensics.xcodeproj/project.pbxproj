@@ -441,12 +441,12 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
+				349246CB2C20554800638047 /* ContentView.swift */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */,
 				34D718F02C276E5C00C0219C /* forensics.mlpackage */,
 				34170B2A2C2DAD0000FAC79D /* image1.png */,
 				34170B292C2DAD0000FAC79D /* image2.png */,
-				349246CB2C20554800638047 /* ContentView.swift */,
 				34170B322C2DB65500FAC79D /* ImageModel.swift */,
 				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
 				34170B2F2C2DB61700FAC79D /* ForensicView.swift */,
