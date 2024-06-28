@@ -89,15 +89,15 @@ class ImageModel: ObservableObject {
   private func applyTemperatureAndTint(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.temperatureAndTint()
     filter.inputImage = inputImage
-    filter.neutral = CIVector(x: CGFloat(Float(temperature)), y: 0)
-    filter.targetNeutral = CIVector(x: CGFloat(Float(tint)), y: 0)
+    filter.neutral = CIVector(x: CGFloat(temperature), y: 0)
+    filter.targetNeutral = CIVector(x: CGFloat(tint), y: 0)
     return filter.outputImage ?? inputImage
   }
-
+  
   private func applyWhitePoint(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.whitePointAdjust()
     filter.inputImage = inputImage
-    filter.color = CIColor(red: CGFloat(whitePoint), green: CGFloat(whitePoint), blue: CGFloat(whitePoint))
+    filter.color = CIColor(red: CGFloat(Float(whitePoint)), green: CGFloat(Float(whitePoint)), blue: CGFloat(Float(whitePoint)))
     return filter.outputImage ?? inputImage
   }
   
@@ -146,9 +146,98 @@ class ImageModel: ObservableObject {
     return filter.outputImage ?? inputImage
   }
   
-  // Manually update the filters
   func updateFilters() {
     self.objectWillChange.send()
     applyFilters()
+  }
+  
+  func resetFilters() {
+    exposure = 0.0
+    brightness = 0.0
+    contrast = 1.0
+    saturation = 1.0
+    sharpness = 0.4
+    highlights = 1.0
+    shadows = 0.0
+    temperature = 6500.0
+    tint = 0.0
+    sepia = 0.0
+    gamma = 1.0
+    hue = 0.0
+    whitePoint = 1.0
+    bumpRadius = 300.0
+    bumpScale = 0.5
+    pixelate = 10.0
+    convolution = [0, 0, 0, 0, 1, 0, 0, 0, 0]
+    updateFilters()
+  }
+  
+  func saveChanges() {
+    guard let outputDirectory = outputDirectory, let processedImage = processedImage else { return }
+    let outputPath = outputDirectory.appendingPathComponent(UUID().uuidString + ".png")
+    if let tiffData = processedImage.tiffRepresentation, let bitmapImage = NSBitmapImageRep(data: tiffData) {
+      let pngData = bitmapImage.representation(using: .png, properties: [:])
+      try? pngData?.write(to: outputPath)
+    }
+  }
+  
+  func applyToAll() {
+    for image in images {
+      guard let tiffData = image.tiffRepresentation, let ciImage = CIImage(data: tiffData) else { continue }
+      var currentImage = ciImage
+      currentImage = applyColorControls(inputImage: currentImage)
+      currentImage = applyExposure(inputImage: currentImage)
+      currentImage = applyGamma(inputImage: currentImage)
+      currentImage = applyHue(inputImage: currentImage)
+      currentImage = applyTemperatureAndTint(inputImage: currentImage)
+      currentImage = applyWhitePoint(inputImage: currentImage)
+      currentImage = applySepia(inputImage: currentImage)
+      currentImage = applySharpness(inputImage: currentImage)
+      currentImage = applyHighlightShadowAdjust(inputImage: currentImage)
+      currentImage = applyBumpDistortion(inputImage: currentImage)
+      currentImage = applyPixelate(inputImage: currentImage)
+      currentImage = applyConvolution(inputImage: currentImage)
+      
+      if let cgImage = context.createCGImage(currentImage, from: currentImage.extent) {
+        let processedImage = NSImage(cgImage: cgImage, size: currentImage.extent.size)
+        saveImage(image: processedImage)
+      }
+    }
+  }
+  func saveImage(image: NSImage) {
+    let panel = NSSavePanel()
+    panel.allowedFileTypes = ["png"]
+    panel.begin { response in
+      if response == .OK, let url: URL = panel.url {
+        if let tiffData: Data = image.tiffRepresentation, let bitmapImage: NSBitmapImageRep = NSBitmapImageRep(data: tiffData) {
+          let pngData: Data? = bitmapImage.representation(using: .png, properties: [:])
+          try? pngData?.write(to: url)
+        }
+      }
+    }
+  }
+  
+  func saveAll() {
+    for image in images {
+      guard let tiffData = image.tiffRepresentation, let ciImage = CIImage(data: tiffData) else { continue }
+      var currentImage = ciImage
+      currentImage = applyColorControls(inputImage: currentImage)
+      currentImage = applyExposure(inputImage: currentImage)
+      currentImage = applyGamma(inputImage: currentImage)
+      currentImage = applyHue(inputImage: currentImage)
+      currentImage = applyTemperatureAndTint(inputImage: currentImage)
+      currentImage = applyWhitePoint(inputImage: currentImage)
+      currentImage = applySepia(inputImage: currentImage)
+      currentImage = applySharpness(inputImage: currentImage)
+      currentImage = applyHighlightShadowAdjust(inputImage: currentImage)
+      currentImage = applyBumpDistortion(inputImage: currentImage)
+      currentImage = applyPixelate(inputImage: currentImage)
+      currentImage = applyConvolution(inputImage: currentImage)
+      
+      if let cgImage = context.createCGImage(currentImage, from: currentImage.extent) {
+        let processedImage = NSImage(cgImage: cgImage, size: currentImage.extent.size)
+        saveImage(image: processedImage)
+      }
+    }
   }
 }
