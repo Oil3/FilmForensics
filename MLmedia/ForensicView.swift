@@ -180,6 +180,7 @@ struct ForensicView: View {
               Text("No image selected")
                 .frame(width: geometry.size.width, height: geometry.size.height)
             }
+            
           }
           
           Spacer()
