@@ -26,7 +26,6 @@
 		34170B2C2C2DAD0000FAC79D /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B292C2DAD0000FAC79D /* image2.png */; };
 		34170B2D2C2DAD0000FAC79D /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B2A2C2DAD0000FAC79D /* image1.png */; };
 		34170B2E2C2DAD0000FAC79D /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B2A2C2DAD0000FAC79D /* image1.png */; };
-		34170B302C2DB61700FAC79D /* ForensicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B2F2C2DB61700FAC79D /* ForensicView.swift */; };
 		34170B312C2DB61700FAC79D /* ForensicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B2F2C2DB61700FAC79D /* ForensicView.swift */; };
 		34170B332C2DB65500FAC79D /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B322C2DB65500FAC79D /* ImageModel.swift */; };
 		34170B342C2DB65500FAC79D /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B322C2DB65500FAC79D /* ImageModel.swift */; };
@@ -137,7 +136,6 @@
 		34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
-		34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
 		34E4C05E2C0BBAB5007D3A05 /* ImageViewerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05D2C0BBAB5007D3A05 /* ImageViewerModel.swift */; };
 		34E4C0602C0BBEE5007D3A05 /* FiltersImageControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05F2C0BBEE5007D3A05 /* FiltersImageControlsView.swift */; };
 /* End PBXBuildFile section */
@@ -799,7 +797,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				34AA94B22C19394500CEFB75 /* Coordinator.swift in Sources */,
-				34170B302C2DB61700FAC79D /* ForensicView.swift in Sources */,
 				348EA80D2C1C0FF800C112C3 /* DetectionStatsView.swift in Sources */,
 				349ECA482C1B510F00C29D1B /* GalleryModel.swift in Sources */,
 				34170B252C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
@@ -872,7 +869,6 @@
 				342D0CF82C1D3D7A00ECDA36 /* lastE8.mlpackage in Sources */,
 				342D0CF52C1D3D7A00ECDA36 /* epoch70.mlpackage in Sources */,
 				34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */,
-				34E4C05C2C0BA623007D3A05 /* FilterControlsView.swift in Sources */,
 				342D0CF62C1D3D7A00ECDA36 /* best.mlpackage in Sources */,
 				349771492BFEF01500533EEA /* Extensions.swift in Sources */,
 				3497714B2BFEF1DB00533EEA /* FilterControlsOverlay.swift in Sources */,
