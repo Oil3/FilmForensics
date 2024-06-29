@@ -163,7 +163,8 @@
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
 		342126132C2E9A4E007E7878 /* customembedded.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = customembedded.mlmodel; sourceTree = "<group>"; };
-		3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ObjectsCoordinatesProcessors.swift; path = MLmedia/ObjectsCoordinatesProcessors.swift; sourceTree = "<group>"; };
+		3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectsCoordinatesProcessors.swift; sourceTree = "<group>"; };
+		3425A9062C2FA122008D6EBA /* tempp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tempp.swift; sourceTree = "<group>"; };
 		34278E032C1F133700E3D6AA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		34278E062C1F724E00E3D6AA /* sas.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = sas.jpg; path = Assets.xcassets/sas.jpg; sourceTree = "<group>"; };
 		342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier32_2000.mlmodel; sourceTree = "<group>"; };
@@ -446,6 +447,7 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
+				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
 				349246CB2C20554800638047 /* ContentView.swift */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */,
@@ -481,7 +483,7 @@
 		34A99DA92BFC2A88004685AC = {
 			isa = PBXGroup;
 			children = (
-				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
+				3425A9062C2FA122008D6EBA /* tempp.swift */,
 				349246C82C20554800638047 /* MLmedia */,
 				342D0CFE2C1D52D500ECDA36 /* ToolML */,
 				344D22E02C0EF86100C6966E /* V */,
