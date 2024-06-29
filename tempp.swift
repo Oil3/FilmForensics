@@ -13,13 +13,13 @@ struct MainVideoView: View {
   @State private var detectedHumans: [VNHumanObservation] = []
   @State private var detectedHands: [VNHumanHandPoseObservation] = []
   @State private var detectedBodyPoses: [VNHumanBodyPoseObservation] = []
-
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
   @State private var objectDetectionEnabled = true
   @State private var faceDetectionEnabled = true
   @State private var humanDetectionEnabled = false
   @State private var handDetectionEnabled = false
+  @State private var bodyPoseDetectionEnabled = false
   @State private var maxRequestsMode = false
   @State private var framePerFrameMode = false
   @State private var loopMode = false
@@ -32,22 +32,15 @@ struct MainVideoView: View {
   @State private var totalHumansDetected = 0
   @State private var totalHandsDetected = 0
   @State private var totalBodyPosesDetected = 0
-
+  @State private var droppedFrames = 0
+  @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
-
   @State private var selectedSize: CGSize = CGSize(width: 1280, height: 720)
   @State private var videoOutput: AVPlayerItemVideoOutput?
   @State private var saveJsonLog = false
   @State private var saveLabels = false
   @State private var saveFrames = false
-  @State private var faceExtractionEnabled = false
-  @State private var bodyPoseDetectionEnabled = false
-  @State private var boundingBoxScale: CGFloat = 1.0
-  var imageCropAndScaleOption: VNImageCropAndScaleOption = .scaleFill
-  @State private var useBuiltInModel = true
-  @State private var useCustomModel = false
-  @State private var customModelURL: URL?
-
+  
   var body: some View {
     NavigationView {
       videoGallery
@@ -177,6 +170,8 @@ struct MainVideoView: View {
         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
         Text("Frame: \(getCurrentFrameNumber())")
         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
+        Text("Dropped Frames: \(droppedFrames)")
+        Text("Corrupted Frames: \(corruptedFrames)")
       }
       HStack {
         Text("Current Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
@@ -186,6 +181,7 @@ struct MainVideoView: View {
         Text("Total Faces Detected: \(totalFacesDetected)")
         Text("Total Humans Detected: \(totalHumansDetected)")
         Text("Total Hands Detected: \(totalHandsDetected)")
+        Text("Total Body Poses Detected: \(totalBodyPosesDetected)")
       }
       if mediaModel.selectedVideoURL != nil {
         VStack {
@@ -197,11 +193,10 @@ struct MainVideoView: View {
             .modifier(BoundingBoxModifier(observations: detectedFaces.map { VNDetectedObjectObservation(boundingBox: $0.boundingBox) }, color: .blue, scale: 2.0))
             .modifier(BoundingBoxModifier(observations: detectedHumans.map { VNDetectedObjectObservation(boundingBox: $0.boundingBox) }, color: .green, scale: 1.0))
             .modifier(HandJointModifier(hands: detectedHands, color: .yellow))
-  //          .modifier(BoundingBoxModifier(observations: detectedBodyPoses.map { VNDetectedObjectObservation(boundingBox: $0.boundingBox) }, color: .purple, scale: 1.0))
+            .modifier(BodyPoseJointModifier(bodyPoses: detectedBodyPoses, color: .purple))
         }
       } else {
-       VStack {
-
+        VStack {
           Rectangle()
             .stroke(Color.gray, lineWidth: 2)
             .frame(width: selectedSize.width, height: selectedSize.height)
@@ -220,12 +215,11 @@ struct MainVideoView: View {
           Toggle("Enable Face Detection", isOn: $faceDetectionEnabled)
           Toggle("Enable Human Detection", isOn: $humanDetectionEnabled)
           Toggle("Enable Hand Detection", isOn: $handDetectionEnabled)
+          Toggle("Enable Body Pose Detection", isOn: $bodyPoseDetectionEnabled)
           Toggle("Save Labels", isOn: $saveLabels)
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
           Toggle("Auto Pause on New Detection", isOn: $autoPauseOnNewDetection)
-          Toggle("Enable Face Extraction", isOn: $faceExtractionEnabled)
-          Toggle("Enable Body Pose Detection", isOn: $bodyPoseDetectionEnabled)
         }
         HStack {
           Button("Select Save Path") {
@@ -233,7 +227,6 @@ struct MainVideoView: View {
           }
           if let savePath = savePath {
             Text("Save Path: \(savePath.path)")
-            
           }
         }
         HStack {
@@ -268,15 +261,9 @@ struct MainVideoView: View {
           Button("Background Run") {
             runPredictionsWithoutPlaying()
           }
-          Toggle("Use Built-in Model", isOn: $useBuiltInModel)
-          Toggle("Use Custom Model", isOn: $useCustomModel)
-          Button("Select Custom Model") {
-          }
-
         }
       }
     }
-    .textSelection(.enabled)
   }
   
   private func getVideoFrameRate() -> Float {
@@ -290,58 +277,10 @@ struct MainVideoView: View {
     return Int(CMTimeGetSeconds(currentTime) * Double(frameRate))
   }
   
-  private func drawBoundingBox(for observation: VNDetectedObjectObservation, in parentSize: CGSize, color: NSColor, scale: CGFloat = 1.0) -> some View {
-    let boundingBox = observation.boundingBox
-    let videoWidth = parentSize.width
-    let videoHeight = parentSize.height
-    let scaledRect = CGRect(
-      x: boundingBox.minX * videoWidth,
-      y: (1 - boundingBox.maxY) * videoHeight,
-      width: boundingBox.width * videoWidth * scale,
-      height: boundingBox.height * videoHeight * scale
-    )
-    
-    return Rectangle()
-      .stroke(Color(color), lineWidth: 2)
-      .frame(width: scaledRect.width, height: scaledRect.height)
-      .position(x: scaledRect.midX, y: scaledRect.midY)
-  }
-  
-  private func drawBoundingBox(for observation: VNFaceObservation, in parentSize: CGSize, color: NSColor, scale: CGFloat = 1.0) -> some View {
-    let boundingBox = observation.boundingBox
-    let videoWidth = parentSize.width
-    let videoHeight = parentSize.height
-    let scaledRect = CGRect(
-      x: boundingBox.minX * videoWidth,
-      y: (1 - boundingBox.maxY) * videoHeight,
-      width: boundingBox.width * videoWidth * scale,
-      height: boundingBox.height * videoHeight * scale
-    )
-    
-    return Rectangle()
-      .stroke(Color(color), lineWidth: 2)
-      .frame(width: scaledRect.width, height: scaledRect.height)
-      .position(x: scaledRect.midX, y: scaledRect.midY)
-  }
-  
-  private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
-    let points = observation.availableJointNames.compactMap { try? observation.recognizedPoint($0) }
-    let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
-    
-    return ForEach(normalizedPoints.indices, id: \.self) { index in
-      Circle()
-        .fill(Color(color))
-        .frame(width: 5, height: 5)
-        .position(normalizedPoints[index])
-    }
-  }
-  
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: forensics().model)
-    
+    let model = try! VNCoreMLModel(for: IO_cashtrack().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
-      
       if let results = request.results as? [VNRecognizedObjectObservation] {
         DispatchQueue.main.async {
           self.detectedObjects = results
@@ -359,7 +298,7 @@ struct MainVideoView: View {
         }
       }
     }
-    request.imageCropAndScaleOption = .scaleFill
+    
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([request])
   }
@@ -378,7 +317,7 @@ struct MainVideoView: View {
         }
       }
     }
-    faceRequest.preferBackgroundProcessing = true
+    
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([faceRequest])
   }
@@ -399,7 +338,6 @@ struct MainVideoView: View {
     }
     
     humanRequest.upperBodyOnly = true
-    humanRequest.preferBackgroundProcessing = true
     
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([humanRequest])
@@ -426,243 +364,23 @@ struct MainVideoView: View {
     try? handler.perform([handRequest])
   }
   
-  private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
-    guard let time = time, let savePath = savePath else { return }
-    
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-    let folderName = "\(videoFilename)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels")
-    let imagesFolderURL = folderURL.appendingPathComponent("images")
-    
-    createFolderIfNotExists(at: folderURL)
-    createFolderIfNotExists(at: labelsFolderURL)
-    createFolderIfNotExists(at: imagesFolderURL)
-    
-    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-    
-    var labelText = ""
-    var detectionLog = [Detection]()
-    
-    for detection in detections {
-      let boundingBox = detection.boundingBox
-      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
-      let identifier = detection.labels.first?.identifier ?? "unknown"
-      let confidence = detection.confidence
-      detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
-    }
-    
-    if !labelText.isEmpty {
-      do {
-        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-      } catch {
-        print("Error saving labels: \(error)")
-      }
-      
-      if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
-      }
-    }
-    
-    if saveJsonLog {
-      logDetections(detections: detectionLog, frameNumber: frameNumber, folderURL: folderURL)
-    }
-  }
-  
-  private func processAndSaveFaces(_ faces: [VNFaceObservation], at time: CMTime?) async {
-    guard let time = time, let savePath = savePath else { return }
-    
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-    let folderName = "\(videoFilename)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels_faces")
-    let imagesFolderURL = folderURL.appendingPathComponent("images_faces")
-    let facesFolderURL = folderURL.appendingPathComponent("extracted_faces")
-    
-    createFolderIfNotExists(at: folderURL)
-    createFolderIfNotExists(at: labelsFolderURL)
-    createFolderIfNotExists(at: imagesFolderURL)
-    if faceExtractionEnabled {
-      createFolderIfNotExists(at: facesFolderURL)
-    }
-    
-    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-    
-    var labelText = ""
-    var faceLog = [FaceDetection]()
-    
-    for (index, face) in faces.enumerated() {
-      let boundingBox = face.boundingBox
-      let scaledBoundingBox = CGRect(
-        x: boundingBox.origin.x + boundingBox.size.width / 2 - boundingBox.size.width,
-        y: boundingBox.origin.y + boundingBox.size.height / 2 - boundingBox.size.height,
-        
-        width: boundingBox.size.width * 2,
-        height: boundingBox.size.height * 2
-      )
-      labelText += "0 \(scaledBoundingBox.midX.rounded(toPlaces: 5)) \(1 - scaledBoundingBox.midY.rounded(toPlaces: 5)) \(scaledBoundingBox.width.rounded(toPlaces: 5)) \(scaledBoundingBox.height.rounded(toPlaces: 5))\n"
-      faceLog.append(FaceDetection(boundingBox: scaledBoundingBox))
-      
-      if faceExtractionEnabled, let pixelBuffer = mediaModel.currentPixelBuffer {
-        extractAndSaveFace(from: pixelBuffer, boundingBox: scaledBoundingBox, at: facesFolderURL.appendingPathComponent("\(videoFilename)_face_\(frameNumber)_\(index).jpg"))
-      }
-    }
-    
-    if !labelText.isEmpty {
-      do {
-        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-      } catch {
-        print("Error saving labels: \(error)")
-      }
-      
-      if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
-      }
-    }
-    
-    if saveJsonLog {
-      logFaceDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
-    }
-  }
-  
-  private func extractAndSaveFace(from pixelBuffer: CVPixelBuffer, boundingBox: CGRect, at url: URL) {
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-    let context = CIContext()
-    let scaledRect = boundingBox.scaled(to: CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer)))
-    guard let faceImage = context.createCGImage(ciImage, from: scaledRect) else { return }
-    let nsImage = NSImage(cgImage: faceImage, size: .zero)
-    
-    guard let tiffData = nsImage.tiffRepresentation,
-          let bitmap = NSBitmapImageRep(data: tiffData),
-          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
-    
-    do {
-      try jpegData.write(to: url)
-    } catch {
-      print("Error saving face: \(error)")
-    }
-  }
-  
-  private func processAndSaveHumans(_ humans: [VNHumanObservation], at time: CMTime?) async {
-    guard let time = time, let savePath = savePath else { return }
-    
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-    let folderName = "\(videoFilename)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels_humans")
-    let imagesFolderURL = folderURL.appendingPathComponent("images_humans")
-    
-    createFolderIfNotExists(at: folderURL)
-    createFolderIfNotExists(at: labelsFolderURL)
-    createFolderIfNotExists(at: imagesFolderURL)
-    
-    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-    
-    var labelText = ""
-    var humanLog = [HumanDetection]()
-    
-    for human in humans {
-      let boundingBox = human.boundingBox
-      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
-      humanLog.append(HumanDetection(boundingBox: boundingBox))
-    }
-    
-    if !labelText.isEmpty {
-      do {
-        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-      } catch {
-        print("Error saving labels: \(error)")
-      }
-      
-      if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
-      }
-    }
-    
-    if saveJsonLog {
-      logHumanDetections(detections: humanLog, frameNumber: frameNumber, folderURL: folderURL)
-    }
-  }
-  
-  private func processAndSaveHands(_ hands: [VNHumanHandPoseObservation], at time: CMTime?) async {
-    guard let time = time, let savePath = savePath else { return }
-    
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-    let folderName = "\(videoFilename)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels_hands")
-    let imagesFolderURL = folderURL.appendingPathComponent("images_hands")
-    
-    createFolderIfNotExists(at: folderURL)
-    createFolderIfNotExists(at: labelsFolderURL)
-    createFolderIfNotExists(at: imagesFolderURL)
-    
-    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-    
-    var labelText = ""
-    var handLog = [HandDetection]()
-    
-    for hand in hands {
-      for jointName in hand.availableJointNames {
-        if let point = try? hand.recognizedPoint(jointName).location {
-          labelText += "\(jointName) \(point.x.rounded(toPlaces: 5)) \(1 - point.y.rounded(toPlaces: 5))\n"
-          handLog.append(HandDetection(location: point))
+  private func runBodyPoseDetection(on pixelBuffer: CVPixelBuffer) {
+    let bodyPoseRequest = VNDetectHumanBodyPoseRequest { request, error in
+      if let results = request.results as? [VNHumanBodyPoseObservation] {
+        DispatchQueue.main.async {
+          self.detectedBodyPoses = results
+          self.totalBodyPosesDetected += results.count
+          if saveLabels || saveFrames {
+            Task {
+              await processAndSaveBodyPoses(results, at: player.currentItem?.currentTime())
+            }
+          }
         }
       }
     }
     
-    if !labelText.isEmpty {
-      do {
-        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-      } catch {
-        print("Error saving labels: \(error)")
-      }
-      
-      if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
-      }
-    }
-    
-    if saveJsonLog {
-      logHandDetections(detections: handLog, frameNumber: frameNumber, folderURL: folderURL)
-    }
-  }
-  
-  private func saveCurrentFrame(fileName: String) {
-    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
-    
-    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-    let context = CIContext()
-    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
-    let nsImage = NSImage(cgImage: cgImage, size: .zero)
-    
-    guard let tiffData = nsImage.tiffRepresentation,
-          let bitmap = NSBitmapImageRep(data: tiffData),
-          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
-    
-    do {
-      try jpegData.write(to: URL(fileURLWithPath: fileName))
-    } catch {
-      print("Error saving frame: \(error)")
-    }
-  }
-  
-  private func setupVideoOutput(for playerItem: AVPlayerItem) {
-    let pixelBufferAttributes: [String: Any] = [
-      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-    ]
-    let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
-    playerItem.add(videoOutput)
-    
-    self.videoOutput = videoOutput
+    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    try? handler.perform([bodyPoseRequest])
   }
   
   private func startFrameExtraction() {
@@ -692,6 +410,34 @@ struct MainVideoView: View {
         }
       }
     }
+  }
+  
+  private func saveCurrentFrame(fileName: String) {
+    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+    
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+    let nsImage = NSImage(cgImage: cgImage, size: .zero)
+    
+    guard let tiffData = nsImage.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiffData),
+          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+    
+    do {
+      try jpegData.write(to: URL(fileURLWithPath: fileName))
+    } catch {
+      print("Error saving frame: \(error)")
+    }
+  }
+  
+  private func setupVideoOutput(for playerItem: AVPlayerItem) {
+    let pixelBufferAttributes: [String: Any] = [
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+    ]
+    let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
+    playerItem.add(videoOutput)
+    self.videoOutput = videoOutput
   }
   
   private func getSaveURL(fileName: String) -> URL {
@@ -807,21 +553,24 @@ struct MainVideoView: View {
     }
   }
   
-  
-  private func startFramePerFrameMode() {
-    player.rate = 1.0 / Float(player.currentItem?.asset.tracks.first?.nominalFrameRate ?? 0.02)
-  }
-  
-  private func stopFramePerFrameMode() {
-    player.rate = 1.0
-  }
-  
-  private func startPlayBackwardMode() {
-    player.rate = -1.0
-  }
-  
-  private func stopPlayBackwardMode() {
-    player.rate = 1.0
+  private func logBodyPoseDetections(detections: [BodyPoseDetection], frameNumber: Int, folderURL: URL) {
+    let logFileName = folderURL.appendingPathComponent("log_body_poses_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
+    
+    var log = BodyPoseDetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
+    
+    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(BodyPoseDetectionLog.self, from: data) {
+      log = existingLog
+    }
+    
+    let frameLog = BodyPoseFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
+    log.frames.append(frameLog)
+    
+    do {
+      let data = try JSONEncoder().encode(log)
+      try data.write(to: logFileName)
+    } catch {
+      print("Error saving log: \(error)")
+    }
   }
   
   private func runPredictionsWithoutPlaying() {
@@ -852,8 +601,6 @@ struct MainVideoView: View {
           }
           if bodyPoseDetectionEnabled {
             runBodyPoseDetection(on: pixelBuffer)
-          
-            
           }
         }
       }
@@ -861,71 +608,7 @@ struct MainVideoView: View {
       currentFrame += 1
     }
   }
-  private func processAndSaveBodyPoses(_ bodyPoses: [VNHumanBodyPoseObservation], at time: CMTime?) async {
-    guard let time = time, let savePath = savePath else { return }
-    
-    let frameNumber = Int(CMTimeGetSeconds(time) * Double(getVideoFrameRate()))
-    let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
-    let folderName = "\(videoFilename)"
-    let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels_body_poses")
-    let imagesFolderURL = folderURL.appendingPathComponent("images_body_poses")
-    
-    createFolderIfNotExists(at: folderURL)
-    createFolderIfNotExists(at: labelsFolderURL)
-    createFolderIfNotExists(at: imagesFolderURL)
-    
-    let labelFileName = labelsFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).txt")
-    let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
-    
-    var labelText = ""
-    var bodyPoseLog = [BodyPoseDetection]()
-    
-    for bodyPose in bodyPoses {
-      for jointName in bodyPose.availableJointNames {
-        if let point = try? bodyPose.recognizedPoint(jointName).location {
-          labelText += "\(jointName) \(point.x.rounded(toPlaces: 5)) \(1 - point.y.rounded(toPlaces: 5))\n"
-          bodyPoseLog.append(BodyPoseDetection(location: point))
-        }
-      }
-    }
-    
-    if !labelText.isEmpty {
-      do {
-        try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
-      } catch {
-        print("Error saving labels: \(error)")
-      }
-      
-      if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
-      }
-    }
-    
-    if saveJsonLog {
-      logBodyPoseDetections(detections: bodyPoseLog, frameNumber: frameNumber, folderURL: folderURL)
-    }
-  }
   
-  private func logBodyPoseDetections(detections: [BodyPoseDetection], frameNumber: Int, folderURL: URL) {
-    let logFileName = folderURL.appendingPathComponent("log_body_poses_\(mediaModel.selectedVideoURL?.lastPathComponent ?? "video").json")
-    
-    var log = BodyPoseDetectionLog(videoURL: mediaModel.selectedVideoURL?.absoluteString ?? "", creationDate: Date().description, frames: [])
-    
-    if let data = try? Data(contentsOf: logFileName), let existingLog = try? JSONDecoder().decode(BodyPoseDetectionLog.self, from: data) {
-      log = existingLog
-    }
-    
-    let frameLog = BodyPoseFrameLog(frameNumber: frameNumber, detections: detections.isEmpty ? nil : detections)
-    log.frames.append(frameLog)
-    
-    do {
-      let data = try JSONEncoder().encode(log)
-      try data.write(to: logFileName)
-    } catch {
-      print("Error saving log: \(error)")
-    }
-  }
   private func checkAccessToPath(url: URL) -> Bool {
     var bookmarkDataIsStale: Bool = false
     do {
@@ -935,25 +618,7 @@ struct MainVideoView: View {
       return false
     }
   }
-  private func runBodyPoseDetection(on pixelBuffer: CVPixelBuffer) {
-    let bodyPoseRequest = VNDetectHumanBodyPoseRequest { request, error in
-      if let results = request.results as? [VNHumanBodyPoseObservation] {
-        DispatchQueue.main.async {
-          self.detectedBodyPoses = results
-          self.totalBodyPosesDetected += results.count
-          if saveLabels || saveFrames {
-            Task {
-              await processAndSaveBodyPoses(results, at: player.currentItem?.currentTime())
-            }
-          }
-        }
-      }
-    }
-    bodyPoseRequest.preferBackgroundProcessing = true
-    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-    try? handler.perform([bodyPoseRequest])
-  }
-
+  
   private func move(from source: IndexSet, to destination: Int) {
     mediaModel.videos.move(fromOffsets: source, toOffset: destination)
   }
@@ -995,6 +660,81 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
-  
 }
 
+struct BoundingBoxModifier: ViewModifier {
+  let observations: [VNDetectedObjectObservation]
+  let color: NSColor
+  let scale: CGFloat
+  
+  func body(content: Content) -> some View {
+    content.overlay(
+      ForEach(observations, id: \.self) { observation in
+        drawBoundingBox(for: observation, scale: scale, color: color)
+      }
+    )
+  }
+  
+  private func drawBoundingBox(for observation: VNDetectedObjectObservation, scale: CGFloat, color: NSColor) -> some View {
+    let boundingBox = observation.boundingBox
+    let normalizedRect = CGRect(
+      x: boundingBox.origin.x - boundingBox.size.width * (scale - 1) / 2,
+      y: boundingBox.origin.y - boundingBox.size.height * (scale - 1) / 2,
+      width: boundingBox.width * scale,
+      height: boundingBox.height * scale
+    )
+    
+    return Rectangle()
+      .stroke(Color(color), lineWidth: 2)
+      .frame(width: normalizedRect.width, height: normalizedRect.height)
+      .position(x: normalizedRect.midX, y: normalizedRect.midY)
+  }
+}
+
+struct HandJointModifier: ViewModifier {
+  let hands: [VNHumanHandPoseObservation]
+  let color: NSColor
+  
+  func body(content: Content) -> some View {
+    content.overlay(
+      ForEach(hands, id: \.self) { hand in
+        ForEach(hand.availableJointNames, id: \.self) { jointName in
+          if let point = try? hand.recognizedPoint(jointName).location {
+            drawHandJoint(at: point, color: color)
+          }
+        }
+      }
+    )
+  }
+  
+  private func drawHandJoint(at point: CGPoint, color: NSColor) -> some View {
+    Circle()
+      .fill(Color(color))
+      .frame(width: 5, height: 5)
+      .position(x: point.x, y: 1 - point.y)
+  }
+}
+
+struct BodyPoseJointModifier: ViewModifier {
+  let bodyPoses: [VNHumanBodyPoseObservation]
+  let color: NSColor
+  
+  func body(content: Content) -> some View {
+    content.overlay(
+      ForEach(bodyPoses, id: \.self) { bodyPose in
+        ForEach(bodyPose.availableJointNames, id: \.self) { jointName in
+          if let point = try? bodyPose.recognizedPoint(jointName).location {
+            drawBodyPoseJoint(at: point, color: color)
+          }
+        }
+      }
+    )
+  }
+  
+  private func drawBodyPoseJoint(at point: CGPoint, color: NSColor) -> some View {
+    Circle()
+      .fill(Color(color))
+      .frame(width: 5, height: 5)
+      .position(x: point.x, y: 1 - point.y)
+  }
+}
