@@ -76,7 +76,7 @@ struct MainImageView: View {
 }
 func selectImages(completion: @escaping ([NSImage]) -> Void) {
   let panel = NSOpenPanel()
-  panel.allowedFileTypes = ["png", "jpg", "jpeg"]
+  panel.allowedContentTypes = [.image]
   panel.allowsMultipleSelection = true
   panel.begin { response in
     if response == .OK {
@@ -86,5 +86,38 @@ func selectImages(completion: @escaping ([NSImage]) -> Void) {
       completion(images)
     }
   }
+  
+  func selectOutputDirectory(completion: @escaping (URL) -> Void) {
+    let panel = NSOpenPanel()
+    panel.canChooseDirectories = true
+    panel.canCreateDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.begin { response in
+      if response == .OK, let url: URL = panel.url {
+        completion(url)
+      }
+    }
+  }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 }
 
