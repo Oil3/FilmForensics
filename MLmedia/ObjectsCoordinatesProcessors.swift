@@ -42,7 +42,14 @@ struct BoundingBoxModifier: ViewModifier {
     }
   }
 }
-
+class CustomDetection: Identifiable, ObservableObject {
+  var id = UUID()
+  var boundingBox: CGRect
+  
+  init(boundingBox: CGRect) {
+    self.boundingBox = boundingBox
+  }
+}
 //private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
 //  let jointNames: [VNHumanHandPoseObservation.JointName] = [
 //    .wrist, .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
