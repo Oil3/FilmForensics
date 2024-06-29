@@ -13,6 +13,7 @@ struct MainVideoView: View {
   @State private var detectedHumans: [VNHumanObservation] = []
   @State private var detectedHands: [VNHumanHandPoseObservation] = []
   @State private var detectedBodyPoses: [VNHumanBodyPoseObservation] = []
+  @State private var detectedCustomObjects: [VNRecognizedObjectObservation] = []
   @State private var imageSize: CGSize = .zero
   @State private var videoSize: CGSize = .zero
   @State private var objectDetectionEnabled = true
@@ -20,6 +21,7 @@ struct MainVideoView: View {
   @State private var humanDetectionEnabled = false
   @State private var handDetectionEnabled = false
   @State private var bodyPoseDetectionEnabled = false
+  @State private var customModelEnabled = false
   @State private var maxRequestsMode = false
   @State private var framePerFrameMode = false
   @State private var loopMode = false
@@ -32,10 +34,12 @@ struct MainVideoView: View {
   @State private var framesWithHumans = 0
   @State private var framesWithHands = 0
   @State private var framesWithBodyPoses = 0
-  @State private var totalFrames = 0
+  @State private var framesWithCustomObjects = 0
+  @State private var totalFrames = 1
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
   @State private var detectionFPS: Double = 0.0
+  @State private var d2etectionFPS: Double = 0.0
   @State private var selectedSize: CGSize = CGSize(width: 1024, height: 576)
   @State private var videoOutput: AVPlayerItemVideoOutput?
   @State private var saveJsonLog = false
@@ -180,11 +184,13 @@ struct MainVideoView: View {
         Text("Frames with Humans: \(framesWithHumans)")
         Text("Frames with Hands: \(framesWithHands)")
         Text("Frames with Body Poses: \(framesWithBodyPoses)")
+        Text("Frames with Custom Objects: \(framesWithCustomObjects)")
         Text("Objects Presence: \((framesWithObjects / (totalFrames + 1)))%")
         Text("Faces Presence: \((framesWithFaces / (totalFrames + 1)))%")
         Text("Humans Presence: \((framesWithHumans / (totalFrames + 1)))%")
         Text("Hands Presence: \((framesWithHands / (totalFrames + 1)))%")
-//        Text("Body Poses Presence: \((framesWithBodyPoses * 100 / (totalFrames+ 1))%")
+        Text("Custom Objects Presence: \((framesWithCustomObjects / totalFrames))%")
+        //                Text("Body Poses Presence: \((framesWithBodyPoses * 100 / (totalFrames+ 1))%")
       }
       if mediaModel.selectedVideoURL != nil {
         VStack {
@@ -223,6 +229,11 @@ struct MainVideoView: View {
                       drawBodyJoints(for: bodyPose, in: geo.size, color: .purple)
                     }
                   }
+                  ForEach(detectedCustomObjects,id: \.self) { customObject in
+                    if showBoundingBoxes && customModelEnabled {
+                      drawBoundingBox(for: customObject, in: geo.size, color: .systemRed)
+                    }
+                  }
                 }
               }
             )
@@ -248,6 +259,7 @@ struct MainVideoView: View {
           Toggle("Enable Human Detection", isOn: $humanDetectionEnabled)
           Toggle("Enable Hand Detection", isOn: $handDetectionEnabled)
           Toggle("Enable Body Pose Detection", isOn: $bodyPoseDetectionEnabled)
+          Toggle("Enable Custom Model", isOn: $customModelEnabled)
           Toggle("Save Labels", isOn: $saveLabels)
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
@@ -332,105 +344,120 @@ struct MainVideoView: View {
       .position(x: normalizedRect.midX, y: normalizedRect.midY)
   }
   
-private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
-  let jointNames: [VNHumanHandPoseObservation.JointName] = [
-    .wrist, .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
-    .indexMCP, .indexPIP, .indexDIP, .indexTip,
-    .middleMCP, .middlePIP, .middleDIP, .middleTip,
-    .ringMCP, .ringPIP, .ringDIP, .ringTip,
-    .littleMCP, .littlePIP, .littleDIP, .littleTip
-  ]
-  
-  let points = jointNames.compactMap { try? observation.recognizedPoint($0) }
-  let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
-  
-  // Define the connections between the hand joints
-  let connections: [(VNHumanHandPoseObservation.JointName, VNHumanHandPoseObservation.JointName)] = [
-    (.wrist, .thumbCMC), (.thumbCMC, .thumbMP), (.thumbMP, .thumbIP), (.thumbIP, .thumbTip),
-    (.wrist, .indexMCP), (.indexMCP, .indexPIP), (.indexPIP, .indexDIP), (.indexDIP, .indexTip),
-    (.wrist, .middleMCP), (.middleMCP, .middlePIP), (.middlePIP, .middleDIP), (.middleDIP, .middleTip),
-    (.wrist, .ringMCP), (.ringMCP, .ringPIP), (.ringPIP, .ringDIP), (.ringDIP, .ringTip),
-    (.wrist, .littleMCP), (.littleMCP, .littlePIP), (.littlePIP, .littleDIP), (.littleDIP, .littleTip)
-  ]
-  
-  let connectionsPoints: [(CGPoint, CGPoint)] = connections.compactMap { connection in
-    guard let startPoint = try? observation.recognizedPoint(connection.0),
-          let endPoint = try? observation.recognizedPoint(connection.1),
-          startPoint.confidence > 0.1, endPoint.confidence > 0.1 else { return nil }
-    return (CGPoint(x: startPoint.location.x * parentSize.width, y: (1 - startPoint.location.y) * parentSize.height),
-            CGPoint(x: endPoint.location.x * parentSize.width, y: (1 - endPoint.location.y) * parentSize.height))
-  }
-  
-  return ZStack {
-    // Draw lines
-    ForEach(Array(connectionsPoints.enumerated()), id: \.offset) { _, connection in
-      Line(start: connection.0, end: connection.1)
-        .stroke(Color(color), lineWidth: 2)
+  private func drawHandJoints(for observation: VNHumanHandPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
+    let jointNames: [VNHumanHandPoseObservation.JointName] = [
+      .wrist, .thumbCMC, .thumbMP, .thumbIP, .thumbTip,
+      .indexMCP, .indexPIP, .indexDIP, .indexTip,
+      .middleMCP, .middlePIP, .middleDIP, .middleTip,
+      .ringMCP, .ringPIP, .ringDIP, .ringTip,
+      .littleMCP, .littlePIP, .littleDIP, .littleTip
+    ]
+    
+    let points = jointNames.compactMap { try? observation.recognizedPoint($0) }
+    let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
+    
+    // Define the connections between the hand joints
+    let connections: [(VNHumanHandPoseObservation.JointName, VNHumanHandPoseObservation.JointName)] = [
+      (.wrist, .thumbCMC), (.thumbCMC, .thumbMP), (.thumbMP, .thumbIP), (.thumbIP, .thumbTip),
+      (.wrist, .indexMCP), (.indexMCP, .indexPIP), (.indexPIP, .indexDIP), (.indexDIP, .indexTip),
+      (.wrist, .middleMCP), (.middleMCP, .middlePIP), (.middlePIP, .middleDIP), (.middleDIP, .middleTip),
+      (.wrist, .ringMCP), (.ringMCP, .ringPIP), (.ringPIP, .ringDIP), (.ringDIP, .ringTip),
+      (.wrist, .littleMCP), (.littleMCP, .littlePIP), (.littlePIP, .littleDIP), (.littleDIP, .littleTip)
+    ]
+    
+    let connectionsPoints: [(CGPoint, CGPoint)] = connections.compactMap { connection in
+      guard let startPoint = try? observation.recognizedPoint(connection.0),
+            let endPoint = try? observation.recognizedPoint(connection.1),
+            startPoint.confidence > 0.1, endPoint.confidence > 0.1 else { return nil }
+      return (CGPoint(x: startPoint.location.x * parentSize.width, y: (1 - startPoint.location.y) * parentSize.height),
+              CGPoint(x: endPoint.location.x * parentSize.width, y: (1 - endPoint.location.y) * parentSize.height))
     }
     
-    // Draw points
-    ForEach(Array(normalizedPoints.enumerated()), id: \.offset) { _, point in
-      Circle()
-        .fill(Color(color))
-        .frame(width: 5, height: 5)
-        .position(point)
+    return ZStack {
+      // Draw lines
+      ForEach(Array(connectionsPoints.enumerated()), id: \.offset) { _, connection in
+        Line(start: connection.0, end: connection.1)
+          .stroke(Color(color), lineWidth: 2)
+      }
+      
+      // Draw points
+      ForEach(Array(normalizedPoints.enumerated()), id: \.offset) { _, point in
+        Circle()
+          .fill(Color(color))
+          .frame(width: 5, height: 5)
+          .position(point)
+      }
     }
   }
-}
-
-
-private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
-  let jointNames: [VNHumanBodyPoseObservation.JointName] = [
-    .neck, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
-    .leftWrist, .rightWrist, .root, .leftHip, .rightHip,
-    .leftKnee, .rightKnee, .leftAnkle, .rightAnkle,
-    .leftEar, .leftEye, .rightEar, .rightEye, .nose
-  ]
   
-  let points = jointNames.compactMap { try? observation.recognizedPoint($0) }
-  let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
-  
-  // Define the connections between the joints
-  let connections: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
-    (.neck, .leftShoulder), (.neck, .rightShoulder),
-    (.leftShoulder, .leftElbow), (.rightShoulder, .rightElbow),
-    (.leftElbow, .leftWrist), (.rightElbow, .rightWrist),
-    (.neck, .root),
-    (.root, .leftHip), (.root, .rightHip),
-    (.leftHip, .leftKnee), (.rightHip, .rightKnee),
-    (.leftKnee, .leftAnkle), (.rightKnee, .rightAnkle),
-    (.neck, .nose),
-    (.nose, .leftEye), (.nose, .rightEye),
-    (.leftEye, .leftEar), (.rightEye, .rightEar)
-  ]
-  
-  let connectionsPoints: [(CGPoint, CGPoint)] = connections.compactMap { connection in
-    guard let startPoint = try? observation.recognizedPoint(connection.0),
-          let endPoint = try? observation.recognizedPoint(connection.1),
-          startPoint.confidence > 0.1, endPoint.confidence > 0.1 else { return nil }
-    return (CGPoint(x: startPoint.location.x * parentSize.width, y: (1 - startPoint.location.y) * parentSize.height),
-            CGPoint(x: endPoint.location.x * parentSize.width, y: (1 - endPoint.location.y) * parentSize.height))
-  }
-  
-  return ZStack {
-    // Draw lines
-    ForEach(Array(connectionsPoints.enumerated()), id: \.offset) { _, connection in
-      Line(start: connection.0, end: connection.1)
-        .stroke(Color(color), lineWidth: 2)
+  private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in parentSize: CGSize, color: NSColor) -> some View {
+    let jointNames: [VNHumanBodyPoseObservation.JointName] = [
+      .neck, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
+      .leftWrist, .rightWrist, .root, .leftHip, .rightHip,
+      .leftKnee, .rightKnee, .leftAnkle, .rightAnkle,
+      .leftEar, .leftEye, .rightEar, .rightEye, .nose
+    ]
+    
+    let points = jointNames.compactMap { try? observation.recognizedPoint($0) }
+    let normalizedPoints = points.map { CGPoint(x: $0.location.x * parentSize.width, y: (1 - $0.location.y) * parentSize.height) }
+    
+    // Define the connections between the joints
+    let connections: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
+      (.neck, .leftShoulder), (.neck, .rightShoulder),
+      (.leftShoulder, .leftElbow), (.rightShoulder, .rightElbow),
+      (.leftElbow, .leftWrist), (.rightElbow, .rightWrist),
+      (.neck, .root),
+      (.root, .leftHip), (.root, .rightHip),
+      (.leftHip, .leftKnee), (.rightHip, .rightKnee),
+      (.leftKnee, .leftAnkle), (.rightKnee, .rightAnkle),
+      (.neck, .nose),
+      (.nose, .leftEye), (.nose, .rightEye),
+      (.leftEye, .leftEar), (.rightEye, .rightEar)
+    ]
+    
+    let connectionsPoints: [(CGPoint, CGPoint)] = connections.compactMap { connection in
+      guard let startPoint = try? observation.recognizedPoint(connection.0),
+            let endPoint = try? observation.recognizedPoint(connection.1),
+            startPoint.confidence > 0.1, endPoint.confidence > 0.1 else { return nil }
+      return (CGPoint(x: startPoint.location.x * parentSize.width, y: (1 - startPoint.location.y) * parentSize.height),
+              CGPoint(x: endPoint.location.x * parentSize.width, y: (1 - endPoint.location.y) * parentSize.height))
     }
     
-    // Draw points
-    ForEach(Array(normalizedPoints.enumerated()), id: \.offset) { _, point in
-      Circle()
-        .fill(Color(color))
-        .frame(width: 5, height: 5)
-        .position(point)
+    return ZStack {
+      // Draw lines
+      ForEach(Array(connectionsPoints.enumerated()), id: \.offset) { _, connection in
+        Line(start: connection.0, end: connection.1)
+          .stroke(Color(color), lineWidth: 2)
+      }
+      
+      // Draw points
+      ForEach(Array(normalizedPoints.enumerated()), id: \.offset) { _, point in
+        Circle()
+          .fill(Color(color))
+          .frame(width: 5, height: 5)
+          .position(point)
+      }
     }
   }
-}
+  
+  private func drawCustomBoundingBox(for customObject: CustomDetection, in parentSize: CGSize, color: NSColor) -> some View {
+    let boundingBox = customObject.boundingBox
+    let normalizedRect = CGRect(
+      x: boundingBox.minX * parentSize.width,
+      y: (1 - boundingBox.maxY) * parentSize.height,
+      width: boundingBox.width * parentSize.width,
+      height: boundingBox.height * parentSize.height
+    )
+    
+    return Rectangle()
+      .stroke(Color(color), lineWidth: 2)
+      .frame(width: normalizedRect.width, height: normalizedRect.height)
+      .position(x: normalizedRect.midX, y: normalizedRect.midY)
+  }
 
+  
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: custom2().model)
+    let model = try! VNCoreMLModel(for: customembedded().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -469,7 +496,7 @@ private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in pare
         }
       }
     }
-
+    
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([faceRequest])
   }
@@ -535,6 +562,32 @@ private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in pare
     try? handler.perform([bodyPoseRequest])
   }
   
+  private func runCustomModel(on pixelBuffer: CVPixelBuffer) {
+    let model = try! VNCoreMLModel(for: custom2().model)
+    let request = VNCoreMLRequest(model: model) { request, error in
+      let start = CFAbsoluteTimeGetCurrent()
+      if let results = request.results as? [VNRecognizedObjectObservation] {
+        DispatchQueue.main.async {
+          self.detectedCustomObjects = results
+          if !results.isEmpty { self.framesWithObjects += 1 }
+          if saveLabels || saveFrames {
+            Task {
+              await processAndSaveDetections(results, at: player.currentItem?.currentTime())
+            }
+          }
+          if autoPauseOnNewDetection && !results.isEmpty {
+            player.pause()
+          }
+          let end = CFAbsoluteTimeGetCurrent()
+          self.d2etectionFPS = 1.0 / (end - start)
+        }
+      }
+    }
+    request.imageCropAndScaleOption = .scaleFill
+    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    try? handler.perform([request])
+  }
+
   private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
@@ -817,6 +870,9 @@ private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in pare
           if bodyPoseDetectionEnabled {
             runBodyPoseDetection(on: pixelBuffer)
           }
+          if customModelEnabled {
+            runCustomModel(on: pixelBuffer)
+          }
         }
       }
     }
@@ -1000,6 +1056,9 @@ private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in pare
           if bodyPoseDetectionEnabled {
             runBodyPoseDetection(on: pixelBuffer)
           }
+          if customModelEnabled {
+            runCustomModel(on: pixelBuffer)
+          }
         }
       }
       
@@ -1059,3 +1118,21 @@ private func drawBodyJoints(for observation: VNHumanBodyPoseObservation, in pare
     mainVideoView.startFrameExtraction()
   }
 }
+
+private extension MLMultiArray {
+  func toBoundingBoxes(imageSize: CGSize) -> [CGRect] {
+    let count = self.shape[0].intValue
+    var boundingBoxes: [CGRect] = []
+    
+    for i in 0..<count {
+      let x = self[[i, 0] as [NSNumber]].doubleValue * imageSize.width
+      let y = self[[i, 1] as [NSNumber]].doubleValue * imageSize.height
+      let width = self[[i, 2] as [NSNumber]].doubleValue * imageSize.width
+      let height = self[[i, 3] as [NSNumber]].doubleValue * imageSize.height
+      boundingBoxes.append(CGRect(x: x, y: y, width: width, height: height))
+    }
+    
+    return boundingBoxes
+  }
+}
+

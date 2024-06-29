@@ -115,3 +115,13 @@ struct BodyPoseDetectionLog: Codable {
   var creationDate: String
   var frames: [BodyPoseFrameLog]
 }
+struct CustomEmbeddedDetectionLog: Codable {
+  var videoURL: String
+  var creationDate: String
+  var frames: [CustomEmbeddedFrameLog]
+}
+
+struct CustomEmbeddedFrameLog: Codable {
+  var frameNumber: Int
+  var detections: [CGRect]?
+}
