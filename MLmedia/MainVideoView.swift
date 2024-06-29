@@ -382,7 +382,8 @@ struct MainVideoView: View {
     let jointNames: [VNHumanBodyPoseObservation.JointName] = [
       .neck, .leftShoulder, .rightShoulder, .leftElbow, .rightElbow,
       .leftWrist, .rightWrist, .root, .leftHip, .rightHip,
-      .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
+      .leftKnee, .rightKnee, .leftAnkle, .rightAnkle,
+      .leftEar, .leftEye, .rightEar, .rightEye, .nose
     ]
     
     let points = jointNames.compactMap { try? observation.recognizedPoint($0) }
@@ -396,7 +397,10 @@ struct MainVideoView: View {
       (.neck, .root),
       (.root, .leftHip), (.root, .rightHip),
       (.leftHip, .leftKnee), (.rightHip, .rightKnee),
-      (.leftKnee, .leftAnkle), (.rightKnee, .rightAnkle)
+      (.leftKnee, .leftAnkle), (.rightKnee, .rightAnkle),
+      (.neck, .nose),
+      (.nose, .leftEye), (.nose, .rightEye),
+      (.leftEye, .leftEar), (.rightEye, .rightEar)
     ]
     
     let connectionsPoints: [(CGPoint, CGPoint)] = connections.compactMap { connection in
@@ -424,6 +428,7 @@ struct MainVideoView: View {
     }
   }
   
+
 
 
   private func runModel(on pixelBuffer: CVPixelBuffer) {

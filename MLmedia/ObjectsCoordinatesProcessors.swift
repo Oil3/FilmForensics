@@ -43,32 +43,44 @@ struct BoundingBoxModifier: ViewModifier {
   }
 }
 
-struct HandJointModifier: ViewModifier {
-  var hands: [VNHumanHandPoseObservation]
-  var color: NSColor
+//struct HandJointModifier: ViewModifier {
+//  var hands: [VNHumanHandPoseObservation]
+//  var color: NSColor
+//  
+//  func body(content: Content) -> some View {
+//    content.overlay(
+//      ZStack {
+//        ForEach(hands, id: \.self) { hand in
+//          drawHandJoints(for: hand, color: color)
+//        }
+//      }
+//    )
+//  }
+//  
+////  private func drawHandJoints(for observation: VNHumanHandPoseObservation, color: NSColor) -> some View {
+////    GeometryReader { geometry in
+////      let points = observation.availableJointNames.compactMap { try? observation.recognizedPoint($0) }
+////      let normalizedPoints = points.map { CGPoint(x: $0.location.x * geometry.size.width, y: (1 - $0.location.y) * geometry.size.height) }
+////      
+////      ForEach(normalizedPoints.indices, id: \.self) { index in
+////        Circle()
+////          .fill(Color(color))
+////          .frame(width: 5, height: 5)
+////          .position(normalizedPoints[index])
+////      }
+////    }
+////  }
+////}
+
+
+struct Line: Shape {
+  var start: CGPoint
+  var end: CGPoint
   
-  func body(content: Content) -> some View {
-    content.overlay(
-      ZStack {
-        ForEach(hands, id: \.self) { hand in
-          drawHandJoints(for: hand, color: color)
-        }
-      }
-    )
-  }
-  
-  private func drawHandJoints(for observation: VNHumanHandPoseObservation, color: NSColor) -> some View {
-    GeometryReader { geometry in
-      let points = observation.availableJointNames.compactMap { try? observation.recognizedPoint($0) }
-      let normalizedPoints = points.map { CGPoint(x: $0.location.x * geometry.size.width, y: (1 - $0.location.y) * geometry.size.height) }
-      
-      ForEach(normalizedPoints.indices, id: \.self) { index in
-        Circle()
-          .fill(Color(color))
-          .frame(width: 5, height: 5)
-          .position(normalizedPoints[index])
-      }
-    }
+  func path(in rect: CGRect) -> Path {
+    var path = Path()
+    path.move(to: start)
+    path.addLine(to: end)
+    return path
   }
 }
-
