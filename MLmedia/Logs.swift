@@ -115,3 +115,14 @@ struct BodyPoseDetectionLog: Codable {
   var creationDate: String
   var frames: [BodyPoseFrameLog]
 }
+struct Line: Shape {
+  var start: CGPoint
+  var end: CGPoint
+  
+  func path(in rect: CGRect) -> Path {
+    var path = Path()
+    path.move(to: start)
+    path.addLine(to: end)
+    return path
+  }
+  }
