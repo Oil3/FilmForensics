@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		340047762C267F990055418A /* Logs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 340047752C267F990055418A /* Logs.swift */; };
-		34097CCF2C28D73E0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
-		34097CD02C28D73F0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
-		34097CD12C28D73F0078EF63 /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34097CCF2C28D73E0078EF63 /* custom2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* custom2.mlpackage */; };
+		34097CD02C28D73F0078EF63 /* custom2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* custom2.mlpackage */; };
+		34097CD12C28D73F0078EF63 /* custom2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* custom2.mlpackage */; };
 		34097CD42C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD52C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
 		34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34097CD32C28D7630078EF63 /* MLresizer.mlmodel */; };
@@ -21,7 +21,7 @@
 		34170B252C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */; };
 		34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */; };
 		34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349246D82C20558700638047 /* FaceContentView.swift */; };
-		34170B282C2DA4F200FAC79D /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34170B282C2DA4F200FAC79D /* custom2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* custom2.mlpackage */; };
 		34170B2B2C2DAD0000FAC79D /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B292C2DAD0000FAC79D /* image2.png */; };
 		34170B2C2C2DAD0000FAC79D /* image2.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B292C2DAD0000FAC79D /* image2.png */; };
 		34170B2D2C2DAD0000FAC79D /* image1.png in Resources */ = {isa = PBXBuildFile; fileRef = 34170B2A2C2DAD0000FAC79D /* image1.png */; };
@@ -136,8 +136,7 @@
 		34C825B22C0FAF0E0006E453 /* ccashier3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */; };
 		34C825B42C102B7D0006E453 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B32C102B7D0006E453 /* LogView.swift */; };
 		34C825B62C115DA00006E453 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C825B52C115DA00006E453 /* SettingsView.swift */; };
-		34D0C1A22C2D516D004E8182 /* cashtoadd59_9650.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */; };
-		34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* forensics.mlpackage */; };
+		34D718F12C276E5C00C0219C /* custom2.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34D718F02C276E5C00C0219C /* custom2.mlpackage */; };
 		34E11DD72C0CA68200A7B857 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DD62C0CA68200A7B857 /* Assets.xcassets */; };
 		34E11DDB2C0CA68200A7B857 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */; };
 		34E4C05E2C0BBAB5007D3A05 /* ImageViewerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05D2C0BBAB5007D3A05 /* ImageViewerModel.swift */; };
@@ -270,8 +269,7 @@
 		34C825AF2C0FAF0E0006E453 /* ccashier3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = ccashier3.mlmodel; sourceTree = "<group>"; };
 		34C825B32C102B7D0006E453 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		34C825B52C115DA00006E453 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashtoadd59_9650.mlmodel; sourceTree = "<group>"; };
-		34D718F02C276E5C00C0219C /* forensics.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = forensics.mlpackage; sourceTree = "<group>"; };
+		34D718F02C276E5C00C0219C /* custom2.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = custom2.mlpackage; sourceTree = "<group>"; };
 		34E11DD02C0CA68200A7B857 /* MachineSystemSecurity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MachineSystemSecurity.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34E11DD62C0CA68200A7B857 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		34E11DDA2C0CA68200A7B857 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -450,9 +448,8 @@
 				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
 				349246CB2C20554800638047 /* ContentView.swift */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
-				34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */,
 				342126132C2E9A4E007E7878 /* customembedded.mlmodel */,
-				34D718F02C276E5C00C0219C /* forensics.mlpackage */,
+				34D718F02C276E5C00C0219C /* custom2.mlpackage */,
 				34170B2A2C2DAD0000FAC79D /* image1.png */,
 				34170B292C2DAD0000FAC79D /* image2.png */,
 				34170B322C2DB65500FAC79D /* ImageModel.swift */,
@@ -793,7 +790,7 @@
 			files = (
 				34097CD72C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				342D0D102C1D5B2600ECDA36 /* ccontrol4.mlmodel in Sources */,
-				34097CD12C28D73F0078EF63 /* forensics.mlpackage in Sources */,
+				34097CD12C28D73F0078EF63 /* custom2.mlpackage in Sources */,
 				342D0D192C1E1D0900ECDA36 /* MediaModel.swift in Sources */,
 				342D0D142C1DAF6E00ECDA36 /* MainView.swift in Sources */,
 				342D0D112C1D5B4000ECDA36 /* cashtrack416.mlmodel in Sources */,
@@ -828,7 +825,7 @@
 				34C825B02C0FAF0E0006E453 /* ccontrol4.mlmodel in Sources */,
 				34170B222C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				34C825A82C0FA4970006E453 /* SyntaxHighlightingTextView.swift in Sources */,
-				34097CD02C28D73F0078EF63 /* forensics.mlpackage in Sources */,
+				34097CD02C28D73F0078EF63 /* custom2.mlpackage in Sources */,
 				34170B332C2DB65500FAC79D /* ImageModel.swift in Sources */,
 				34097CD62C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */,
@@ -843,13 +840,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */,
-				34D0C1A22C2D516D004E8182 /* cashtoadd59_9650.mlmodel in Sources */,
 				34170B312C2DB61700FAC79D /* ForensicView.swift in Sources */,
 				34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */,
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */,
-				34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */,
+				34D718F12C276E5C00C0219C /* custom2.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
@@ -874,7 +870,7 @@
 				3494C54C2BFDCF9000E70B0F /* MLDetection.swift in Sources */,
 				34A99DC42BFC2ABF004685AC /* VIdeoPlayerViewModel.swift in Sources */,
 				342D0CE62C1D3C5000ECDA36 /* cashcashier321it14588.mlmodel in Sources */,
-				34170B282C2DA4F200FAC79D /* forensics.mlpackage in Sources */,
+				34170B282C2DA4F200FAC79D /* custom2.mlpackage in Sources */,
 				349771512BFEF4AB00533EEA /* OverlayWindow.swift in Sources */,
 				34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */,
 				3494C5482BFDCF2F00E70B0F /* ImagePicker.swift in Sources */,
@@ -902,7 +898,7 @@
 				3471ED6C2C0CF71900916598 /* YOLOv3TinyInt8LUT.mlmodel in Sources */,
 				3471ED4D2C0CF71900916598 /* MachineSystemSecurityApp.swift in Sources */,
 				3471ED422C0CF71900916598 /* VideoPreviewView.swift in Sources */,
-				34097CCF2C28D73E0078EF63 /* forensics.mlpackage in Sources */,
+				34097CCF2C28D73E0078EF63 /* custom2.mlpackage in Sources */,
 				3471ED6F2C0CF71900916598 /* SideBar.swift in Sources */,
 				3471ED532C0CF71900916598 /* VideoViewControllerWrapper.swift in Sources */,
 				3471ED5B2C0CF71900916598 /* GalleryView.swift in Sources */,
