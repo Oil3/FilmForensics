@@ -31,6 +31,8 @@
 		34170B342C2DB65500FAC79D /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B322C2DB65500FAC79D /* ImageModel.swift */; };
 		34170B362C2E838A00FAC79D /* MainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B352C2E838A00FAC79D /* MainImageView.swift */; };
 		34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B352C2E838A00FAC79D /* MainImageView.swift */; };
+		342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342126132C2E9A4E007E7878 /* customembedded.mlmodel */; };
+		3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -160,6 +162,8 @@
 		341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRGAN.mlmodel; sourceTree = "<group>"; };
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
+		342126132C2E9A4E007E7878 /* customembedded.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = customembedded.mlmodel; sourceTree = "<group>"; };
+		3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ObjectsCoordinatesProcessors.swift; path = MLmedia/ObjectsCoordinatesProcessors.swift; sourceTree = "<group>"; };
 		34278E032C1F133700E3D6AA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		34278E062C1F724E00E3D6AA /* sas.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = sas.jpg; path = Assets.xcassets/sas.jpg; sourceTree = "<group>"; };
 		342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier32_2000.mlmodel; sourceTree = "<group>"; };
@@ -442,10 +446,10 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
-				34170B352C2E838A00FAC79D /* MainImageView.swift */,
 				349246CB2C20554800638047 /* ContentView.swift */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				34D0C1A12C2D516D004E8182 /* cashtoadd59_9650.mlmodel */,
+				342126132C2E9A4E007E7878 /* customembedded.mlmodel */,
 				34D718F02C276E5C00C0219C /* forensics.mlpackage */,
 				34170B2A2C2DAD0000FAC79D /* image1.png */,
 				34170B292C2DAD0000FAC79D /* image2.png */,
@@ -453,6 +457,7 @@
 				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
 				34170B2F2C2DB61700FAC79D /* ForensicView.swift */,
 				340047752C267F990055418A /* Logs.swift */,
+				34170B352C2E838A00FAC79D /* MainImageView.swift */,
 				349246D62C20557100638047 /* MainVideoView.swift */,
 				349246DA2C20565700638047 /* MediaModel.swift */,
 				34097CE92C28D7EE0078EF63 /* MLcapture.swift */,
@@ -476,6 +481,7 @@
 		34A99DA92BFC2A88004685AC = {
 			isa = PBXGroup;
 			children = (
+				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
 				349246C82C20554800638047 /* MLmedia */,
 				342D0CFE2C1D52D500ECDA36 /* ToolML */,
 				344D22E02C0EF86100C6966E /* V */,
@@ -840,11 +846,13 @@
 				34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */,
 				349246D72C20557100638047 /* MainVideoView.swift in Sources */,
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
+				3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */,
 				34D718F12C276E5C00C0219C /* forensics.mlpackage in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
 				34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
+				342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
 				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,

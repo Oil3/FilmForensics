@@ -24,9 +24,9 @@ class ImageModel: ObservableObject {
   var gamma: CGFloat = 1.0
   var hue: CGFloat = 0.0
   var whitePoint: CGFloat = 1.0
-  var bumpRadius: CGFloat = 0.0
-  var bumpScale: CGFloat = 0.0
-  var pixelate: CGFloat = 0.0
+  var bumpRadius: CGFloat = 300.0
+  var bumpScale: CGFloat = 0.5
+  var pixelate: CGFloat = 10.0
   var convolution: [CGFloat] = [0, 0, 0, 0, 1, 0, 0, 0, 0]
   
   let context: CIContext = CIContext()
@@ -216,7 +216,6 @@ class ImageModel: ObservableObject {
       }
     }
   }
-  
   func saveAll() {
     for image in images {
       guard let tiffData = image.tiffRepresentation, let ciImage = CIImage(data: tiffData) else { continue }
