@@ -33,6 +33,13 @@
 		34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B352C2E838A00FAC79D /* MainImageView.swift */; };
 		342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342126132C2E9A4E007E7878 /* customembedded.mlmodel */; };
 		3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */; };
+		3425A9112C304A90008D6EBA /* phone22.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3425A90F2C304A90008D6EBA /* phone22.mlmodel */; };
+		3425A9122C304A90008D6EBA /* phone67.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9102C304A90008D6EBA /* phone67.mlmodel */; };
+		3425A9152C30D384008D6EBA /* gsm32.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9132C30D384008D6EBA /* gsm32.mlmodel */; };
+		3425A9162C30D384008D6EBA /* gsm67.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9142C30D384008D6EBA /* gsm67.mlmodel */; };
+		3425A9182C30F1CB008D6EBA /* CoreVideoPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9172C30F1CB008D6EBA /* CoreVideoPlayer.swift */; };
+		3425A91A2C30F3BF008D6EBA /* jamesbond.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3425A9192C30F3BF008D6EBA /* jamesbond.mp4 */; };
+		3425A91B2C30F93E008D6EBA /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
 		34278E052C1F135300E3D6AA /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34278E032C1F133700E3D6AA /* ContentView.swift */; };
 		34278E072C1F724E00E3D6AA /* sas.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 34278E062C1F724E00E3D6AA /* sas.jpg */; };
 		342A34512C157A3200F1995E /* SRGAN.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */; };
@@ -164,6 +171,12 @@
 		342126132C2E9A4E007E7878 /* customembedded.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = customembedded.mlmodel; sourceTree = "<group>"; };
 		3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectsCoordinatesProcessors.swift; sourceTree = "<group>"; };
 		3425A9062C2FA122008D6EBA /* tempp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tempp.swift; sourceTree = "<group>"; };
+		3425A90F2C304A90008D6EBA /* phone22.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = phone22.mlmodel; sourceTree = "<group>"; };
+		3425A9102C304A90008D6EBA /* phone67.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = phone67.mlmodel; sourceTree = "<group>"; };
+		3425A9132C30D384008D6EBA /* gsm32.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = gsm32.mlmodel; sourceTree = "<group>"; };
+		3425A9142C30D384008D6EBA /* gsm67.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = gsm67.mlmodel; sourceTree = "<group>"; };
+		3425A9172C30F1CB008D6EBA /* CoreVideoPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreVideoPlayer.swift; sourceTree = "<group>"; };
+		3425A9192C30F3BF008D6EBA /* jamesbond.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = jamesbond.mp4; sourceTree = "<group>"; };
 		34278E032C1F133700E3D6AA /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		34278E062C1F724E00E3D6AA /* sas.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; name = sas.jpg; path = Assets.xcassets/sas.jpg; sourceTree = "<group>"; };
 		342D0CE12C1D3C5000ECDA36 /* cashcashier32_2000.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = cashcashier32_2000.mlmodel; sourceTree = "<group>"; };
@@ -445,14 +458,18 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
+				3425A9192C30F3BF008D6EBA /* jamesbond.mp4 */,
 				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
 				349246CB2C20554800638047 /* ContentView.swift */,
+				3425A9172C30F1CB008D6EBA /* CoreVideoPlayer.swift */,
 				349246CF2C20554900638047 /* MLmedia.entitlements */,
 				342126132C2E9A4E007E7878 /* customembedded.mlmodel */,
 				34D718F02C276E5C00C0219C /* custom2.mlpackage */,
 				34170B2A2C2DAD0000FAC79D /* image1.png */,
 				34170B292C2DAD0000FAC79D /* image2.png */,
 				34170B322C2DB65500FAC79D /* ImageModel.swift */,
+				3425A90F2C304A90008D6EBA /* phone22.mlmodel */,
+				3425A9102C304A90008D6EBA /* phone67.mlmodel */,
 				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
 				34170B2F2C2DB61700FAC79D /* ForensicView.swift */,
 				340047752C267F990055418A /* Logs.swift */,
@@ -463,6 +480,8 @@
 				34097CEF2C28DA610078EF63 /* MLcapture2.swift */,
 				349246C92C20554800638047 /* MLmediaApp.swift */,
 				349246D82C20558700638047 /* FaceContentView.swift */,
+				3425A9132C30D384008D6EBA /* gsm32.mlmodel */,
+				3425A9142C30D384008D6EBA /* gsm67.mlmodel */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				349246D02C20554900638047 /* Preview Content */,
 			);
@@ -751,6 +770,7 @@
 				349246D22C20554900638047 /* Preview Assets.xcassets in Resources */,
 				34170B2E2C2DAD0000FAC79D /* image1.png in Resources */,
 				349246CE2C20554900638047 /* Assets.xcassets in Resources */,
+				3425A91A2C30F3BF008D6EBA /* jamesbond.mp4 in Resources */,
 				34170B2C2C2DAD0000FAC79D /* image2.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -839,6 +859,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3425A9122C304A90008D6EBA /* phone67.mlmodel in Sources */,
+				3425A9112C304A90008D6EBA /* phone22.mlmodel in Sources */,
 				34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */,
 				34170B312C2DB61700FAC79D /* ForensicView.swift in Sources */,
 				34170B272C2DA4A400FAC79D /* FaceContentView.swift in Sources */,
@@ -846,12 +868,16 @@
 				349246CC2C20554800638047 /* ContentView.swift in Sources */,
 				3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */,
 				34D718F12C276E5C00C0219C /* custom2.mlpackage in Sources */,
+				3425A9162C30D384008D6EBA /* gsm67.mlmodel in Sources */,
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
+				3425A9152C30D384008D6EBA /* gsm32.mlmodel in Sources */,
 				34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */,
 				349246DB2C20565700638047 /* MediaModel.swift in Sources */,
+				3425A9182C30F1CB008D6EBA /* CoreVideoPlayer.swift in Sources */,
+				3425A91B2C30F93E008D6EBA /* SRGAN.mlmodel in Sources */,
 				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
 				34170B342C2DB65500FAC79D /* ImageModel.swift in Sources */,
