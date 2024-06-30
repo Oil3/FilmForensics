@@ -1,27 +1,39 @@
 import SwiftUI
 import AVFoundation
 import CoreImage
-import Vision
 import CoreML
 
 struct CoreVideoPlayer: View {
   @State private var videoURL: URL?
   @State private var ciContext = CIContext()
   @State private var selectedFilter: CIFilter?
-  @State private var mlModel: VNCoreMLModel?
+  @State private var mlModel: MLModel?
   @State private var applyFilter = false
   @State private var applyMLModel = false
-  @State private var sideBySide = false
   @State private var brightness: CGFloat = 0.0
   @State private var contrast: CGFloat = 1.0
   @State private var saturation: CGFloat = 1.0
   @State private var inputEV: CGFloat = 0.0
+  @State private var gamma: CGFloat = 1.0
+  @State private var hue: CGFloat = 0.0
+  @State private var highlightAmount: CGFloat = 1.0
+  @State private var shadowAmount: CGFloat = 0.0
+  @State private var temperature: CGFloat = 6500.0
+  @State private var tint: CGFloat = 0.0
+  @State private var whitePoint: CGFloat = 1.0
+  @State private var selectedFilterName: String?
   @State private var selectedSize = "1024x576"
   @State private var player: AVPlayer?
-  @State private var originalPlayerLayer: AVPlayerLayer?
-  @State private var processedPlayerLayer: AVPlayerLayer?
+  @State private var playerLayer: AVPlayerLayer?
+  @State private var invert = false
+  @State private var posterize = false
+  @State private var sharpenLuminance = false
+  @State private var unsharpMask = false
+  @State private var edges = false
+  @State private var gaborGradients = false
   
   let sizes = ["640x640", "1024x576", "576x1024", "1280x720"]
+  let filters = ["CIDocumentEnhancer", "CIColorHistogram"]
   
   var body: some View {
     VStack {
@@ -29,17 +41,22 @@ struct CoreVideoPlayer: View {
         Button("Choose Video") {
           chooseVideo()
         }
-        Button("Choose Filter") {
-          chooseFilter()
-        }
         Button("Choose CoreML Model") {
           chooseModel()
+        }
+        Picker("Filter", selection: $selectedFilterName) {
+          ForEach(filters, id: \.self) { filter in
+            Text(filter).tag(filter as String?)
+          }
+        }
+        .onChange(of: selectedFilterName) { newFilter in
+          selectedFilter = CIFilter(name: newFilter ?? "")
+          updateVideoProcessing()
         }
       }
       HStack {
         Toggle("Apply Filter", isOn: $applyFilter)
         Toggle("Apply CoreML Model", isOn: $applyMLModel)
-        Toggle("Side by Side", isOn: $sideBySide)
       }
       Picker("View Size", selection: $selectedSize) {
         ForEach(sizes, id: \.self) { size in
@@ -47,7 +64,7 @@ struct CoreVideoPlayer: View {
         }
       }
       .pickerStyle(MenuPickerStyle())
-      HStack {
+      VStack {
         Slider(value: $brightness, in: -1...1, step: 0.1) {
           Text("Brightness")
         }
@@ -60,20 +77,57 @@ struct CoreVideoPlayer: View {
         Slider(value: $inputEV, in: -2...2, step: 0.1) {
           Text("Exposure")
         }
+        Slider(value: $gamma, in: 0.1...3.0, step: 0.1) {
+          Text("Gamma")
+        }
+        Slider(value: $hue, in: 0...2 * .pi, step: 0.1) {
+          Text("Hue")
+        }
+        Slider(value: $highlightAmount, in: 0...1, step: 0.1) {
+          Text("Highlight Amount")
+        }
+        Slider(value: $shadowAmount, in: -1...1, step: 0.1) {
+          Text("Shadow Amount")
+        }
+        Slider(value: $temperature, in: 1000...10000, step: 100) {
+          Text("Temperature")
+        }
+        Slider(value: $tint, in: -200...200, step: 1) {
+          Text("Tint")
+        }
+        Slider(value: $whitePoint, in: 0...2, step: 0.1) {
+          Text("White Point")
+        }
+        Toggle("CIColorInvert", isOn: $invert)
+        Toggle("CIColorPosterize", isOn: $posterize)
+        Toggle("CISharpenLuminance", isOn: $sharpenLuminance)
+        Toggle("CIUnsharpMask", isOn: $unsharpMask)
+        Toggle("CIEdges", isOn: $edges)
+        Toggle("CIGaborGradients", isOn: $gaborGradients)
       }
-      ScrollView {
-      CoreVideoPlayerView(videoURL: $videoURL, applyFilter: $applyFilter, selectedFilter: $selectedFilter, applyMLModel: $applyMLModel, mlModel: $mlModel, sideBySide: $sideBySide, brightness: $brightness, contrast: $contrast, saturation: $saturation, inputEV: $inputEV, selectedSize: $selectedSize, player: $player, originalPlayerLayer: $originalPlayerLayer, processedPlayerLayer: $processedPlayerLayer, ciContext: $ciContext)
+      CoreVideoPlayerView(videoURL: $videoURL, applyFilter: $applyFilter, selectedFilter: $selectedFilter, applyMLModel: $applyMLModel, mlModel: $mlModel, brightness: $brightness, contrast: $contrast, saturation: $saturation, inputEV: $inputEV, gamma: $gamma, hue: $hue, highlightAmount: $highlightAmount, shadowAmount: $shadowAmount, temperature: $temperature, tint: $tint, whitePoint: $whitePoint, invert: $invert, posterize: $posterize, sharpenLuminance: $sharpenLuminance, unsharpMask: $unsharpMask, edges: $edges, gaborGradients: $gaborGradients, selectedSize: $selectedSize, player: $player, playerLayer: $playerLayer, ciContext: $ciContext)
         .onChange(of: applyFilter) { _ in updateVideoProcessing() }
         .onChange(of: applyMLModel) { _ in updateVideoProcessing() }
-        .onChange(of: sideBySide) { _ in updateVideoSize() }
         .onChange(of: selectedSize) { _ in updateVideoSize() }
         .onChange(of: brightness) { _ in updateVideoProcessing() }
         .onChange(of: contrast) { _ in updateVideoProcessing() }
         .onChange(of: saturation) { _ in updateVideoProcessing() }
         .onChange(of: inputEV) { _ in updateVideoProcessing() }
+        .onChange(of: gamma) { _ in updateVideoProcessing() }
+        .onChange(of: hue) { _ in updateVideoProcessing() }
+        .onChange(of: highlightAmount) { _ in updateVideoProcessing() }
+        .onChange(of: shadowAmount) { _ in updateVideoProcessing() }
+        .onChange(of: temperature) { _ in updateVideoProcessing() }
+        .onChange(of: tint) { _ in updateVideoProcessing() }
+        .onChange(of: whitePoint) { _ in updateVideoProcessing() }
+        .onChange(of: invert) { _ in updateVideoProcessing() }
+        .onChange(of: posterize) { _ in updateVideoProcessing() }
+        .onChange(of: sharpenLuminance) { _ in updateVideoProcessing() }
+        .onChange(of: unsharpMask) { _ in updateVideoProcessing() }
+        .onChange(of: edges) { _ in updateVideoProcessing() }
+        .onChange(of: gaborGradients) { _ in updateVideoProcessing() }
     }
     .padding()
-      }
   }
   
   private func chooseVideo() {
@@ -85,32 +139,12 @@ struct CoreVideoPlayer: View {
     }
   }
   
-  private func chooseFilter() {
-    let filterNames = ["CISepiaTone", "CIColorInvert", "CIExposureAdjust"]
-    let alert = NSAlert()
-    alert.messageText = "Choose Filter"
-    for filterName in filterNames {
-      alert.addButton(withTitle: filterName)
-    }
-    alert.addButton(withTitle: "Cancel")
-    let response = alert.runModal()
-    if response == .alertFirstButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[0])
-    } else if response == .alertSecondButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[1])
-    } else if response == .alertThirdButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[2])
-    }
-    updateVideoProcessing()
-  }
-  
   private func chooseModel() {
     let panel = NSOpenPanel()
     panel.allowedFileTypes = ["mlmodel"]
     if panel.runModal() == .OK, let url = panel.url {
       do {
-        let model = try MLModel(contentsOf: url)
-        mlModel = try VNCoreMLModel(for: model)
+        mlModel = try MLModel(contentsOf: url)
       } catch {
         print("Error loading CoreML model: \(error)")
       }
@@ -124,21 +158,13 @@ struct CoreVideoPlayer: View {
   }
   
   private func updateVideoSize() {
-    guard let originalPlayerLayer = originalPlayerLayer, let processedPlayerLayer = processedPlayerLayer, let size = sizes.first(where: { $0 == selectedSize }) else { return }
+    guard let playerLayer = playerLayer, let size = sizes.first(where: { $0 == selectedSize }) else { return }
     
     let dimensions = size.split(separator: "x").compactMap { Int($0) }
     if dimensions.count == 2 {
       let width = CGFloat(dimensions[0])
       let height = CGFloat(dimensions[1])
-      if sideBySide {
-        originalPlayerLayer.frame.size = CGSize(width: width / 2, height: height)
-        processedPlayerLayer.frame.size = CGSize(width: width / 2, height: height)
-        processedPlayerLayer.frame.origin.x = width / 2
-      } else {
-        originalPlayerLayer.frame.size = CGSize(width: width, height: height)
-        processedPlayerLayer.frame.size = CGSize(width: width, height: height)
-        processedPlayerLayer.frame.origin.x = 0
-      }
+      playerLayer.frame.size = CGSize(width: width, height: height)
     }
   }
   
@@ -151,40 +177,100 @@ struct CoreVideoPlayer: View {
     let videoComposition = AVVideoComposition(asset: asset) { request in
       var ciImage = request.sourceImage.clampedToExtent()
       
-      if let selectedFilter = selectedFilter, applyFilter {
-        selectedFilter.setValue(ciImage, forKey: kCIInputImageKey)
-        selectedFilter.setValue(brightness, forKey: kCIInputBrightnessKey)
-        selectedFilter.setValue(contrast, forKey: kCIInputContrastKey)
-        selectedFilter.setValue(saturation, forKey: kCIInputSaturationKey)
-        selectedFilter.setValue(inputEV, forKey: kCIInputEVKey)
-        ciImage = selectedFilter.outputImage ?? ciImage
+      if applyFilter {
+        if let selectedFilter = selectedFilter {
+          selectedFilter.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = selectedFilter.outputImage ?? ciImage
+        }
+        
+        if invert {
+          let filter = CIFilter(name: "CIColorInvert")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        if posterize {
+          let filter = CIFilter(name: "CIColorPosterize")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        if sharpenLuminance {
+          let filter = CIFilter(name: "CISharpenLuminance")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        if unsharpMask {
+          let filter = CIFilter(name: "CIUnsharpMask")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        if edges {
+          let filter = CIFilter(name: "CIEdges")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        if gaborGradients {
+          let filter = CIFilter(name: "CIGaborGradients")
+          filter?.setValue(ciImage, forKey: kCIInputImageKey)
+          ciImage = filter?.outputImage ?? ciImage
+        }
+        
+        let colorControlsFilter = CIFilter(name: "CIColorControls")
+        colorControlsFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        colorControlsFilter?.setValue(brightness, forKey: kCIInputBrightnessKey)
+        colorControlsFilter?.setValue(contrast, forKey: kCIInputContrastKey)
+        colorControlsFilter?.setValue(saturation, forKey: kCIInputSaturationKey)
+        ciImage = colorControlsFilter?.outputImage ?? ciImage
+        
+        let gammaFilter = CIFilter(name: "CIGammaAdjust")
+        gammaFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        gammaFilter?.setValue(gamma, forKey: "inputPower")
+        ciImage = gammaFilter?.outputImage ?? ciImage
+        
+        let hueFilter = CIFilter(name: "CIHueAdjust")
+        hueFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        hueFilter?.setValue(hue, forKey: kCIInputAngleKey)
+        ciImage = hueFilter?.outputImage ?? ciImage
+        
+        let highlightShadowFilter = CIFilter(name: "CIHighlightShadowAdjust")
+        highlightShadowFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        highlightShadowFilter?.setValue(highlightAmount, forKey: "inputHighlightAmount")
+        highlightShadowFilter?.setValue(shadowAmount, forKey: "inputShadowAmount")
+        ciImage = highlightShadowFilter?.outputImage ?? ciImage
+        
+        let temperatureAndTintFilter = CIFilter(name: "CITemperatureAndTint")
+        temperatureAndTintFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        temperatureAndTintFilter?.setValue(CIVector(x: temperature, y: tint), forKey: "inputNeutral")
+        ciImage = temperatureAndTintFilter?.outputImage ?? ciImage
+        
+        let whitePointAdjustFilter = CIFilter(name: "CIWhitePointAdjust")
+        whitePointAdjustFilter?.setValue(ciImage, forKey: kCIInputImageKey)
+        whitePointAdjustFilter?.setValue(CIColor(red: CGFloat(Float(whitePoint)), green: CGFloat(Float(whitePoint)), blue: CGFloat(Float(whitePoint))), forKey: kCIInputColorKey)
+        ciImage = whitePointAdjustFilter?.outputImage ?? ciImage
       }
       
       if let mlModel = mlModel, applyMLModel {
-        let request = VNCoreMLRequest(model: mlModel) { request, error in
-          guard let results = request.results as? [VNPixelBufferObservation], let result = results.first else { return }
-          let ciResultImage = CIImage(cvPixelBuffer: result.pixelBuffer)
-          ciImage = ciResultImage
-        }
-        let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
-        try? handler.perform([request])
+        let mlFilter = CIFilter(name: "CICoreMLModelFilter")!
+        mlFilter.setValue(mlModel, forKey: "inputModel")
+        mlFilter.setValue(ciImage, forKey: kCIInputImageKey)
+        ciImage = mlFilter.outputImage ?? ciImage
       }
       
       request.finish(with: ciImage, context: nil)
     }
     
-    
     playerItem.videoComposition = videoComposition
     
-    if originalPlayerLayer == nil {
-      originalPlayerLayer = AVPlayerLayer(player: player)
-      originalPlayerLayer?.frame = .zero
+    if playerLayer == nil {
+      playerLayer = AVPlayerLayer(player: player)
+      playerLayer?.frame = .zero
     }
     
-    if processedPlayerLayer == nil {
-      processedPlayerLayer = AVPlayerLayer(player: player)
-      processedPlayerLayer?.frame = .zero
-    }
+    playerLayer?.player = player
   }
 }
 
@@ -193,16 +279,27 @@ struct CoreVideoPlayerView: NSViewRepresentable {
   @Binding var applyFilter: Bool
   @Binding var selectedFilter: CIFilter?
   @Binding var applyMLModel: Bool
-  @Binding var mlModel: VNCoreMLModel?
-  @Binding var sideBySide: Bool
+  @Binding var mlModel: MLModel?
   @Binding var brightness: CGFloat
   @Binding var contrast: CGFloat
   @Binding var saturation: CGFloat
   @Binding var inputEV: CGFloat
+  @Binding var gamma: CGFloat
+  @Binding var hue: CGFloat
+  @Binding var highlightAmount: CGFloat
+  @Binding var shadowAmount: CGFloat
+  @Binding var temperature: CGFloat
+  @Binding var tint: CGFloat
+  @Binding var whitePoint: CGFloat
+  @Binding var invert: Bool
+  @Binding var posterize: Bool
+  @Binding var sharpenLuminance: Bool
+  @Binding var unsharpMask: Bool
+  @Binding var edges: Bool
+  @Binding var gaborGradients: Bool
   @Binding var selectedSize: String
   @Binding var player: AVPlayer?
-  @Binding var originalPlayerLayer: AVPlayerLayer?
-  @Binding var processedPlayerLayer: AVPlayerLayer?
+  @Binding var playerLayer: AVPlayerLayer?
   @Binding var ciContext: CIContext
   
   func makeNSView(context: Context) -> NSView {
@@ -212,23 +309,14 @@ struct CoreVideoPlayerView: NSViewRepresentable {
   }
   
   func updateNSView(_ nsView: NSView, context: Context) {
-    guard let player = player, let originalPlayerLayer = originalPlayerLayer, let processedPlayerLayer = processedPlayerLayer else { return }
+    guard let playerLayer = playerLayer else { return }
     
-    if originalPlayerLayer.superlayer == nil {
-      originalPlayerLayer.frame = nsView.bounds
-      nsView.layer?.addSublayer(originalPlayerLayer)
+    if playerLayer.superlayer == nil {
+      playerLayer.frame = nsView.bounds
+      nsView.layer?.addSublayer(playerLayer)
     }
     
-    if sideBySide {
-      if processedPlayerLayer.superlayer == nil {
-        processedPlayerLayer.frame = nsView.bounds
-        nsView.layer?.addSublayer(processedPlayerLayer)
-      }
-      processedPlayerLayer.frame = CGRect(x: nsView.bounds.width / 2, y: 0, width: nsView.bounds.width / 2, height: nsView.bounds.height)
-    } else {
-      processedPlayerLayer.removeFromSuperlayer()
-    }
-    
-    player.play()
+    player?.play()
   }
 }
+
