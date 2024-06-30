@@ -231,7 +231,7 @@ struct MainVideoView: View {
                   }
                   ForEach(detectedCustomObjects,id: \.self) { customObject in
                     if showBoundingBoxes && customModelEnabled {
-                      drawBoundingBox(for: customObject, in: geo.size, color: .systemRed)
+                      drawBoundingBox(for: customObject, in: geo.size, color: .systemBrown)
                     }
                   }
                 }
@@ -457,7 +457,7 @@ struct MainVideoView: View {
 
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: customembedded().model)
+    let model = try! VNCoreMLModel(for: gsm32().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -563,7 +563,7 @@ struct MainVideoView: View {
   }
   
   private func runCustomModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: custom2().model)
+    let model = try! VNCoreMLModel(for: gsm67().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -1119,20 +1119,5 @@ struct MainVideoView: View {
   }
 }
 
-private extension MLMultiArray {
-  func toBoundingBoxes(imageSize: CGSize) -> [CGRect] {
-    let count = self.shape[0].intValue
-    var boundingBoxes: [CGRect] = []
-    
-    for i in 0..<count {
-      let x = self[[i, 0] as [NSNumber]].doubleValue * imageSize.width
-      let y = self[[i, 1] as [NSNumber]].doubleValue * imageSize.height
-      let width = self[[i, 2] as [NSNumber]].doubleValue * imageSize.width
-      let height = self[[i, 3] as [NSNumber]].doubleValue * imageSize.height
-      boundingBoxes.append(CGRect(x: x, y: y, width: width, height: height))
-    }
-    
-    return boundingBoxes
-  }
-}
+
 

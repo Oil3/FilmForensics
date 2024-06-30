@@ -22,6 +22,10 @@ struct ContentView: View {
         .tabItem {
           Label("ForensicView", systemImage: "wrench")
         }
+      CoreVideoPlayer()
+        .tabItem {
+          Label("CoreVideoPlayer", systemImage: "wrench")
+        }
 }
     }
   }
