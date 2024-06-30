@@ -1,14 +1,13 @@
 import SwiftUI
 import AVFoundation
 import CoreImage
-import Vision
 import CoreML
 
 struct CoreVideoPlayer: View {
   @State private var videoURL: URL?
   @State private var ciContext = CIContext()
   @State private var selectedFilter: CIFilter?
-  @State private var mlModel: VNCoreMLModel?
+  @State private var mlModel: MLModel?
   @State private var applyFilter = false
   @State private var applyMLModel = false
   @State private var sideBySide = false
@@ -16,12 +15,14 @@ struct CoreVideoPlayer: View {
   @State private var contrast: CGFloat = 1.0
   @State private var saturation: CGFloat = 1.0
   @State private var inputEV: CGFloat = 0.0
+  @State private var selectedFilterName: String?
   @State private var selectedSize = "1024x576"
   @State private var player: AVPlayer?
   @State private var originalPlayerLayer: AVPlayerLayer?
   @State private var processedPlayerLayer: AVPlayerLayer?
   
   let sizes = ["640x640", "1024x576", "576x1024", "1280x720"]
+  let filters = ["CIColorControls", "CISharpenLuminance", "CIUnsharpMask", "CIConvolution3X3", "CIColorInvert", "CIColorPosterize", "CIGammaAdjust", "CIExposureAdjust", "CIHueAdjust", "CITemperatureAndTint", "CIWhitePointAdjust", "CIDocumentEnhancer", "CIFalseColor", "CIBumpDistortion", "CICrop", "CIColorHistogram", "CIEdges", "CIGaborGradients", "CIHighlightShadowAdjust", "CIPixellate", "CIGuidedFilter", "CICoreMLModelFilter"]
   
   var body: some View {
     VStack {
@@ -29,11 +30,17 @@ struct CoreVideoPlayer: View {
         Button("Choose Video") {
           chooseVideo()
         }
-        Button("Choose Filter") {
-          chooseFilter()
-        }
         Button("Choose CoreML Model") {
           chooseModel()
+        }
+        Picker("Filter", selection: $selectedFilterName) {
+          ForEach(filters, id: \.self) { filter in
+            Text(filter).tag(filter as String?)
+          }
+        }
+        .onChange(of: selectedFilterName) { newFilter in
+          selectedFilter = CIFilter(name: newFilter ?? "")
+          updateVideoProcessing()
         }
       }
       HStack {
@@ -47,21 +54,22 @@ struct CoreVideoPlayer: View {
         }
       }
       .pickerStyle(MenuPickerStyle())
-      HStack {
-        Slider(value: $brightness, in: -1...1, step: 0.1) {
-          Text("Brightness")
-        }
-        Slider(value: $contrast, in: 0...4, step: 0.1) {
-          Text("Contrast")
-        }
-        Slider(value: $saturation, in: 0...4, step: 0.1) {
-          Text("Saturation")
-        }
-        Slider(value: $inputEV, in: -2...2, step: 0.1) {
-          Text("Exposure")
+      VStack {
+        if selectedFilterName == "CIColorControls" {
+          Slider(value: $brightness, in: -1...1, step: 0.1) {
+            Text("Brightness")
+          }
+          Slider(value: $contrast, in: 0...4, step: 0.1) {
+            Text("Contrast")
+          }
+          Slider(value: $saturation, in: 0...4, step: 0.1) {
+            Text("Saturation")
+          }
+          Slider(value: $inputEV, in: -2...2, step: 0.1) {
+            Text("Exposure")
+          }
         }
       }
-      ScrollView {
       CoreVideoPlayerView(videoURL: $videoURL, applyFilter: $applyFilter, selectedFilter: $selectedFilter, applyMLModel: $applyMLModel, mlModel: $mlModel, sideBySide: $sideBySide, brightness: $brightness, contrast: $contrast, saturation: $saturation, inputEV: $inputEV, selectedSize: $selectedSize, player: $player, originalPlayerLayer: $originalPlayerLayer, processedPlayerLayer: $processedPlayerLayer, ciContext: $ciContext)
         .onChange(of: applyFilter) { _ in updateVideoProcessing() }
         .onChange(of: applyMLModel) { _ in updateVideoProcessing() }
@@ -73,7 +81,6 @@ struct CoreVideoPlayer: View {
         .onChange(of: inputEV) { _ in updateVideoProcessing() }
     }
     .padding()
-      }
   }
   
   private func chooseVideo() {
@@ -85,32 +92,12 @@ struct CoreVideoPlayer: View {
     }
   }
   
-  private func chooseFilter() {
-    let filterNames = ["CISepiaTone", "CIColorInvert", "CIExposureAdjust"]
-    let alert = NSAlert()
-    alert.messageText = "Choose Filter"
-    for filterName in filterNames {
-      alert.addButton(withTitle: filterName)
-    }
-    alert.addButton(withTitle: "Cancel")
-    let response = alert.runModal()
-    if response == .alertFirstButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[0])
-    } else if response == .alertSecondButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[1])
-    } else if response == .alertThirdButtonReturn {
-      selectedFilter = CIFilter(name: filterNames[2])
-    }
-    updateVideoProcessing()
-  }
-  
   private func chooseModel() {
     let panel = NSOpenPanel()
     panel.allowedFileTypes = ["mlmodel"]
     if panel.runModal() == .OK, let url = panel.url {
       do {
-        let model = try MLModel(contentsOf: url)
-        mlModel = try VNCoreMLModel(for: model)
+        mlModel = try MLModel(contentsOf: url)
       } catch {
         print("Error loading CoreML model: \(error)")
       }
@@ -161,18 +148,14 @@ struct CoreVideoPlayer: View {
       }
       
       if let mlModel = mlModel, applyMLModel {
-        let request = VNCoreMLRequest(model: mlModel) { request, error in
-          guard let results = request.results as? [VNPixelBufferObservation], let result = results.first else { return }
-          let ciResultImage = CIImage(cvPixelBuffer: result.pixelBuffer)
-          ciImage = ciResultImage
-        }
-        let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
-        try? handler.perform([request])
+        let mlFilter = CIFilter(name: "CICoreMLModelFilter")!
+        mlFilter.setValue(mlModel, forKey: "inputModel")
+        mlFilter.setValue(ciImage, forKey: kCIInputImageKey)
+        ciImage = mlFilter.outputImage ?? ciImage
       }
       
       request.finish(with: ciImage, context: nil)
-    }
-    
+    } 
     
     playerItem.videoComposition = videoComposition
     
@@ -193,7 +176,7 @@ struct CoreVideoPlayerView: NSViewRepresentable {
   @Binding var applyFilter: Bool
   @Binding var selectedFilter: CIFilter?
   @Binding var applyMLModel: Bool
-  @Binding var mlModel: VNCoreMLModel?
+  @Binding var mlModel: MLModel?
   @Binding var sideBySide: Bool
   @Binding var brightness: CGFloat
   @Binding var contrast: CGFloat
