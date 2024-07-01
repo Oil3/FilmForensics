@@ -1,10 +1,17 @@
+//
+//  CoreVideoFiltersView.swift
+//  FilmForensics
+//
+//  Created by Almahdi Morris on 1/7/24.
+//
+
 import SwiftUI
 import AVFoundation
 import CoreImage
 import CoreML
 import AVKit
 
-struct CoreVideoPlayer: View {
+struct CoreVideoFiltersView: View {
   @State private var videoURL: URL?
   @State private var ciContext = CIContext()
   @State private var selectedFilter: CIFilter?
@@ -415,7 +422,7 @@ struct CoreVideoPlayerView: NSViewRepresentable {
       playerView.frame = nsView.bounds
     }
     
-   // playerView.player?.pause()
+    // playerView.player?.pause()
   }
 }
 

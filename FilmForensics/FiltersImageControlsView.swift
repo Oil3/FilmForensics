@@ -69,9 +69,9 @@ struct FiltersImageControls: View {
                 Button("Reset") {
                     imageViewerModel.resetFilters()
                 }
-                Button("Save Preset") {
-                    imageViewerModel.savePreset()
-                }
+//                Button("Save Preset") {
+//                    imageViewerModel.savePreset()
+//                }
 //                if let presets = imageViewerModel.presets {
 //                    Picker("Load Preset", selection: $imageViewerModel.selectedPreset) {
 //                        ForEach(presets, id: \.self) { preset in

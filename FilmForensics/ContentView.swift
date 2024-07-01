@@ -15,6 +15,19 @@ struct ContentView: View {
     @State private var isImagePicker = false
 
     var body: some View {
+      TabView {
+        CoreVideoFiltersView()
+        .tabItem {
+          Label("CoreVideoFiltersView", systemImage: "video" )
+        }
+        
+        oldTab
+        .tabItem {
+          Label("previous", systemImage: "gear.badge.xmark")
+        }
+      }
+      }
+      private var oldTab: some View {
         NavigationSplitView {
             List {
                 Section(header: Text("Open")) {
@@ -76,6 +89,7 @@ struct ContentView: View {
         }
         .frame(minWidth: 800, minHeight: 600)
     }
+  
 }
 
 struct VideoView: View {
