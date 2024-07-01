@@ -436,218 +436,218 @@ class ViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDele
                 landmarks.nose
             ]
             for closedLandmarkRegion in closedLandmarkRegions where closedLandmarkRegion != nil {
-                self.addPoints(in: closedLandmarkRegion!, to: faceLandmarksPath, applying: affineTransform, closingWhenComplete: true)
+              self.addPoints(in: closedLandmarkRegion!, to: faceLandmarksPath, applying: affineTransform, closingWhenComplete: true)
             }
         }
     }
-    
-    /// - Tag: DrawPaths
-    fileprivate func drawFaceObservations(_ faceObservations: [VNFaceObservation]) {
-        guard let faceRectangleShapeLayer = self.detectedFaceRectangleShapeLayer,
-              let faceLandmarksShapeLayer = self.detectedFaceLandmarksShapeLayer else {
-            return
-        }
-        
-        CATransaction.begin()
-        
-        CATransaction.setValue(NSNumber(value: true), forKey: kCATransactionDisableActions)
-        
-        let faceRectanglePath = CGMutablePath()
-        let faceLandmarksPath = CGMutablePath()
-        
-        for faceObservation in faceObservations {
-            self.addIndicators(to: faceRectanglePath,
-                               faceLandmarksPath: faceLandmarksPath,
-                               for: faceObservation)
-        }
-        
-        faceRectangleShapeLayer.path = faceRectanglePath
-        faceLandmarksShapeLayer.path = faceLandmarksPath
-        
-        self.updateLayerGeometry()
-        
-        CATransaction.commit()
+  
+  /// - Tag: DrawPaths
+  fileprivate func drawFaceObservations(_ faceObservations: [VNFaceObservation]) {
+    guard let faceRectangleShapeLayer = self.detectedFaceRectangleShapeLayer,
+          let faceLandmarksShapeLayer = self.detectedFaceLandmarksShapeLayer else {
+      return
     }
     
-    // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
-    /// - Tag: PerformRequests
-    // Handle delegate method callback on receiving a sample buffer.
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
-        var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
-        
-        let cameraIntrinsicData = CMGetAttachment(sampleBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
-        if cameraIntrinsicData != nil {
-            requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
-        }
-        
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to obtain a CVPixelBuffer for the current output frame.")
-            return
-        }
-        
-        let exifOrientation = self.exifOrientationForCurrentDeviceOrientation()
-        
-        guard let requests = self.trackingRequests, !requests.isEmpty else {
-            // No tracking object detected, so perform initial detection
-            let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                                            orientation: exifOrientation,
-                                                            options: requestHandlerOptions)
-            
-            do {
-                guard let detectRequests = self.detectionRequests else {
-                    return
-                }
-                try imageRequestHandler.perform(detectRequests)
-            } catch let error as NSError {
-                NSLog("Failed to perform FaceRectangleRequest: %@", error)
-            }
-            return
-        }
-        
-        do {
-            try self.sequenceRequestHandler.perform(requests,
-                                                    on: pixelBuffer,
-                                                    orientation: exifOrientation)
-        } catch let error as NSError {
-            NSLog("Failed to perform SequenceRequest: %@", error)
-        }
-        
-        // Setup the next round of tracking.
-        var newTrackingRequests = [VNTrackObjectRequest]()
-        for trackingRequest in requests {
-            
-            guard let results = trackingRequest.results else {
-                return
-            }
-            
-            guard let observation = results[0] as? VNDetectedObjectObservation else {
-                return
-            }
-            
-            if !trackingRequest.isLastFrame {
-                if observation.confidence > 0.3 {
-                    trackingRequest.inputObservation = observation
-                } else {
-                    trackingRequest.isLastFrame = true
-                }
-                newTrackingRequests.append(trackingRequest)
-            }
-        }
-        self.trackingRequests = newTrackingRequests
-        
-        if newTrackingRequests.isEmpty {
-            // Nothing to track, so abort.
-            return
-        }
-        
-        // Perform face landmark tracking on detected faces.
-        var faceLandmarkRequests = [VNDetectFaceLandmarksRequest]()
-        
-        // Perform landmark detection on tracked faces.
-        for trackingRequest in newTrackingRequests {
-            
-            let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
-                
-                if error != nil {
-                    print("FaceLandmarks error: \(String(describing: error)).")
-                }
-                
-                guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
-                      let results = landmarksRequest.results as? [VNFaceObservation] else {
-                    return
-                }
-                
-                // Perform all UI updates (drawing) on the main queue, not the background queue on which this handler is being called.
-                DispatchQueue.main.async {
-                    self.drawFaceObservations(results)
-                }
-            })
-            
-            guard let trackingResults = trackingRequest.results else {
-                return
-            }
-            
-            guard let observation = trackingResults[0] as? VNDetectedObjectObservation else {
-                return
-            }
-            let faceObservation = VNFaceObservation(boundingBox: observation.boundingBox)
-            faceLandmarksRequest.inputFaceObservations = [faceObservation]
-            
-            // Continue to track detected facial landmarks.
-            faceLandmarkRequests.append(faceLandmarksRequest)
-            
-            let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
-                                                            orientation: exifOrientation,
-                                                            options: requestHandlerOptions)
-            
-            do {
-                try imageRequestHandler.perform(faceLandmarkRequests)
-            } catch let error as NSError {
-                NSLog("Failed to perform FaceLandmarkRequest: %@", error)
-            }
-        }
-        
-        // CoreML object detection
-        let currentTime = Date()
-        guard currentTime.timeIntervalSince(lastInferenceTime) >= inferenceInterval else { return }
-        lastInferenceTime = currentTime
-
-        guard let model = selectedVNModel else { return }
-
-        let objectDetectionRequest = VNCoreMLRequest(model: model) { (request, error) in
-            if let results = request.results as? [VNRecognizedObjectObservation] {
-                self.processObjectObservations(results)
-            }
-        }
-        
-        objectDetectionRequest.imageCropAndScaleOption = .scaleFill
-
-        do {
-            try self.sequenceRequestHandler.perform([objectDetectionRequest], on: pixelBuffer, orientation: exifOrientation)
-        } catch let error as NSError {
-            NSLog("Failed to perform ObjectDetectionRequest: %@", error)
-        }
+    CATransaction.begin()
+    
+    CATransaction.setValue(NSNumber(value: true), forKey: kCATransactionDisableActions)
+    
+    let faceRectanglePath = CGMutablePath()
+    let faceLandmarksPath = CGMutablePath()
+    
+    for faceObservation in faceObservations {
+      self.addIndicators(to: faceRectanglePath,
+                         faceLandmarksPath: faceLandmarksPath,
+                         for: faceObservation)
     }
     
-    // Process object detection results
-    func processObjectObservations(_ observations: [VNRecognizedObjectObservation]) {
+    faceRectangleShapeLayer.path = faceRectanglePath
+    faceLandmarksShapeLayer.path = faceLandmarksPath
+    
+    self.updateLayerGeometry()
+    
+    CATransaction.commit()
+  }
+  
+  // MARK: AVCaptureVideoDataOutputSampleBufferDelegate
+  /// - Tag: PerformRequests
+  // Handle delegate method callback on receiving a sample buffer.
+  public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+    
+    var requestHandlerOptions: [VNImageOption: AnyObject] = [:]
+    
+    let cameraIntrinsicData = CMGetAttachment(sampleBuffer, key: kCMSampleBufferAttachmentKey_CameraIntrinsicMatrix, attachmentModeOut: nil)
+    if cameraIntrinsicData != nil {
+      requestHandlerOptions[VNImageOption.cameraIntrinsics] = cameraIntrinsicData
+    }
+    
+    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+      print("Failed to obtain a CVPixelBuffer for the current output frame.")
+      return
+    }
+    
+    let exifOrientation = self.exifOrientationForCurrentDeviceOrientation()
+    
+    guard let requests = self.trackingRequests, !requests.isEmpty else {
+      // No tracking object detected, so perform initial detection
+      let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                      orientation: exifOrientation,
+                                                      options: requestHandlerOptions)
+      
+      do {
+        guard let detectRequests = self.detectionRequests else {
+          return
+        }
+        try imageRequestHandler.perform(detectRequests)
+      } catch let error as NSError {
+        NSLog("Failed to perform FaceRectangleRequest: %@", error)
+      }
+      return
+    }
+    
+    do {
+      try self.sequenceRequestHandler.perform(requests,
+                                              on: pixelBuffer,
+                                              orientation: exifOrientation)
+    } catch let error as NSError {
+      NSLog("Failed to perform SequenceRequest: %@", error)
+    }
+    
+    // Setup the next round of tracking.
+    var newTrackingRequests = [VNTrackObjectRequest]()
+    for trackingRequest in requests {
+      
+      guard let results = trackingRequest.results else {
+        return
+      }
+      
+      guard let observation = results[0] as? VNDetectedObjectObservation else {
+        return
+      }
+      
+      if !trackingRequest.isLastFrame {
+        if observation.confidence > 0.3 {
+          trackingRequest.inputObservation = observation
+        } else {
+          trackingRequest.isLastFrame = true
+        }
+        newTrackingRequests.append(trackingRequest)
+      }
+    }
+    self.trackingRequests = newTrackingRequests
+    
+    if newTrackingRequests.isEmpty {
+      // Nothing to track, so abort.
+      return
+    }
+    
+    // Perform face landmark tracking on detected faces.
+    var faceLandmarkRequests = [VNDetectFaceLandmarksRequest]()
+    
+    // Perform landmark detection on tracked faces.
+    for trackingRequest in newTrackingRequests {
+      
+      let faceLandmarksRequest = VNDetectFaceLandmarksRequest(completionHandler: { (request, error) in
+        
+        if error != nil {
+          print("FaceLandmarks error: \(String(describing: error)).")
+        }
+        
+        guard let landmarksRequest = request as? VNDetectFaceLandmarksRequest,
+              let results = landmarksRequest.results as? [VNFaceObservation] else {
+          return
+        }
+        
+        // Perform all UI updates (drawing) on the main queue, not the background queue on which this handler is being called.
         DispatchQueue.main.async {
-            self.detectionOverlayLayer?.sublayers?.removeAll(where: { $0.name == "objectBox" })
-            
-            for observation in observations {
-                let boundingBox = observation.boundingBox
-                let convertedRect = self.convertBoundingBox(boundingBox)
-                let boundingBoxLayer = self.createBoundingBoxLayer(frame: convertedRect, color: UIColor.yellow)
-                self.detectionOverlayLayer?.addSublayer(boundingBoxLayer)
-            }
-            
-            if !observations.isEmpty {
-                self.playSound()
-            }
+          self.drawFaceObservations(results)
         }
+      })
+      
+      guard let trackingResults = trackingRequest.results else {
+        return
+      }
+      
+      guard let observation = trackingResults[0] as? VNDetectedObjectObservation else {
+        return
+      }
+      let faceObservation = VNFaceObservation(boundingBox: observation.boundingBox)
+      faceLandmarksRequest.inputFaceObservations = [faceObservation]
+      
+      // Continue to track detected facial landmarks.
+      faceLandmarkRequests.append(faceLandmarksRequest)
+      
+      let imageRequestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer,
+                                                      orientation: exifOrientation,
+                                                      options: requestHandlerOptions)
+      
+      do {
+        try imageRequestHandler.perform(faceLandmarkRequests)
+      } catch let error as NSError {
+        NSLog("Failed to perform FaceLandmarkRequest: %@", error)
+      }
     }
     
-    // Convert bounding box to view coordinates
-    func convertBoundingBox(_ boundingBox: CGRect) -> CGRect {
-        let width = boundingBox.width * view.bounds.width
-        let height = boundingBox.height * view.bounds.height
-        let x = boundingBox.origin.x * view.bounds.width
-        let y = view.bounds.height - (boundingBox.origin.y * view.bounds.height + height)
-        return CGRect(x: x, y: y, width: width, height: height)
+    // CoreML object detection
+    let currentTime = Date()
+    guard currentTime.timeIntervalSince(lastInferenceTime) >= inferenceInterval else { return }
+    lastInferenceTime = currentTime
+    
+    guard let model = selectedVNModel else { return }
+    
+    let objectDetectionRequest = VNCoreMLRequest(model: model) { (request, error) in
+      if let results = request.results as? [VNRecognizedObjectObservation] {
+        self.processObjectObservations(results)
+      }
     }
     
-    // Create bounding box layer
-    func createBoundingBoxLayer(frame: CGRect, color: UIColor) -> CALayer {
-        let layer = CALayer()
-        layer.frame = frame
-        layer.borderColor = color.cgColor
-        layer.borderWidth = 2.0
-        layer.name = "objectBox"
-        return layer
-    }
+    objectDetectionRequest.imageCropAndScaleOption = .scaleFill
     
-    // Load CoreML model
+    do {
+      try self.sequenceRequestHandler.perform([objectDetectionRequest], on: pixelBuffer, orientation: exifOrientation)
+    } catch let error as NSError {
+      NSLog("Failed to perform ObjectDetectionRequest: %@", error)
+    }
+  }
+  
+  // Process object detection results
+  func processObjectObservations(_ observations: [VNRecognizedObjectObservation]) {
+    DispatchQueue.main.async {
+      self.detectionOverlayLayer?.sublayers?.removeAll(where: { $0.name == "objectBox" })
+      
+      for observation in observations {
+        let boundingBox = observation.boundingBox
+        let convertedRect = self.convertBoundingBox(boundingBox)
+        let boundingBoxLayer = self.createBoundingBoxLayer(frame: convertedRect, color: UIColor.yellow)
+        self.detectionOverlayLayer?.addSublayer(boundingBoxLayer)
+      }
+      
+      if !observations.isEmpty {
+        self.playSound()
+      }
+    }
+  }
+  
+  // Convert bounding box to view coordinates
+  func convertBoundingBox(_ boundingBox: CGRect) -> CGRect {
+    let width = boundingBox.width * view.bounds.width
+    let height = boundingBox.height * view.bounds.height
+    let x = boundingBox.origin.x * view.bounds.width
+    let y = view.bounds.height - (boundingBox.origin.y * view.bounds.height + height)
+    return CGRect(x: x, y: y, width: width, height: height)
+  }
+  
+  // Create bounding box layer
+  func createBoundingBoxLayer(frame: CGRect, color: UIColor) -> CALayer {
+    let layer = CALayer()
+    layer.frame = frame
+    layer.borderColor = color.cgColor
+    layer.borderWidth = 2.0
+    layer.name = "objectBox"
+    return layer
+  }
+  
+  // Load CoreML model
     func loadModel() {
         guard let modelUrl = Bundle.main.url(forResource: "yolov8x2AAA", withExtension: "mlmodelc") else {
             fatalError("Model file not found")

@@ -116,8 +116,8 @@ class ImageViewerModel: ObservableObject {
 
     @Published var ciImage: CIImage? = nil
     @Published var isPlaying: Bool = false
-    @Published var presets: [FilterPreset]? = []
-    @Published var selectedPreset: FilterPreset?
+//    @Published var presets: [FilterPreset]? = []
+//    @Published var selectedPreset: FilterPreset?
     @Published var showBoundingBoxes: Bool = false
     @Published var boundingBoxes: [CGRect] = []
     @Published var image: NSImage? {
@@ -376,65 +376,58 @@ class ImageViewerModel: ObservableObject {
         convolution5X5 = defaultSettings["convolution5X5"]!
     }
 
-    func savePreset() {
-        let preset = FilterPreset(
-            brightness: brightness,
-            contrast: contrast,
-            saturation: saturation,
-            hue: hue,
-            gamma: gamma,
-            vibrance: vibrance,
-            exposure: exposure,
-            temperature: temperature,
-            sepiaTone: sepiaTone,
-            colorInvert: colorInvert ? 1 : 0,
-            gaussianBlur: gaussianBlur,
-            motionBlur: motionBlur,
-            zoomBlur: zoomBlur,
-            noiseReduction: noiseReduction,
-            sharpenLuminance: sharpenLuminance,
-            unsharpMask: unsharpMask,
-            additionCompositing: additionCompositing,
-            multiplyCompositing: multiplyCompositing,
-            convolution3X3: convolution3X3,
-            convolution5X5: convolution5X5
-        )
+//    func savePreset() {
+//        let preset = FilterPreset(
+//            brightness: brightness,
+//            contrast: contrast,
+//            saturation: saturation,
+//            hue: hue,
+//            gamma: gamma,
+//            vibrance: vibrance,
+//            exposure: exposure,
+//            temperature: temperature,
+//            sepiaTone: sepiaTone,
+//            colorInvert: colorInvert ? 1 : 0,
+//            gaussianBlur: gaussianBlur,
+//            motionBlur: motionBlur,
+//            zoomBlur: zoomBlur,
+//            noiseReduction: noiseReduction,
+//            sharpenLuminance: sharpenLuminance,
+//            unsharpMask: unsharpMask,
+//            additionCompositing: additionCompositing,
+//            multiplyCompositing: multiplyCompositing,
+//            convolution3X3: convolution3X3,
+//            convolution5X5: convolution5X5
+//        )
+//
+//        presets?.append(preset)
+//        savePresets()
+//    }
+//
+//    func loadPreset(preset: FilterPreset) {
+//        brightness = preset.brightness
+//        contrast = preset.contrast
+//        saturation = preset.saturation
+//        hue = preset.hue
+//        gamma = preset.gamma
+//        vibrance = preset.vibrance
+//        exposure = preset.exposure
+//        temperature = preset.temperature
+//        sepiaTone = preset.sepiaTone
+//        colorInvert = preset.colorInvert == 1
+//        gaussianBlur = preset.gaussianBlur
+//        motionBlur = preset.motionBlur
+//        zoomBlur = preset.zoomBlur
+//        noiseReduction = preset.noiseReduction
+//        sharpenLuminance = preset.sharpenLuminance
+//        unsharpMask = preset.unsharpMask
+//        additionCompositing = preset.additionCompositing
+//        multiplyCompositing = preset.multiplyCompositing
+//        convolution3X3 = preset.convolution3X3
+//        convolution5X5 = preset.convolution5X5
+//    }
 
-        presets?.append(preset)
-        savePresets()
-    }
-
-    func loadPreset(preset: FilterPreset) {
-        brightness = preset.brightness
-        contrast = preset.contrast
-        saturation = preset.saturation
-        hue = preset.hue
-        gamma = preset.gamma
-        vibrance = preset.vibrance
-        exposure = preset.exposure
-        temperature = preset.temperature
-        sepiaTone = preset.sepiaTone
-        colorInvert = preset.colorInvert == 1
-        gaussianBlur = preset.gaussianBlur
-        motionBlur = preset.motionBlur
-        zoomBlur = preset.zoomBlur
-        noiseReduction = preset.noiseReduction
-        sharpenLuminance = preset.sharpenLuminance
-        unsharpMask = preset.unsharpMask
-        additionCompositing = preset.additionCompositing
-        multiplyCompositing = preset.multiplyCompositing
-        convolution3X3 = preset.convolution3X3
-        convolution5X5 = preset.convolution5X5
-    }
-
-    private func savePresets() {
-        // Code to save presets to disk
-    }
-
-    private func loadPresets() {
-        // Code to load presets from disk
-    }
-
+   
     func detectObjects(in image: CIImage) {
         guard let model = try? VNCoreMLModel(for: MLcopycontrol25k().model) else { return }
 

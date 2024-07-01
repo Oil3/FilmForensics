@@ -18,6 +18,10 @@ struct ContentView: View {
         .tabItem {
           Label("Main Image View", systemImage: "wrench")
         }
+//      YView()
+//        .tabItem {
+//          Label("YView", systemImage: "wrench")
+//        }
       ForensicView()
         .tabItem {
           Label("ForensicView", systemImage: "wrench")

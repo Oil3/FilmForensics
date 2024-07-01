@@ -169,7 +169,7 @@ struct MainVideoView: View {
     ScrollView {
       HStack {
         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
-        Text("Model: IO_cashtrack.mlmodel")
+        Text("Model: custom2.mlmodel")
       }
       HStack {
         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")

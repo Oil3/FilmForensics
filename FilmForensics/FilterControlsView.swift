@@ -68,9 +68,9 @@ struct FilterControls: View {
                 Button("Reset") {
                     videoPlayerViewModel.resetFilters()
                 }
-                Button("Save Preset") {
-                    videoPlayerViewModel.savePreset()
-                }
+//                Button("Save Preset") {
+//                    videoPlayerViewModel.savePreset()
+//                }
 //                if let presets = videoPlayerViewModel.presets {
 //                    Picker("Load Preset", selection: $videoPlayerViewModel.selectedPreset) {
 //                        (presets, id: \.self) { preset in

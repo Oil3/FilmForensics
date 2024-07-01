@@ -59,7 +59,8 @@ struct MainVideoView: View {
       }
     }
   }
-  
+  whitePointAdjustFilter?.setValue(CIColor(red: CGFloat(Float(whitePoint)), green: CGFloat(Float(whitePoint)), blue: CGFloat(Float(whitePoint))), forKey: kCIInputColorKey)
+
   private var videoGallery: some View {
     VStack {
       Button("Add Video") {
