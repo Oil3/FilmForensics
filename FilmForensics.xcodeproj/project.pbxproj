@@ -75,6 +75,8 @@
 		345B64BE2C333CCF000C0B3F /* yolov10s_fl32.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 345B64BD2C333CCF000C0B3F /* yolov10s_fl32.mlpackage */; };
 		345B64C12C335B3F000C0B3F /* FilterControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E4C05B2C0BA623007D3A05 /* FilterControlsView.swift */; };
 		345B64C42C335C61000C0B3F /* CoreVideoFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 345B64C32C335C61000C0B3F /* CoreVideoFiltersView.swift */; };
+		345B64C62C3369E9000C0B3F /* sample1.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 345B64C52C3369E8000C0B3F /* sample1.jpg */; };
+		345B64C82C338102000C0B3F /* yolovFloat10nNN.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 345B64C72C338102000C0B3F /* yolovFloat10nNN.mlpackage */; };
 		3471ED402C0CF71900916598 /* detFX.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 3471ED062C0CF71800916598 /* detFX.m4a */; };
 		3471ED412C0CF71900916598 /* ImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED072C0CF71800916598 /* ImageViewer.swift */; };
 		3471ED422C0CF71900916598 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3471ED082C0CF71800916598 /* VideoPreviewView.swift */; };
@@ -209,6 +211,8 @@
 		344D22FC2C0F17E200C6966E /* matrix.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = matrix.mov; sourceTree = "<group>"; };
 		345B64BD2C333CCF000C0B3F /* yolov10s_fl32.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolov10s_fl32.mlpackage; sourceTree = "<group>"; };
 		345B64C32C335C61000C0B3F /* CoreVideoFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreVideoFiltersView.swift; sourceTree = "<group>"; };
+		345B64C52C3369E8000C0B3F /* sample1.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = sample1.jpg; sourceTree = "<group>"; };
+		345B64C72C338102000C0B3F /* yolovFloat10nNN.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = yolovFloat10nNN.mlpackage; sourceTree = "<group>"; };
 		3471ED062C0CF71800916598 /* detFX.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = detFX.m4a; sourceTree = "<group>"; };
 		3471ED072C0CF71800916598 /* ImageViewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImageViewer.swift; sourceTree = "<group>"; };
 		3471ED082C0CF71800916598 /* VideoPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
@@ -476,6 +480,7 @@
 				34170B322C2DB65500FAC79D /* ImageModel.swift */,
 				3425A90F2C304A90008D6EBA /* phone22.mlmodel */,
 				3425A9102C304A90008D6EBA /* phone67.mlmodel */,
+				345B64C72C338102000C0B3F /* yolovFloat10nNN.mlpackage */,
 				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
 				34170B2F2C2DB61700FAC79D /* ForensicView.swift */,
 				340047752C267F990055418A /* Logs.swift */,
@@ -489,6 +494,7 @@
 				3425A9132C30D384008D6EBA /* gsm32.mlmodel */,
 				3425A9142C30D384008D6EBA /* gsm67.mlmodel */,
 				349246CD2C20554900638047 /* Assets.xcassets */,
+				345B64C52C3369E8000C0B3F /* sample1.jpg */,
 				349246D02C20554900638047 /* Preview Content */,
 			);
 			path = MLmedia;
@@ -779,6 +785,7 @@
 				349246CE2C20554900638047 /* Assets.xcassets in Resources */,
 				3425A91A2C30F3BF008D6EBA /* jamesbond.mp4 in Resources */,
 				34170B2C2C2DAD0000FAC79D /* image2.png in Resources */,
+				345B64C62C3369E9000C0B3F /* sample1.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -880,6 +887,7 @@
 				340047762C267F990055418A /* Logs.swift in Sources */,
 				3441A8D32C2A30E500809478 /* goodZeroDCE.mlmodel in Sources */,
 				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
+				345B64C82C338102000C0B3F /* yolovFloat10nNN.mlpackage in Sources */,
 				3425A9152C30D384008D6EBA /* gsm32.mlmodel in Sources */,
 				34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */,

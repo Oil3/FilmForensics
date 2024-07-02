@@ -457,7 +457,7 @@ struct MainVideoView: View {
 
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: gsm32().model)
+    let model = try! VNCoreMLModel(for: yolov10s_fl32().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
