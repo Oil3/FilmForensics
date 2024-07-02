@@ -47,6 +47,7 @@ struct Detection: Codable, Identifiable {
   var confidence: VNConfidence
 }
 
+
 struct HandDetection: Codable, Identifiable {
   var id = UUID()
   var location: CGPoint
@@ -124,4 +125,11 @@ struct CustomEmbeddedDetectionLog: Codable {
 struct CustomEmbeddedFrameLog: Codable {
   var frameNumber: Int
   var detections: [CGRect]?
+}
+
+struct DetectionF: Identifiable, Codable {
+  var id = UUID()
+  let boundingBoxF: CGRect
+  let confidenceF: Float
+  let classNumberF: Int
 }

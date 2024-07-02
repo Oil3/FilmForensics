@@ -1,4 +1,5 @@
 import SwiftUI
+import Vision
 import CoreImage
 import CoreImage.CIFilterBuiltins
 
@@ -9,7 +10,11 @@ class ImageModel: ObservableObject {
   @Published var outputDirectory: URL?
   @Published var statusText: String = ""
   @Published var isProcessing: Bool = false
+  @Published var detections: [Detection] = []
+  @Published var detectionsF: [DetectionF] = []
+
   
+
   // Filter settings as regular properties
   var exposure: CGFloat = 0.0
   var brightness: CGFloat = 0.0
@@ -240,3 +245,4 @@ class ImageModel: ObservableObject {
     }
   }
 }
+
