@@ -30,7 +30,7 @@ struct imageGallery: View {
               .scaledToFit()
               .frame(width: 100, height: 100)
               .contextMenu {
-                Button("Delete from List") {
+                Button("Delete") {
                   imageModel.images.remove(at: index)
                 }
                 Button("Quick Look") {
@@ -41,10 +41,23 @@ struct imageGallery: View {
                 }
               }
               .onTapGesture(count: 2) {
-                imageModel.processedImage = image
-                imageModel.applyFilters()
+                imageModel.previewImage = image
               }
+            
+            VStack {
+              Button("Run Prediction") {
+                runPrediction(on: image, imageModel: imageModel)
+              }
+              Button("Quick Look") {
+                imageModel.previewImage = image
+              }
+              Button("Delete") {
+                imageModel.images.remove(at: index)
+              }
+            }
           }
+          .frame(width: 640, height: 640, alignment: .center)
+          
         }
       }
     }
@@ -57,17 +70,17 @@ struct imageGallery: View {
       let input = try yolovFloat10nNNInput(imageWith: cgImage)
       let model = try yolovFloat10nNN(configuration: MLModelConfiguration())
       let output = try model.prediction(input: input)
-      parsePredictionOutput(output.var_1200, imageSize: CGSize(width: cgImage.width, height: cgImage.height), imageModel: imageModel)
+      parsePredictionOutput(output.var_1200, imageSize: CGSize(width: cgImage.width, height: cgImage.height), imageModel: imageModel, imageName: "image_\(imageModel.images.firstIndex(of: image) ?? 0).json")
     } catch {
       print("Failed to perform prediction: \(error)")
     }
   }
   
-  private func parsePredictionOutput(_ output: MLMultiArray, imageSize: CGSize, imageModel: ImageModel) {
+  private func parsePredictionOutput(_ output: MLMultiArray, imageSize: CGSize, imageModel: ImageModel, imageName: String) {
     var detections: [DetectionF] = []
     
     let outputPointer = UnsafeMutablePointer<Float>(OpaquePointer(output.dataPointer))
-    let numDetections = output.count / 6
+    let numDetections = output.count / 300
     
     for i in 0..<numDetections {
       let x = CGFloat(outputPointer[i * 6 + 0])
@@ -81,12 +94,26 @@ struct imageGallery: View {
         let boundingBox = CGRect(x: x, y: y, width: width, height: height)
         let detection = DetectionF(boundingBoxF: boundingBox, confidenceF: confidence, classNumberF: classNumber)
         detections.append(detection)
-        print("Class: \(classNumber), Confidence: \(confidence), Bounding Box: \(boundingBox)")
       }
     }
     
     DispatchQueue.main.async {
       imageModel.detectionsF = detections
+      saveDetectionsToFile(detections: detections, imageName: imageName)
+    }
+  }
+  
+  private func saveDetectionsToFile(detections: [DetectionF], imageName: String) {
+    selectOutputDirectory { directoryURL in
+      let fileURL = directoryURL.appendingPathComponent(imageName)
+      let encoder = JSONEncoder()
+      encoder.outputFormatting = .prettyPrinted
+      do {
+        let data = try encoder.encode(detections)
+        try data.write(to: fileURL)
+      } catch {
+        print("Failed to save detections to file: \(error)")
+      }
     }
   }
 }
@@ -102,26 +129,26 @@ struct imageContentView: View {
             Image(nsImage: previewImage)
               .resizable()
               .scaledToFit()
-              .padding()
+              .frame(width: geo.size.width, height: geo.size.height)
             
             ForEach(imageModel.detectionsF) { detection in
               drawBoundingBox(for: detection, in: geo.size, color: .red)
             }
           }
         }
-        .padding()
+        .frame(width: 640, height: 640, alignment: .center)
       } else {
         Text("Select an image to preview")
-          .padding()
       }
     }
+    .frame(width: 640, height: 640, alignment: .center)
   }
   
   private func drawBoundingBox(for detection: DetectionF, in parentSize: CGSize, color: NSColor) -> some View {
     let boundingBox = detection.boundingBoxF
     let normalizedRect = CGRect(
       x: boundingBox.origin.x * parentSize.width,
-      y: (1 - boundingBox.origin.y - boundingBox.height) * parentSize.height,
+      y: boundingBox.origin.y * parentSize.height,
       width: boundingBox.width * parentSize.width,
       height: boundingBox.height * parentSize.height
     )
