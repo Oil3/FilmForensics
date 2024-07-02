@@ -31,6 +31,7 @@
 		34170B342C2DB65500FAC79D /* ImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B322C2DB65500FAC79D /* ImageModel.swift */; };
 		34170B362C2E838A00FAC79D /* MainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B352C2E838A00FAC79D /* MainImageView.swift */; };
 		34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34170B352C2E838A00FAC79D /* MainImageView.swift */; };
+		341E2A912C33DB3D002C1D78 /* a10nnms.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 341E2A902C33DB3D002C1D78 /* a10nnms.mlmodel */; };
 		342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 342126132C2E9A4E007E7878 /* customembedded.mlmodel */; };
 		3425A9052C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */; };
 		3425A9112C304A90008D6EBA /* phone22.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = 3425A90F2C304A90008D6EBA /* phone22.mlmodel */; };
@@ -172,6 +173,7 @@
 		341AD8BA2BFFA61300BF3CE3 /* SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRGAN.mlmodel; sourceTree = "<group>"; };
 		341AD8BC2BFFA61300BF3CE3 /* SRResNet.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SRResNet.mlmodel; sourceTree = "<group>"; };
 		341AD8BD2BFFA61300BF3CE3 /* Fast-SRGAN.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = "Fast-SRGAN.mlmodel"; sourceTree = "<group>"; };
+		341E2A902C33DB3D002C1D78 /* a10nnms.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = a10nnms.mlmodel; sourceTree = "<group>"; };
 		342126132C2E9A4E007E7878 /* customembedded.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = customembedded.mlmodel; sourceTree = "<group>"; };
 		3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjectsCoordinatesProcessors.swift; sourceTree = "<group>"; };
 		3425A9062C2FA122008D6EBA /* tempp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = tempp.swift; sourceTree = "<group>"; };
@@ -467,6 +469,7 @@
 		349246C82C20554800638047 /* MLmedia */ = {
 			isa = PBXGroup;
 			children = (
+				341E2A902C33DB3D002C1D78 /* a10nnms.mlmodel */,
 				3425A9192C30F3BF008D6EBA /* jamesbond.mp4 */,
 				3425A9042C2F95F3008D6EBA /* ObjectsCoordinatesProcessors.swift */,
 				345B64BD2C333CCF000C0B3F /* yolov10s_fl32.mlpackage */,
@@ -896,6 +899,7 @@
 				3425A91B2C30F93E008D6EBA /* SRGAN.mlmodel in Sources */,
 				34097CD82C28D7630078EF63 /* MLresizer.mlmodel in Sources */,
 				349246CA2C20554800638047 /* MLmediaApp.swift in Sources */,
+				341E2A912C33DB3D002C1D78 /* a10nnms.mlmodel in Sources */,
 				34170B342C2DB65500FAC79D /* ImageModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
