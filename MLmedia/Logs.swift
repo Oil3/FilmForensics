@@ -40,7 +40,7 @@ struct FrameLog: Codable {
   var detections: [Detection]?
 }
 
-struct Detection: Codable, Identifiable {
+struct Detection: Codable, Identifiable { //for Vision-based requests
   var id = UUID()
   var boundingBox: CGRect
   var identifier: String
@@ -127,7 +127,7 @@ struct CustomEmbeddedFrameLog: Codable {
   var detections: [CGRect]?
 }
 
-struct DetectionF: Identifiable, Codable {
+struct DetectionF: Identifiable, Codable { //for non-Vision CoreML requests
   var id = UUID()
   let boundingBoxF: CGRect
   let confidenceF: Float

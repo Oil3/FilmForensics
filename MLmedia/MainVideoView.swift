@@ -45,7 +45,7 @@ struct MainVideoView: View {
   @State private var saveJsonLog = false
   @State private var saveLabels = false
   @State private var saveFrames = false
-  
+
   var body: some View {
     NavigationView {
       videoGallery
@@ -457,7 +457,7 @@ struct MainVideoView: View {
 
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: a10nnms().model)
+    let model = try! VNCoreMLModel(for: counteraid3().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -496,7 +496,7 @@ struct MainVideoView: View {
         }
       }
     }
-    
+
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([faceRequest])
   }

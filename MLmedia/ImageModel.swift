@@ -12,6 +12,10 @@ class ImageModel: ObservableObject {
   @Published var isProcessing: Bool = false
   @Published var detections: [Detection] = []
   @Published var detectionsF: [DetectionF] = []
+  @Published var displayedImageSize: CGSize = .zero // Track  displayed image size
+  @Published var generatedImage: NSImage?
+  @Published var selectedModel: MLModel?
+
 
   
 
