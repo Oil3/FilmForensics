@@ -15,6 +15,7 @@ class ImageModel: ObservableObject {
   @Published var displayedImageSize: CGSize = .zero // Track  displayed image size
   @Published var generatedImage: NSImage?
   @Published var selectedModel: MLModel?
+  private let imagesKey = "savedImages"
 
 
   
@@ -64,7 +65,21 @@ class ImageModel: ObservableObject {
       processedImage = NSImage(cgImage: cgImage, size: currentImage.extent.size)
     }
   }
+  func loadImages() {
+    guard let data = UserDefaults.standard.data(forKey: imagesKey),
+          let savedImages = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(data) as? [NSImage] else {
+      return
+    }
+    images = savedImages
+  }
   
+  func saveImages() {
+    guard let data = try? NSKeyedArchiver.archivedData(withRootObject: images, requiringSecureCoding: false) else {
+      return
+    }
+    UserDefaults.standard.set(data, forKey: imagesKey)
+  }
+
   private func applyColorControls(inputImage: CIImage) -> CIImage {
     let filter = CIFilter.colorControls()
     filter.inputImage = inputImage
@@ -250,3 +265,24 @@ class ImageModel: ObservableObject {
   }
 }
 
+//// Extension to handle key events
+//extension View {
+//  func onKeyDown(perform action: @escaping (NSEvent) -> Void) -> some View {
+//    self.background(KeyDownView(action: action))
+//  }
+//}
+
+//struct KeyDownView: NSViewRepresentable {
+//  let action: (NSEvent) -> Void
+//  
+//  func makeNSView(context: Context) -> NSView {
+//    let view = NSView()
+//    view.addLocalMonitorForEvents(matching: .keyDown) { event in
+//      action(event)
+//      return event
+//    }
+//    return view
+//  }
+//  
+//  func updateNSView(_ nsView: NSView, context: Context) {}
+//}

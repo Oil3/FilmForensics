@@ -50,51 +50,21 @@
             endingLineNumber = "44"
             landmarkName = "BoundingBoxModifier"
             landmarkType = "14">
-            <Locations>
-               <Location
-                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - 72d8e948beb0ef7e"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MLmedia.CustomDetection.deinit"
-                  moduleName = "MLmedia"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ssz/Desktop/1folder/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-               <Location
-                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - f9cf6514a1645369"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MLmedia.CustomDetection.__deallocating_deinit"
-                  moduleName = "MLmedia"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ssz/Desktop/1folder/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "0"
-                  endingLineNumber = "0">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "4D023DC0-E09B-4228-A387-AF9264AA8FB7"
+            uuid = "B0DCC76D-33A4-4723-B78A-8200F8D5D0D6"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "MLmedia/MainVideoView.swift"
+            filePath = "MLmedia/CoreVideoPlayer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "780"
-            endingLineNumber = "780"
-            landmarkName = "processAndSaveBodyPoses(_:at:)"
+            startingLineNumber = "282"
+            endingLineNumber = "282"
+            landmarkName = "applyFilters(to:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

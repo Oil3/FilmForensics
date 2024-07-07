@@ -35,7 +35,7 @@ struct CoreVideoPlayer: View {
   @AppStorage("filterPreset") private var filterPresetData: Data?
   
   let sizes = ["640x640", "1024x576", "576x1024", "1280x720"]
-  let filters = ["CIDocumentEnhancer", "CIColorHistogram"]
+  let filters = ["Original", "CIDocumentEnhancer", "CIColorHistogram"]
   
   var body: some View {
     NavigationSplitView(sidebar: {
@@ -177,9 +177,12 @@ struct CoreVideoPlayer: View {
   private func chooseModel() {
     let panel = NSOpenPanel()
     panel.allowedFileTypes = ["mlmodel"]
-    if panel.runModal() == .OK, let url = panel.url {
+    if panel.runModal() == .OK  {
       do {
-        mlModel = try MLModel(contentsOf: url)
+        let url = panel.url
+        let compiledModelURL = try? MLModel.compileModel(at: url!)
+
+        mlModel = try MLModel(contentsOf: compiledModelURL!)
       } catch {
         print("Error loading CoreML model: \(error)")
       }
@@ -276,9 +279,17 @@ struct CoreVideoPlayer: View {
     }
     
     if let mlModel = mlModel, applyMLModel {
-      let mlFilter = CIFilter(name: "CICoreMLModelFilter")!
+//      let mlFilter = CIFilter(name: "CICoreMLModelFilter")!
+
+      let mlFilter = CIFilter.coreMLModel()
+      let model = mlFilter.model
+      mlFilter.inputImage = ciImage
+      mlFilter.headIndex = 0
+      mlFilter.softmaxNormalization = false
       mlFilter.setValue(mlModel, forKey: "inputModel")
       mlFilter.setValue(ciImage, forKey: kCIInputImageKey)
+      mlFilter.isEnabled = true
+
       ciImage = mlFilter.outputImage ?? ciImage
     }
     

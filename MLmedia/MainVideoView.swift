@@ -55,13 +55,27 @@ struct MainVideoView: View {
       Label("MainVideoView", systemImage: "video")
     }
     .onAppear {
-      if let savedPath = UserDefaults.standard.url(forKey: "savePath") {
-        if checkAccessToPath(url: savedPath) {
-          savePath = savedPath
-        } else {
-          selectSavePath()
+      if let bookmarkData = UserDefaults.standard.data(forKey: "savePathBookmark") {
+        do {
+          var isStale = false
+          let resolvedURL = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+            if isStale {
+              print("Bookmark data is stale.")
+            } else {
+              savePath = resolvedURL
+              if savePath?.startAccessingSecurityScopedResource() == false {
+                print("Couldn't access the security-scoped resource.")
+              
+            }
+          }
+        } catch {
+          print("Error resolving bookmark: \(error)")
         }
       }
+    }
+    
+    .onDisappear {
+      savePath?.stopAccessingSecurityScopedResource()
     }
   }
   
@@ -231,7 +245,7 @@ struct MainVideoView: View {
                   }
                   ForEach(detectedCustomObjects,id: \.self) { customObject in
                     if showBoundingBoxes && customModelEnabled {
-                      drawBoundingBox(for: customObject, in: geo.size, color: .systemBrown)
+                      drawBoundingBox(for: customObject, in: geo.size, color: .systemRed)
                     }
                   }
                 }
@@ -498,6 +512,7 @@ struct MainVideoView: View {
     }
 
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+    
     try? handler.perform([faceRequest])
   }
   
@@ -563,7 +578,10 @@ struct MainVideoView: View {
   }
   
   private func runCustomModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: gsm67().model)
+    let confCPUGPU = MLModelConfiguration()
+    confCPUGPU.computeUnits = .cpuAndGPU
+    let cpugpuModel = try? hyper_190(configuration: confCPUGPU)
+    let model = try! VNCoreMLModel(for: cpugpuModel!.model) //(for: hyper_190().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {
@@ -654,15 +672,19 @@ struct MainVideoView: View {
     var faceLog = [FaceDetection]()
     
     for face in faces {
-      let boundingBox = face.boundingBox
-      let scaledBoundingBox = CGRect(
-        x: boundingBox.origin.x - boundingBox.size.width / 2,
-        y: boundingBox.origin.y - boundingBox.size.height / 2,
-        width: boundingBox.size.width * 2,
-        height: boundingBox.size.height * 2
-      )
-      labelText += "0 \(scaledBoundingBox.midX.rounded(toPlaces: 5)) \(1 - scaledBoundingBox.midY.rounded(toPlaces: 5)) \(scaledBoundingBox.width.rounded(toPlaces: 5)) \(scaledBoundingBox.height.rounded(toPlaces: 5))\n"
-      faceLog.append(FaceDetection(boundingBox: scaledBoundingBox))
+      if let landmarks = face.landmarks, let allLandmarksPresent = landmarks.allPoints?.pointsInImage(imageSize: imageSize) {
+        if allLandmarksPresent.count > 0 {
+          let boundingBox = face.boundingBox
+          let center = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
+          let cropSize = CGSize(width: (0.1333 * imageSize.width), height: (0.1333 * imageSize.height))
+          let cropBox = CGRect(
+            origin: CGPoint(x: center.x - cropSize.width / 2, y: center.y - cropSize.height / 2),
+            size: cropSize
+          )
+          labelText += "0 \(cropBox.midX.rounded(toPlaces: 5)) \(1 - cropBox.midY.rounded(toPlaces: 5)) \(cropBox.width.rounded(toPlaces: 5)) \(cropBox.height.rounded(toPlaces: 5))\n"
+          faceLog.append(FaceDetection(boundingBox: cropBox))
+        }
+      }
     }
     
     if !labelText.isEmpty {
@@ -895,10 +917,18 @@ struct MainVideoView: View {
     panel.canCreateDirectories = true
     panel.allowsMultipleSelection = false
     if panel.runModal() == .OK {
-      savePath = panel.url
-      UserDefaults.standard.set(savePath, forKey: "savePath")
+      if let url = panel.url {
+        savePath = url
+        do {
+          let bookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+          UserDefaults.standard.set(bookmarkData, forKey: "savePathBookmark")
+        } catch {
+          print("Error creating bookmark: \(error)")
+        }
+      }
     }
   }
+
   
   private func createFolderIfNotExists(at url: URL) {
     let fileManager = FileManager.default
