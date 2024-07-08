@@ -695,7 +695,7 @@ struct MainVideoView: View {
       }
       
       if saveFrames {
-        saveCurrentFrame(fileName: frameFileName.path)
+        saveFaceImages(faces: faces, at: frameFileName.path)
       }
     }
     
@@ -836,6 +836,39 @@ struct MainVideoView: View {
     
     if saveJsonLog {
       logBodyPoseDetections(detections: bodyPoseLog, frameNumber: frameNumber, folderURL: folderURL)
+    }
+  }
+  private func saveFaceImages(faces: [VNFaceObservation], at frameFileName: String) {
+    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+    
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    
+    for (index, face) in faces.enumerated() {
+      let faceBoundingBox = face.boundingBox
+      let faceRect = CGRect(
+        x: faceBoundingBox.origin.x * CGFloat(ciImage.extent.width),
+        y: (1 - faceBoundingBox.maxY) * CGFloat(ciImage.extent.height),
+        width: faceBoundingBox.width * CGFloat(ciImage.extent.width),
+        height: faceBoundingBox.height * CGFloat(ciImage.extent.height)
+      )
+      
+       let croppedImage = ciImage.cropped(to: faceRect).oriented(forExifOrientation: 6)
+     if    let cgImage = context.createCGImage(croppedImage, from: croppedImage.extent) {
+        let nsImage = NSImage(cgImage: cgImage, size: .zero)
+        
+        let faceFileName = "\(frameFileName)_face_\(index).jpg"
+        
+        guard let tiffData = nsImage.tiffRepresentation,
+              let bitmap = NSBitmapImageRep(data: tiffData),
+              let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+        
+        do {
+          try jpegData.write(to: URL(fileURLWithPath: faceFileName))
+        } catch {
+          print("Error saving face image: \(error)")
+        }
+      }
     }
   }
   

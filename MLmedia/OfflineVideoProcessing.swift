@@ -4,53 +4,59 @@ import Vision
 import CoreML
 
 class VideoProcessor: ObservableObject {
-  private var videoProcessor: VNVideoProcessor?
+  private var sequenceRequestHandler = VNSequenceRequestHandler()
   private var dispatchQueue = DispatchQueue(label: "com.example.VideoProcessor")
   private var asset: AVAsset?
-  fileprivate var cadence: Int = 1
   fileprivate var startTime: CFAbsoluteTime?
+  fileprivate var frameCount: Int = 0
   
   @Published var isProcessing: Bool = false
   @Published var selectedModelURL: URL?
-  @Published var logs: [String] = []
-  var savePath: URL?
+  @Published var logs: [(id: UUID, message: String)] = []
+  fileprivate var savePath: URL?
   
   func processVideo(url: URL, startTime: CMTime, duration: CMTime, requests: [VNRequest], saveFrames: Bool, saveLabels: Bool) {
-    videoProcessor = VNVideoProcessor(url: url)
     asset = AVAsset(url: url)
     
-    guard let videoProcessor = videoProcessor else {
-      print("Failed to initialize VNVideoProcessor")
+    guard let asset = asset else {
+      print("Failed to initialize AVAsset")
       return
     }
     
-    self.cadence = 1  // You can adjust this value as needed
     isProcessing = true
-    
+    self.frameCount = 0
     self.startTime = CFAbsoluteTimeGetCurrent()
+    
+    let reader = try! AVAssetReader(asset: asset)
+    let videoTrack = asset.tracks(withMediaType: .video).first!
+    let readerOutput = AVAssetReaderTrackOutput(track: videoTrack, outputSettings: [
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+    ])
+    reader.add(readerOutput)
+    reader.startReading()
     
     dispatchQueue.async { [weak self] in
       guard let self = self else { return }
+      while reader.status == .reading {
+        if let sampleBuffer = readerOutput.copyNextSampleBuffer(),
+           let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+          self.handleFrame(pixelBuffer: pixelBuffer, requests: requests, videoURL: url, saveFrames: saveFrames, saveLabels: saveLabels)
+        }
+      }
       
-      do {
-        for request in requests {
-          try videoProcessor.addRequest(request, processingOptions: VNVideoProcessor.RequestProcessingOptions())
-        }
-        try videoProcessor.analyze(with: CMTimeRange(start: startTime, duration: duration))
-        DispatchQueue.main.async {
-          self.isProcessing = false
-        }
-      } catch {
-        print("Error processing video: \(error)")
-        DispatchQueue.main.async {
-          self.isProcessing = false
-        }
+      DispatchQueue.main.async {
+        self.isProcessing = false
+      }
+      
+      if reader.status == .completed {
+        print("Video processing completed.")
+      } else if reader.status == .failed {
+        print("Video processing failed: \(reader.error?.localizedDescription ?? "Unknown error")")
       }
     }
   }
   
   func cancelProcessing() {
-    videoProcessor?.cancel()
     isProcessing = false
   }
   
@@ -78,7 +84,8 @@ class VideoProcessor: ObservableObject {
     }
   }
   
-  fileprivate func logDetection(videoURL: URL, frameNumber: Int, detections: [VNObservation], detectionType: String, elapsedTime: Double, saveFrames: Bool, saveLabels: Bool) {
+  fileprivate func logDetection(videoURL: URL, detections: [VNObservation], detectionType: String, elapsedTime: Double, saveFrames: Bool, saveLabels: Bool, pixelBuffer: CVPixelBuffer?) {
+    frameCount += 1
     let videoPath = videoURL.path
     var detectionInfo = detections.map { observation -> String in
       if let objectObservation = observation as? VNRecognizedObjectObservation {
@@ -95,21 +102,21 @@ class VideoProcessor: ObservableObject {
       }
     }.joined(separator: ", ")
     
-    let frameInfo = "video \(frameNumber) / \(videoPath): \(detectionType) [\(detectionInfo)], \(String(format: "%.1f", elapsedTime)) ms"
+    let frameInfo = "video \(frameCount) / \(videoPath): \(detectionType) [\(detectionInfo)], \(String(format: "%.1f", elapsedTime)) ms"
     DispatchQueue.main.async {
-      self.logs.append(frameInfo)
+      self.logs.append((id: UUID(), message: frameInfo))
     }
     
-    if saveFrames {
-      saveFrame(videoURL: videoURL, frameNumber: frameNumber)
+    if saveFrames, let pixelBuffer = pixelBuffer {
+      saveFrame(videoURL: videoURL, frameNumber: frameCount, pixelBuffer: pixelBuffer)
     }
     
     if saveLabels {
-      saveLabel(videoURL: videoURL, frameNumber: frameNumber, detections: detections)
+      saveLabel(videoURL: videoURL, frameNumber: frameCount, detections: detections)
     }
   }
   
-  private func saveFrame(videoURL: URL, frameNumber: Int) {
+  private func saveFrame(videoURL: URL, frameNumber: Int, pixelBuffer: CVPixelBuffer) {
     guard let savePath = savePath else { return }
     let framePath = savePath.appendingPathComponent("frames")
     let fileManager = FileManager.default
@@ -120,7 +127,20 @@ class VideoProcessor: ObservableObject {
     let imageName = "\(videoURL.deletingPathExtension().lastPathComponent)_frame_\(frameNumber).jpg"
     let imagePath = framePath.appendingPathComponent(imageName)
     
-    // Save frame logic here, using the pixel buffer or any image extraction mechanism
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
+    let nsImage = NSImage(cgImage: cgImage, size: .zero)
+    
+    guard let tiffData = nsImage.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiffData),
+          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+    
+    do {
+      try jpegData.write(to: imagePath)
+    } catch {
+      print("Error saving frame: \(error)")
+    }
   }
   
   private func saveLabel(videoURL: URL, frameNumber: Int, detections: [VNObservation]) {
@@ -144,6 +164,21 @@ class VideoProcessor: ObservableObject {
     }
     
     try? labelContent.write(to: labelFilePath, atomically: true, encoding: .utf8)
+  }
+  
+  private func handleFrame(pixelBuffer: CVPixelBuffer, requests: [VNRequest], videoURL: URL, saveFrames: Bool, saveLabels: Bool) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    do {
+      try sequenceRequestHandler.perform(requests, on: pixelBuffer)
+      let elapsedTime = CFAbsoluteTimeGetCurrent() - startTime
+      for request in requests {
+        guard let results = request.results else { continue }
+        let detectionType = request is VNCoreMLRequest ? "coreml" : "vision"
+        logDetection(videoURL: videoURL, detections: results as! [VNObservation], detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: pixelBuffer)
+      }
+    } catch {
+      print("Error performing request: \(error.localizedDescription)")
+    }
   }
 }
 
@@ -233,8 +268,8 @@ struct OfflineVideoProcessingView: View {
       }
       VStack {
         Text("Status")
-        List(videoProcessor.logs, id: \.self) { log in
-          Text(log)
+        List(videoProcessor.logs, id: \.id) { log in
+          Text(log.message)
         }
       }
       .frame(minWidth: 300)
@@ -289,7 +324,7 @@ struct OfflineVideoProcessingView: View {
     requests = []
     
     if enableObjectDetection {
-      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: cashcash300().model), completionHandler: visionRequestHandler))
+      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: cash2cashNMS().model), completionHandler: visionRequestHandler))
     }
     
     if enableFaceDetection {
@@ -321,8 +356,7 @@ struct OfflineVideoProcessingView: View {
       guard let results = request.results else { return }
       let elapsedTime = CFAbsoluteTimeGetCurrent() - (videoProcessor.startTime ?? 0)
       let detectionType = request is VNCoreMLRequest ? "coreml" : "vision"
-      let frameNumber = Int(elapsedTime * Double(videoProcessor.cadence))
-      videoProcessor.logDetection(videoURL: videoURL!, frameNumber: frameNumber, detections: results as! [VNObservation], detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels)
+      videoProcessor.logDetection(videoURL: videoURL!, detections: results as! [VNObservation], detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: nil)
     }
   }
 }
