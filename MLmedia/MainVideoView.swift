@@ -632,6 +632,8 @@ struct MainVideoView: View {
       let identifier = detection.labels.first?.identifier ?? "unknown"
       let confidence = detection.confidence
       detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
+      
+      cropAndSaveDetection(detection: detection, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_fff.jpg",  boundingBox: boundingBox)
     }
     
     if !labelText.isEmpty {
@@ -658,8 +660,8 @@ struct MainVideoView: View {
     let videoFilename = mediaModel.selectedVideoURL?.lastPathComponent ?? "video"
     let folderName = "\(videoFilename)"
     let folderURL = savePath.appendingPathComponent(folderName)
-    let labelsFolderURL = folderURL.appendingPathComponent("labels_faces")
-    let imagesFolderURL = folderURL.appendingPathComponent("images_faces")
+    let labelsFolderURL = folderURL.appendingPathComponent("face_labels")
+    let imagesFolderURL = folderURL.appendingPathComponent("face_images")
     
     createFolderIfNotExists(at: folderURL)
     createFolderIfNotExists(at: labelsFolderURL)
@@ -669,40 +671,35 @@ struct MainVideoView: View {
     let frameFileName = imagesFolderURL.appendingPathComponent("\(videoFilename)_\(frameNumber).jpg")
     
     var labelText = ""
-    var faceLog = [FaceDetection]()
+    var faceLog = [Detection]()
     
     for face in faces {
-      if let landmarks = face.landmarks, let allLandmarksPresent = landmarks.allPoints?.pointsInImage(imageSize: imageSize) {
-        if allLandmarksPresent.count > 0 {
-          let boundingBox = face.boundingBox
-          let center = CGPoint(x: boundingBox.midX, y: boundingBox.midY)
-          let cropSize = CGSize(width: (0.1333 * imageSize.width), height: (0.1333 * imageSize.height))
-          let cropBox = CGRect(
-            origin: CGPoint(x: center.x - cropSize.width / 2, y: center.y - cropSize.height / 2),
-            size: cropSize
-          )
-          labelText += "0 \(cropBox.midX.rounded(toPlaces: 5)) \(1 - cropBox.midY.rounded(toPlaces: 5)) \(cropBox.width.rounded(toPlaces: 5)) \(cropBox.height.rounded(toPlaces: 5))\n"
-          faceLog.append(FaceDetection(boundingBox: cropBox))
-        }
+      let boundingBox = face.boundingBox
+      labelText += "0 \(boundingBox.midX.rounded(toPlaces: 5)) \(1 - boundingBox.midY.rounded(toPlaces: 5)) \(boundingBox.width.rounded(toPlaces: 5)) \(boundingBox.height.rounded(toPlaces: 5))\n"
+      faceLog.append(Detection(boundingBox: boundingBox, identifier: "face", confidence: face.confidence))
+      
+      // Crop and save the face
+        cropAndSaveFace(face: face, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_ffface.jpg",  boundingBox: face.boundingBox)
       }
-    }
+    
     
     if !labelText.isEmpty {
       do {
         try labelText.write(to: labelFileName, atomically: true, encoding: .utf8)
       } catch {
-        print("Error saving labels: \(error)")
+        print("Error saving face labels: \(error)")
       }
       
       if saveFrames {
-        saveFaceImages(faces: faces, at: frameFileName.path)
+        saveCurrentFrame(fileName: frameFileName.path)
       }
     }
     
     if saveJsonLog {
-      logFaceDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
+      logDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
     }
   }
+
   
   private func processAndSaveHumans(_ humans: [VNHumanObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
@@ -838,40 +835,79 @@ struct MainVideoView: View {
       logBodyPoseDetections(detections: bodyPoseLog, frameNumber: frameNumber, folderURL: folderURL)
     }
   }
-  private func saveFaceImages(faces: [VNFaceObservation], at frameFileName: String) {
+  private func cropAndSaveFace(face: VNFaceObservation, fileName: String, boundingBox: CGRect? = nil) {
+      guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+      
+      let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+      let context = CIContext()
+      
+      let targetImage: CIImage
+      
+      if let boundingBox = boundingBox {
+        // Calculate the cropped area based on the bounding box
+        let cropRect = CGRect(
+          x: boundingBox.origin.x * ciImage.extent.width,
+          y: (1 - boundingBox.origin.y - boundingBox.height) * ciImage.extent.height,
+          width: boundingBox.width * ciImage.extent.width,
+          height: boundingBox.height * ciImage.extent.height
+        )
+        // Crop the CIImage to the bounding box
+        targetImage = ciImage.cropped(to: cropRect)
+      } else {
+        // Use the complete frame
+        targetImage = ciImage
+      }
+      
+      guard let cgImage = context.createCGImage(targetImage, from: targetImage.extent) else { return }
+      let nsImage = NSImage(cgImage: cgImage, size: .zero)
+      
+      guard let tiffData = nsImage.tiffRepresentation,
+            let bitmap = NSBitmapImageRep(data: tiffData),
+            let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+      
+      do {
+        try jpegData.write(to: URL(fileURLWithPath: fileName))
+      } catch {
+        print("Error saving frame: \(error)")
+      }
+    }
+  private func cropAndSaveDetection(detection: VNRecognizedObjectObservation, fileName: String, boundingBox: CGRect? = nil) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
     let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
     let context = CIContext()
     
-    for (index, face) in faces.enumerated() {
-      let faceBoundingBox = face.boundingBox
-      let faceRect = CGRect(
-        x: faceBoundingBox.origin.x * CGFloat(ciImage.extent.width),
-        y: (1 - faceBoundingBox.maxY) * CGFloat(ciImage.extent.height),
-        width: faceBoundingBox.width * CGFloat(ciImage.extent.width),
-        height: faceBoundingBox.height * CGFloat(ciImage.extent.height)
+    let targetImage: CIImage
+    
+    if let boundingBox = boundingBox {
+      // Calculate the cropped area based on the bounding box
+      let cropRect = CGRect(
+        x: boundingBox.origin.x,// * ciImage.extent.width,
+        y: (1 - boundingBox.origin.y ),//- boundingBox.height) * ciImage.extent.height,
+        width: boundingBox.width ,//* ciImage.extent.width,
+        height: boundingBox.height// * ciImage.extent.height
       )
-      
-       let croppedImage = ciImage.cropped(to: faceRect).oriented(forExifOrientation: 6)
-     if    let cgImage = context.createCGImage(croppedImage, from: croppedImage.extent) {
-        let nsImage = NSImage(cgImage: cgImage, size: .zero)
-        
-        let faceFileName = "\(frameFileName)_face_\(index).jpg"
-        
-        guard let tiffData = nsImage.tiffRepresentation,
-              let bitmap = NSBitmapImageRep(data: tiffData),
-              let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
-        
-        do {
-          try jpegData.write(to: URL(fileURLWithPath: faceFileName))
-        } catch {
-          print("Error saving face image: \(error)")
-        }
-      }
+      // Crop the CIImage to the bounding box
+      targetImage = ciImage.cropped(to: cropRect)
+    } else {
+      // Use the complete frame
+      targetImage = ciImage
+    }
+    
+    guard let cgImage = context.createCGImage(targetImage, from: targetImage.extent) else { return }
+    let nsImage = NSImage(cgImage: cgImage, size: .zero)
+    
+    guard let tiffData = nsImage.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiffData),
+          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+    
+    do {
+      try jpegData.write(to: URL(fileURLWithPath: fileName))
+    } catch {
+      print("Error saving frame: \(error)")
     }
   }
-  
+
   private func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
@@ -890,13 +926,13 @@ struct MainVideoView: View {
       print("Error saving frame: \(error)")
     }
   }
-  
   private func setupVideoOutput(for playerItem: AVPlayerItem) {
     let pixelBufferAttributes: [String: Any] = [
       kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
     ]
     let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
     playerItem.add(videoOutput)
+  
     
     self.videoOutput = videoOutput
   }

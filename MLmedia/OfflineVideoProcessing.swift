@@ -12,7 +12,7 @@ class VideoProcessor: ObservableObject {
   
   @Published var isProcessing: Bool = false
   @Published var selectedModelURL: URL?
-  @Published var logs: [(id: UUID, message: String)] = []
+  @Published var logs: [(id: UUID, message: String, timestamp: Date)] = []
   fileprivate var savePath: URL?
   
   func processVideo(url: URL, startTime: CMTime, duration: CMTime, requests: [VNRequest], saveFrames: Bool, saveLabels: Bool) {
@@ -46,12 +46,16 @@ class VideoProcessor: ObservableObject {
       
       DispatchQueue.main.async {
         self.isProcessing = false
-      }
-      
-      if reader.status == .completed {
-        print("Video processing completed.")
-      } else if reader.status == .failed {
-        print("Video processing failed: \(reader.error?.localizedDescription ?? "Unknown error")")
+        
+        if reader.status == .completed {
+          let totalTime = CFAbsoluteTimeGetCurrent() - (self.startTime ?? 0)
+          let frameRate = Double(self.frameCount) / totalTime
+          let processingSpeedLog = "Processing completed: \(self.frameCount) frames in \(totalTime) seconds (\(String(format: "%.2f", frameRate)) frames per second)"
+          self.logs.append((id: UUID(), message: processingSpeedLog, timestamp: Date()))
+          print(processingSpeedLog)
+        } else if reader.status == .failed {
+          print("Video processing failed: \(reader.error?.localizedDescription ?? "Unknown error")")
+        }
       }
     }
   }
@@ -62,7 +66,7 @@ class VideoProcessor: ObservableObject {
   
   func selectCoreMLModel() {
     let panel = NSOpenPanel()
-    panel.allowedFileTypes = ["mlmodelc"]
+    //panel.allowedFileTypes = ["mlmodelc"]
     panel.allowsMultipleSelection = false
     panel.canChooseDirectories = false
     panel.begin { response in
@@ -102,9 +106,10 @@ class VideoProcessor: ObservableObject {
       }
     }.joined(separator: ", ")
     
+    let timestamp = Date()
     let frameInfo = "video \(frameCount) / \(videoPath): \(detectionType) [\(detectionInfo)], \(String(format: "%.1f", elapsedTime)) ms"
     DispatchQueue.main.async {
-      self.logs.append((id: UUID(), message: frameInfo))
+      self.logs.append((id: UUID(), message: frameInfo, timestamp: timestamp))
     }
     
     if saveFrames, let pixelBuffer = pixelBuffer {
@@ -269,8 +274,11 @@ struct OfflineVideoProcessingView: View {
       VStack {
         Text("Status")
         List(videoProcessor.logs, id: \.id) { log in
-          Text(log.message)
+          VStack(alignment: .leading) {
+            Text("\(log.timestamp): \(log.message)")
+          }
         }
+        .textSelection(.enabled)
       }
       .frame(minWidth: 300)
     }
@@ -324,7 +332,7 @@ struct OfflineVideoProcessingView: View {
     requests = []
     
     if enableObjectDetection {
-      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: cash2cashNMS().model), completionHandler: visionRequestHandler))
+      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: paxcount().model), completionHandler: visionRequestHandler))
     }
     
     if enableFaceDetection {

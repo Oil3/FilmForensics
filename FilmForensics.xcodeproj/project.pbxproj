@@ -531,6 +531,7 @@
 				3425A9172C30F1CB008D6EBA /* CoreVideoPlayer.swift */,
 				349246D82C20558700638047 /* FaceContentView.swift */,
 				34170B242C2D837300FAC79D /* ForensicImageProcessor.swift */,
+				346A9C482C398296004B5B7E /* OfflineVideoProcessing.swift */,
 				34170B2F2C2DB61700FAC79D /* ForensicView.swift */,
 				34170B322C2DB65500FAC79D /* ImageModel.swift */,
 				340047752C267F990055418A /* Logs.swift */,
@@ -544,7 +545,6 @@
 				349246CD2C20554900638047 /* Assets.xcassets */,
 				346A9C472C39817D004B5B7E /* ml */,
 				349246D02C20554900638047 /* Preview Content */,
-				346A9C482C398296004B5B7E /* OfflineVideoProcessing.swift */,
 			);
 			path = MLmedia;
 			sourceTree = "<group>";
