@@ -1,5 +1,14 @@
+<<<<<<< refs/remotes/origin/main2
 import AppKit
 import AVKit
+=======
+//
+//  VideoController.swift
+//  V
+//
+// Copyright Almahdi Morris - 4/6/24.
+//
+>>>>>>> fixed abnormal memory usage (with lazy loading frames -10,000 png images kinda weight)
 
 class VideoController: NSViewController {
     var playerViewController: AVPlayerViewController!

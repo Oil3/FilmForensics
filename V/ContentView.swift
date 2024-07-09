@@ -1,3 +1,13 @@
+<<<<<<< refs/remotes/origin/main2
+=======
+//
+//  ContentView.swift
+//  V
+//
+// Copyright Almahdi Morris - 4/6/24.
+//
+
+>>>>>>> fixed abnormal memory usage (with lazy loading frames -10,000 png images kinda weight)
 import SwiftUI
 
 struct ContentView: View {
@@ -14,10 +24,17 @@ struct ContentView: View {
                 NavigationLink(destination: LogView()) {
                     Label("View Logs", systemImage: "doc.text")
                 }
+<<<<<<< refs/remotes/origin/main2
                 NavigationLink(destination: GalleryView()) {
                     Label("Gallery", systemImage: "photo.on.rectangle")
                 }
                 NavigationLink(destination: SettingsView()) {
+=======
+//                NavigationLink(destination: GalleryView(selectedURL: $selectedURL)) {
+//                    Label("Gallery", systemImage: "photo.on.rectangle")
+//                }
+                NavigationLink(destination: SettingsView())  {
+>>>>>>> fixed abnormal memory usage (with lazy loading frames -10,000 png images kinda weight)
                     Label("Settings", systemImage: "gearshape")
                 }
                 NavigationLink(destination: CoreMLProcessView()) {

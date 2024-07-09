@@ -471,7 +471,7 @@ struct MainVideoView: View {
 
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: counteraid3().model)
+    let model = try! VNCoreMLModel(for: cashcash300().model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
       if let results = request.results as? [VNRecognizedObjectObservation] {

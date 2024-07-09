@@ -1,16 +1,20 @@
+import UIKit
 import SwiftUI
 import Vision
-import AppKit
-import AVKit
-import CoreML
+import AVFoundation
 
-class BoundingBoxView: NSView {
+import UIKit
+import SwiftUI
+import Vision
+import AVFoundation
+
+class BoundingBoxView: UIView {
     private let strokeWidth: CGFloat = 2
     
     private var imageRect: CGRect = .zero
     var observations: [VNDetectedObjectObservation]? {
         didSet {
-            self.needsDisplay = true
+            setNeedsDisplay()
         }
     }
     
@@ -18,25 +22,32 @@ class BoundingBoxView: NSView {
         imageRect = AVMakeRect(aspectRatio: imageSize, insideRect: self.bounds)
     }
     
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
+    override func draw(_ rect: CGRect) {
         guard let observations = observations, !observations.isEmpty else { return }
+        subviews.forEach({ $0.removeFromSuperview() })
+        
+        guard let context = UIGraphicsGetCurrentContext() else { return }
         
         for (i, observation) in observations.enumerated() {
-            let color = NSColor(hue: CGFloat(i) / CGFloat(observations.count), saturation: 1, brightness: 1, alpha: 1)
+            var color = UIColor(hue: CGFloat(i) / CGFloat(observations.count), saturation: 1, brightness: 1, alpha: 1)
+            if #available(iOS 12.0, *), let recognizedObjectObservation = observation as? VNRecognizedObjectObservation {
+                let firstLabelHash = recognizedObjectObservation.labels.first?.identifier.hashValue ?? 0
+                color = UIColor(hue: CGFloat(firstLabelHash % 256) / 256.0, saturation: 1, brightness: 1, alpha: 1)
+            }
+            
             let rect = drawBoundingBox(context: context, observation: observation, color: color)
-            if let recognizedObjectObservation = observation as? VNRecognizedObjectObservation {
+            
+            if #available(iOS 12.0, *), let recognizedObjectObservation = observation as? VNRecognizedObjectObservation {
                 addLabel(on: rect, observation: recognizedObjectObservation, color: color)
             }
         }
     }
     
-    func drawBoundingBox(context: CGContext, observation: VNDetectedObjectObservation, color: NSColor) -> CGRect {
+    func drawBoundingBox(context: CGContext, observation: VNDetectedObjectObservation, color: UIColor) -> CGRect {
         let convertedRect = VNImageRectForNormalizedRect(observation.boundingBox, Int(imageRect.width), Int(imageRect.height))
-        let rect = CGRect(x: convertedRect.minX + imageRect.minX,
-                          y: imageRect.maxY - convertedRect.minY - convertedRect.height,
-                          width: convertedRect.width, height: convertedRect.height)
+        let x = convertedRect.minX + imageRect.minX
+        let y = imageRect.maxY - convertedRect.minY - convertedRect.height  // Adjusted y-coordinate calculation
+        let rect = CGRect(x: x, y: y, width: convertedRect.width, height: convertedRect.height)
         
         context.setStrokeColor(color.cgColor)
         context.setLineWidth(strokeWidth)
@@ -45,32 +56,37 @@ class BoundingBoxView: NSView {
         return rect
     }
     
-    private func addLabel(on rect: CGRect, observation: VNRecognizedObjectObservation, color: NSColor) {
+    @available(iOS 12.0, *)
+    private func addLabel(on rect: CGRect, observation: VNRecognizedObjectObservation, color: UIColor) {
         guard let firstLabel = observation.labels.first?.identifier else { return }
         
-        let label = NSTextField(labelWithString: firstLabel)
-        label.font = NSFont.boldSystemFont(ofSize: 13)
+        let label = UILabel()
+        label.text = firstLabel
+        label.font = UIFont.boldSystemFont(ofSize: 13)
+        label.textColor = .black
         label.backgroundColor = color
-        label.isBezeled = false
-        label.drawsBackground = true
-        label.frame = CGRect(x: rect.origin.x, y: rect.origin.y - label.frame.height, width: rect.width, height: label.frame.height)
+        label.sizeToFit()
+        label.frame = CGRect(x: rect.origin.x - strokeWidth / 2,
+                             y: rect.origin.y - label.frame.height,
+                             width: label.frame.width,
+                             height: label.frame.height)
         addSubview(label)
     }
 }
 
-struct BoundingBoxViewWrapper: NSViewRepresentable {
+struct BoundingBoxViewWrapper: UIViewRepresentable {
     @Binding var observations: [VNRecognizedObjectObservation]
-    var image: NSImage
+    var image: UIImage
 
-    func makeNSView(context: Context) -> BoundingBoxView {
+    func makeUIView(context: Context) -> BoundingBoxView {
         let view = BoundingBoxView()
         view.updateSize(for: image.size)
         view.observations = observations
         return view
     }
 
-    func updateNSView(_ nsView: BoundingBoxView, context: Context) {
-        nsView.updateSize(for: image.size)
-        nsView.observations = observations
+    func updateUIView(_ uiView: BoundingBoxView, context: Context) {
+        uiView.updateSize(for: image.size)
+        uiView.observations = observations
     }
 }

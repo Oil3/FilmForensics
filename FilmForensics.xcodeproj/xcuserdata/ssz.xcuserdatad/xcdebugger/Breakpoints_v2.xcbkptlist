@@ -52,28 +52,28 @@
             landmarkType = "14">
             <Locations>
                <Location
-                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - 72d8e948beb0ef7e"
+                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - cae3cceac86330e0"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "MLmedia.CustomDetection.deinit"
                   moduleName = "MLmedia"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ssz/Desktop/1folder/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
+                  urlString = "file:///Users/ssz/Documents/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "0"
                   endingLineNumber = "0">
                </Location>
                <Location
-                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - f9cf6514a1645369"
+                  uuid = "5AECCC35-E857-4338-B7A7-506138925283 - 41f440b6d7b78cf7"
                   shouldBeEnabled = "Yes"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
                   symbolName = "MLmedia.CustomDetection.__deallocating_deinit"
                   moduleName = "MLmedia"
                   usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/ssz/Desktop/1folder/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
+                  urlString = "file:///Users/ssz/Documents/FilmForensics/MLmedia/ObjectsCoordinatesProcessors.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
                   startingLineNumber = "0"

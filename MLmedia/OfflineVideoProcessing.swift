@@ -9,6 +9,7 @@ class VideoProcessor: ObservableObject {
   private var asset: AVAsset?
   fileprivate var startTime: CFAbsoluteTime?
   fileprivate var frameCount: Int = 0
+  private var bufferedFrames: [(frameNumber: Int, pixelBuffer: CVPixelBuffer)] = []
   
   @Published var isProcessing: Bool = false
   @Published var selectedModelURL: URL?
@@ -26,6 +27,7 @@ class VideoProcessor: ObservableObject {
     isProcessing = true
     self.frameCount = 0
     self.startTime = CFAbsoluteTimeGetCurrent()
+    self.bufferedFrames = []
     
     let reader = try! AVAssetReader(asset: asset)
     let videoTrack = asset.tracks(withMediaType: .video).first!
@@ -53,8 +55,48 @@ class VideoProcessor: ObservableObject {
           let processingSpeedLog = "Processing completed: \(self.frameCount) frames in \(totalTime) seconds (\(String(format: "%.2f", frameRate)) frames per second)"
           self.logs.append((id: UUID(), message: processingSpeedLog, timestamp: Date()))
           print(processingSpeedLog)
+          
+          if saveFrames {
+            self.saveBufferedFrames(videoURL: url)
+          }
         } else if reader.status == .failed {
           print("Video processing failed: \(reader.error?.localizedDescription ?? "Unknown error")")
+        }
+      }
+    }
+  }
+  
+  func processImages(in folderURL: URL, requests: [VNRequest], saveFrames: Bool, saveLabels: Bool) {
+    let fileManager = FileManager.default
+    let imageURLs = try? fileManager.contentsOfDirectory(at: folderURL, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
+    guard let imageFiles = imageURLs else { return }
+    
+    isProcessing = true
+    self.frameCount = 0
+    self.startTime = CFAbsoluteTimeGetCurrent()
+    self.bufferedFrames = []
+    
+    dispatchQueue.async { [weak self] in
+      guard let self = self else { return }
+      for imageURL in imageFiles {
+        if let ciImage = CIImage(contentsOf: imageURL) {
+          let context = CIContext()
+          if let pixelBuffer = self.createPixelBuffer(from: ciImage, context: context) {
+            self.handleFrame(pixelBuffer: pixelBuffer, requests: requests, videoURL: imageURL, saveFrames: saveFrames, saveLabels: saveLabels)
+          }
+        }
+      }
+      
+      DispatchQueue.main.async {
+        self.isProcessing = false
+        let totalTime = CFAbsoluteTimeGetCurrent() - (self.startTime ?? 0)
+        let frameRate = Double(self.frameCount) / totalTime
+        let processingSpeedLog = "Processing completed: \(self.frameCount) frames in \(totalTime) seconds (\(String(format: "%.2f", frameRate)) frames per second)"
+        self.logs.append((id: UUID(), message: processingSpeedLog, timestamp: Date()))
+        print(processingSpeedLog)
+        
+        if saveFrames {
+          self.saveBufferedFrames(videoURL: folderURL)
         }
       }
     }
@@ -66,7 +108,7 @@ class VideoProcessor: ObservableObject {
   
   func selectCoreMLModel() {
     let panel = NSOpenPanel()
-    //panel.allowedFileTypes = ["mlmodelc"]
+    panel.allowedFileTypes = ["mlmodelc"]
     panel.allowsMultipleSelection = false
     panel.canChooseDirectories = false
     panel.begin { response in
@@ -113,7 +155,7 @@ class VideoProcessor: ObservableObject {
     }
     
     if saveFrames, let pixelBuffer = pixelBuffer {
-      saveFrame(videoURL: videoURL, frameNumber: frameCount, pixelBuffer: pixelBuffer)
+      bufferedFrames.append((frameNumber: frameCount, pixelBuffer: pixelBuffer))
     }
     
     if saveLabels {
@@ -125,7 +167,7 @@ class VideoProcessor: ObservableObject {
     guard let savePath = savePath else { return }
     let framePath = savePath.appendingPathComponent("frames")
     let fileManager = FileManager.default
-    if !fileManager.fileExists(atPath: framePath.path) {
+    if (!fileManager.fileExists(atPath: framePath.path)) {
       try? fileManager.createDirectory(at: framePath, withIntermediateDirectories: true, attributes: nil)
     }
     
@@ -152,7 +194,7 @@ class VideoProcessor: ObservableObject {
     guard let savePath = savePath else { return }
     let labelPath = savePath.appendingPathComponent("labels")
     let fileManager = FileManager.default
-    if !fileManager.fileExists(atPath: labelPath.path) {
+    if (!fileManager.fileExists(atPath: labelPath.path)) {
       try? fileManager.createDirectory(at: labelPath, withIntermediateDirectories: true, attributes: nil)
     }
     
@@ -185,6 +227,32 @@ class VideoProcessor: ObservableObject {
       print("Error performing request: \(error.localizedDescription)")
     }
   }
+  
+  private func saveBufferedFrames(videoURL: URL) {
+    for frame in bufferedFrames {
+      saveFrame(videoURL: videoURL, frameNumber: frame.frameNumber, pixelBuffer: frame.pixelBuffer)
+    }
+  }
+  
+  private func createPixelBuffer(from ciImage: CIImage, context: CIContext) -> CVPixelBuffer? {
+    let width = Int(ciImage.extent.width)
+    let height = Int(ciImage.extent.height)
+    var pixelBuffer: CVPixelBuffer?
+    let pixelBufferAttributes: [String: Any] = [
+      kCVPixelBufferCGImageCompatibilityKey as String: true,
+      kCVPixelBufferCGBitmapContextCompatibilityKey as String: true,
+      kCVPixelBufferWidthKey as String: width,
+      kCVPixelBufferHeightKey as String: height,
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+    ]
+    let status = CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_32BGRA, pixelBufferAttributes as CFDictionary, &pixelBuffer)
+    guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
+      return nil
+    }
+    
+    context.render(ciImage, to: buffer)
+    return buffer
+  }
 }
 
 struct OfflineVideoProcessingView: View {
@@ -200,6 +268,7 @@ struct OfflineVideoProcessingView: View {
   @State private var enableCustomModelDetection = false
   @State private var saveFrames = false
   @State private var saveLabels = false
+  @State private var selectedFolderURL: URL?
   
   var body: some View {
     NavigationView {
@@ -270,6 +339,56 @@ struct OfflineVideoProcessingView: View {
           }
           .padding()
         }
+        
+        if let selectedFolderURL = selectedFolderURL {
+          Text("Selected Folder: \(selectedFolderURL.lastPathComponent)")
+          
+          VStack {
+            VStack {
+              Toggle("Enable Object Detection", isOn: $enableObjectDetection)
+              Toggle("Enable Face Detection", isOn: $enableFaceDetection)
+              Toggle("Enable Hand Detection", isOn: $enableHandDetection)
+              Toggle("Enable Body Pose Detection", isOn: $enableBodyPoseDetection)
+              Toggle("Enable Custom Model Detection", isOn: $enableCustomModelDetection)
+              Toggle("Save Frames", isOn: $saveFrames)
+              Toggle("Save Labels", isOn: $saveLabels)
+            }
+            .padding()
+            
+            Button(action: {
+              videoProcessor.selectCoreMLModel()
+            }) {
+              Text("Select Core ML Model")
+            }
+            
+            if let modelURL = videoProcessor.selectedModelURL {
+              Text("Selected Model: \(modelURL.lastPathComponent)")
+            }
+            Button(action: {
+              videoProcessor.selectSavePath()
+            }) {
+              Text("Select Save Path")
+            }
+            
+            if let savePath = videoProcessor.savePath {
+              Text("Save Path: \(savePath.path)")
+            }
+            Button(action: {
+              startProcessingImages()
+            }) {
+              Text("Start Processing Images")
+            }
+            .disabled(videoProcessor.isProcessing)
+            
+            Button(action: {
+              videoProcessor.cancelProcessing()
+            }) {
+              Text("Cancel Processing")
+            }
+            .disabled(!videoProcessor.isProcessing)
+          }
+          .padding()
+        }
       }
       VStack {
         Text("Status")
@@ -291,6 +410,13 @@ struct OfflineVideoProcessingView: View {
         selectVideoFile()
       }) {
         Text("Add Video")
+      }
+      .padding()
+      
+      Button(action: {
+        selectImageFolder()
+      }) {
+        Text("Add Image Folder")
       }
       .padding()
       
@@ -322,6 +448,19 @@ struct OfflineVideoProcessingView: View {
     }
   }
   
+  private func selectImageFolder() {
+    let panel = NSOpenPanel()
+    panel.canChooseDirectories = true
+    panel.canCreateDirectories = false
+    panel.allowsMultipleSelection = false
+    panel.allowedFileTypes = ["jpg", "jpeg", "png"]
+    panel.begin { response in
+      if response == .OK, let url = panel.url {
+        selectedFolderURL = url
+      }
+    }
+  }
+  
   private func startProcessing() {
     guard let videoURL = videoURL else { return }
     
@@ -332,7 +471,7 @@ struct OfflineVideoProcessingView: View {
     requests = []
     
     if enableObjectDetection {
-      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: paxcount().model), completionHandler: visionRequestHandler))
+      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: hyper_190().model), completionHandler: visionRequestHandler))
     }
     
     if enableFaceDetection {
@@ -357,6 +496,37 @@ struct OfflineVideoProcessingView: View {
     videoProcessor.processVideo(url: videoURL, startTime: start, duration: duration, requests: requests, saveFrames: saveFrames, saveLabels: saveLabels)
   }
   
+  private func startProcessingImages() {
+    guard let selectedFolderURL = selectedFolderURL else { return }
+    
+    requests = []
+    
+    if enableObjectDetection {
+      requests.append(VNCoreMLRequest(model: try! VNCoreMLModel(for: hyper_190().model), completionHandler: visionRequestHandler))
+    }
+    
+    if enableFaceDetection {
+      requests.append(VNDetectFaceRectanglesRequest(completionHandler: visionRequestHandler))
+    }
+    
+    if enableHandDetection {
+      requests.append(VNDetectHumanHandPoseRequest(completionHandler: visionRequestHandler))
+    }
+    
+    if enableBodyPoseDetection {
+      requests.append(VNDetectHumanBodyPoseRequest(completionHandler: visionRequestHandler))
+    }
+    
+    if enableCustomModelDetection, let modelURL = videoProcessor.selectedModelURL {
+      let compiledModelURL = try! MLModel.compileModel(at: modelURL)
+      let model = try! MLModel(contentsOf: compiledModelURL)
+      let visionModel = try! VNCoreMLModel(for: model)
+      requests.append(VNCoreMLRequest(model: visionModel, completionHandler: visionRequestHandler))
+    }
+    
+    videoProcessor.processImages(in: selectedFolderURL, requests: requests, saveFrames: saveFrames, saveLabels: saveLabels)
+  }
+  
   private func visionRequestHandler(request: VNRequest, error: Error?) {
     if let error = error {
       print("Vision request error: \(error.localizedDescription)")
@@ -364,7 +534,7 @@ struct OfflineVideoProcessingView: View {
       guard let results = request.results else { return }
       let elapsedTime = CFAbsoluteTimeGetCurrent() - (videoProcessor.startTime ?? 0)
       let detectionType = request is VNCoreMLRequest ? "coreml" : "vision"
-      videoProcessor.logDetection(videoURL: videoURL!, detections: results as! [VNObservation], detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: nil)
+      videoProcessor.logDetection(videoURL: videoURL!, detections: results , detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: nil)
     }
   }
 }

@@ -132,6 +132,8 @@
 		349ECA4A2C1B6B9200C29D1B /* DetectionStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA492C1B6B9200C29D1B /* DetectionStats.swift */; };
 		349ECA4C2C1BC82C00C29D1B /* VideoViewContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */; };
 		349ECA4D2C1BCFBF00C29D1B /* detFX.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 3471ED062C0CF71800916598 /* detFX.m4a */; };
+		34A36EB62C3CD578002B007E /* P2cash.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34A36EB52C3CD578002B007E /* P2cash.mlpackage */; };
+		34A36EB82C3CD6FA002B007E /* p1c.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = 34A36EB72C3CD6FA002B007E /* p1c.mlpackage */; };
 		34A99DB62BFC2A88004685AC /* FilmForensicsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */; };
 		34A99DB82BFC2A88004685AC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34A99DB72BFC2A88004685AC /* ContentView.swift */; };
 		34A99DBA2BFC2A89004685AC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 34A99DB92BFC2A89004685AC /* Assets.xcassets */; };
@@ -284,6 +286,8 @@
 		349ECA472C1B510F00C29D1B /* GalleryModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GalleryModel.swift; sourceTree = "<group>"; };
 		349ECA492C1B6B9200C29D1B /* DetectionStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectionStats.swift; sourceTree = "<group>"; };
 		349ECA4B2C1BC82C00C29D1B /* VideoViewContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewContainer.swift; sourceTree = "<group>"; };
+		34A36EB52C3CD578002B007E /* P2cash.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = P2cash.mlpackage; sourceTree = "<group>"; };
+		34A36EB72C3CD6FA002B007E /* p1c.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = p1c.mlpackage; sourceTree = "<group>"; };
 		34A99DB22BFC2A88004685AC /* FilmForensics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmForensics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		34A99DB52BFC2A88004685AC /* FilmForensicsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmForensicsApp.swift; sourceTree = "<group>"; };
 		34A99DB72BFC2A88004685AC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -459,6 +463,7 @@
 		346A9C462C398177004B5B7E /* New Group */ = {
 			isa = PBXGroup;
 			children = (
+				346A9C4D2C3AF011004B5B7E /* cash2cashNMS.mlpackage */,
 			);
 			path = "New Group";
 			sourceTree = "<group>";
@@ -467,6 +472,8 @@
 			isa = PBXGroup;
 			children = (
 				346A9C4F2C3AF14D004B5B7E /* hyper_190.mlpackage */,
+				34A36EB72C3CD6FA002B007E /* p1c.mlpackage */,
+				34A36EB52C3CD578002B007E /* P2cash.mlpackage */,
 				346A9C4B2C3A48E3004B5B7E /* hyper_e90.mlpackage */,
 				342126132C2E9A4E007E7878 /* customembedded.mlmodel */,
 				3425A9132C30D384008D6EBA /* gsm32.mlmodel */,
@@ -475,7 +482,6 @@
 				3425A90F2C304A90008D6EBA /* phone22.mlmodel */,
 				3425A9102C304A90008D6EBA /* phone67.mlmodel */,
 				34644A632C35D5F400AC2D7A /* bestNMSLess.mlpackage */,
-				346A9C4D2C3AF011004B5B7E /* cash2cashNMS.mlpackage */,
 				346A9C442C397D7D004B5B7E /* cashcash300.mlpackage */,
 				34F172732C38238600F78E94 /* counteraid.mlpackage */,
 				34F172752C3882AC00F78E94 /* counteraid3.mlpackage */,
@@ -924,6 +930,7 @@
 				34F172762C3882AC00F78E94 /* counteraid3.mlpackage in Sources */,
 				3425A9112C304A90008D6EBA /* phone22.mlmodel in Sources */,
 				34170B372C2E838A00FAC79D /* MainImageView.swift in Sources */,
+				34A36EB82C3CD6FA002B007E /* p1c.mlpackage in Sources */,
 				34F172742C38238600F78E94 /* counteraid.mlpackage in Sources */,
 				34170B312C2DB61700FAC79D /* ForensicView.swift in Sources */,
 				34F172692C3782F800F78E94 /* yolov9s.mlpackage in Sources */,
@@ -947,6 +954,7 @@
 				34170B262C2D837300FAC79D /* ForensicImageProcessor.swift in Sources */,
 				345B64C82C338102000C0B3F /* yolovFloat10nNN.mlpackage in Sources */,
 				3425A9152C30D384008D6EBA /* gsm32.mlmodel in Sources */,
+				34A36EB62C3CD578002B007E /* P2cash.mlpackage in Sources */,
 				34170B232C2D724800FAC79D /* facenetfromtf.mlmodel in Sources */,
 				342126142C2E9A4E007E7878 /* customembedded.mlmodel in Sources */,
 				34F1727A2C38A8CF00F78E94 /* testtr.mlmodel in Sources */,
