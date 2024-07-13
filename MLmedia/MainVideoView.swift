@@ -5,6 +5,10 @@ import Vision
 import CoreML
 
 struct MainVideoView: View {
+  @State var customModelURL: URL? = Bundle.main.url(forResource: "terminal2p", withExtension: "mlpackage")
+@State  var compiledModelURL: URL?
+
+  @State private var showTooltip = false
   @ObservedObject var mediaModel = MediaModel()
   @State private var player = AVPlayer()
   @State private var playerView = AVPlayerView()
@@ -29,23 +33,17 @@ struct MainVideoView: View {
   @State private var autoPauseOnNewDetection = false
   @State private var showBoundingBoxes = true
   @State private var savePath: URL?
-  @State private var framesWithObjects = 0
-  @State private var framesWithFaces = 0
-  @State private var framesWithHumans = 0
-  @State private var framesWithHands = 0
-  @State private var framesWithBodyPoses = 0
-  @State private var framesWithCustomObjects = 0
   @State private var totalFrames = 1
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
-  @State private var detectionFPS: Double = 0.0
-  @State private var d2etectionFPS: Double = 0.0
+  @State private var detectionRPS: Double = 0.0
+  @State private var detection2RPS: Double = 0.0
   @State private var selectedSize: CGSize = CGSize(width: 1024, height: 576)
   @State private var videoOutput: AVPlayerItemVideoOutput?
   @State private var saveJsonLog = false
   @State private var saveLabels = false
   @State private var saveFrames = false
-
+  
   var body: some View {
     NavigationView {
       videoGallery
@@ -59,12 +57,12 @@ struct MainVideoView: View {
         do {
           var isStale = false
           let resolvedURL = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-            if isStale {
-              print("Bookmark data is stale.")
-            } else {
-              savePath = resolvedURL
-              if savePath?.startAccessingSecurityScopedResource() == false {
-                print("Couldn't access the security-scoped resource.")
+          if isStale {
+            print("Bookmark data is stale.")
+          } else {
+            savePath = resolvedURL
+            if savePath?.startAccessingSecurityScopedResource() == false {
+              print("Couldn't access the security-scoped resource.")
               
             }
           }
@@ -85,7 +83,10 @@ struct MainVideoView: View {
         mediaModel.addVideos()
       }
       .padding()
-      
+      Button(action: {
+        selectCustomMLModel()}) {
+          Text("Load custom model")
+        }
       List {
         ForEach(Array(mediaModel.videos.enumerated()), id: \.element) { index, url in
           Button(action: {
@@ -183,34 +184,23 @@ struct MainVideoView: View {
     ScrollView {
       HStack {
         Text("File: \(mediaModel.selectedVideoURL?.lastPathComponent ?? "N/A")")
-        Text("Model: custom2.mlmodel")
-      }
+        Text("Custom Model: \(customModelURL?.lastPathComponent ?? "N/A)")")      }
       HStack {
         Text("Time: \(player.currentTime().asTimeString() ?? "00:00:00")")
         Text("Frame: \(getCurrentFrameNumber())")
         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
-        Text("Dropped Frames: \(droppedFrames)")
-        Text("Corrupted Frames: \(corruptedFrames)")
       }
       HStack {
-        Text("Frames with Objects: \(framesWithObjects)")
-        Text("Frames with Faces: \(framesWithFaces)")
-        Text("Frames with Humans: \(framesWithHumans)")
-        Text("Frames with Hands: \(framesWithHands)")
-        Text("Frames with Body Poses: \(framesWithBodyPoses)")
-        Text("Frames with Custom Objects: \(framesWithCustomObjects)")
-        Text("Objects Presence: \((framesWithObjects / (totalFrames + 1)))%")
-        Text("Faces Presence: \((framesWithFaces / (totalFrames + 1)))%")
-        Text("Humans Presence: \((framesWithHumans / (totalFrames + 1)))%")
-        Text("Hands Presence: \((framesWithHands / (totalFrames + 1)))%")
-        Text("Custom Objects Presence: \((framesWithCustomObjects / totalFrames))%")
-        //                Text("Body Poses Presence: \((framesWithBodyPoses * 100 / (totalFrames+ 1))%")
+        Text("Video Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
+        Text("Video FPS: \((getVideoFrameRate() * player.rate) , specifier: "%.2f")")
+        Text("Main model RPS: \(detectionRPS, specifier: "%.2f")")
+        Text("Custom model RPS: \(detection2RPS, specifier: "%.2f")")
       }
       if mediaModel.selectedVideoURL != nil {
         VStack {
           VideoPlayerViewMain(player: player, detections: $detectedObjects)
             .frame(width: selectedSize.width, height: selectedSize.height)
-            .background(Color.black)
+            //.background(Color.black)
             .clipped()
             .overlay(
               GeometryReader { geo in
@@ -269,11 +259,22 @@ struct MainVideoView: View {
       VStack {
         HStack {
           Toggle("Enable Object Detection", isOn: $objectDetectionEnabled)
+          
+          
           Toggle("Enable Face Detection", isOn: $faceDetectionEnabled)
           Toggle("Enable Human Detection", isOn: $humanDetectionEnabled)
           Toggle("Enable Hand Detection", isOn: $handDetectionEnabled)
           Toggle("Enable Body Pose Detection", isOn: $bodyPoseDetectionEnabled)
           Toggle("Enable Custom Model", isOn: $customModelEnabled)
+          if showTooltip {
+            Text("No model selected")
+              .padding()
+              .background(Color.black.opacity(0.7))
+              .foregroundColor(.white)
+              .cornerRadius(10)
+              .transition(.opacity)
+              .zIndex(1)
+          }
           Toggle("Save Labels", isOn: $saveLabels)
           Toggle("Save Frames", isOn: $saveFrames)
           Toggle("Save JSON Log", isOn: $saveJsonLog)
@@ -313,8 +314,7 @@ struct MainVideoView: View {
           }
           Button("Pause") {
             player.pause()
-            stopFramePerFrameMode()
-            stopPlayBackwardMode()
+            
           }
           Button("Background Run") {
             runPredictionsWithoutPlaying()
@@ -468,16 +468,23 @@ struct MainVideoView: View {
       .frame(width: normalizedRect.width, height: normalizedRect.height)
       .position(x: normalizedRect.midX, y: normalizedRect.midY)
   }
-
+  
   
   private func runModel(on pixelBuffer: CVPixelBuffer) {
-    let model = try! VNCoreMLModel(for: cashcash300().model)
+    let confCPUANE = MLModelConfiguration()
+    confCPUANE.computeUnits = .all
+    //    confCPUANE.allowLowPrecisionAccumulationOnGPU = true
+    let model = try! VNCoreMLModel(for: terminal2p960half(configuration: confCPUANE).model)
     let request = VNCoreMLRequest(model: model) { request, error in
       let start = CFAbsoluteTimeGetCurrent()
+      
       if let results = request.results as? [VNRecognizedObjectObservation] {
-        DispatchQueue.main.async {
+        DispatchQueue.global().async {
           self.detectedObjects = results
-          if !results.isEmpty { self.framesWithObjects += 1 }
+          let end = CFAbsoluteTimeGetCurrent()
+          self.detectionRPS = (end - start) // 1.0 / (end - start)
+          
+          //          if !results.isEmpty { self.framesWithObjects += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveDetections(results, at: player.currentItem?.currentTime())
@@ -486,12 +493,10 @@ struct MainVideoView: View {
           if autoPauseOnNewDetection && !results.isEmpty {
             player.pause()
           }
-          let end = CFAbsoluteTimeGetCurrent()
-          self.detectionFPS = 1.0 / (end - start)
         }
       }
     }
-    request.imageCropAndScaleOption = .scaleFill
+    request.imageCropAndScaleOption = .scaleFit//Rotate90CCW
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     try? handler.perform([request])
   }
@@ -501,7 +506,7 @@ struct MainVideoView: View {
       if let results = request.results as? [VNFaceObservation] {
         DispatchQueue.main.async {
           self.detectedFaces = results
-          if !results.isEmpty { self.framesWithFaces += 1 }
+          // if !results.isEmpty { self.framesWithFaces += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveFaces(results, at: player.currentItem?.currentTime())
@@ -510,7 +515,7 @@ struct MainVideoView: View {
         }
       }
     }
-
+    
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
     
     try? handler.perform([faceRequest])
@@ -521,7 +526,7 @@ struct MainVideoView: View {
       if let results = request.results as? [VNHumanObservation] {
         DispatchQueue.main.async {
           self.detectedHumans = results
-          if !results.isEmpty { self.framesWithHumans += 1 }
+          //          if !results.isEmpty { self.framesWithHumans += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveHumans(results, at: player.currentItem?.currentTime())
@@ -542,7 +547,7 @@ struct MainVideoView: View {
       if let results = request.results as? [VNHumanHandPoseObservation] {
         DispatchQueue.main.async {
           self.detectedHands = results
-          if !results.isEmpty { self.framesWithHands += 1 }
+          //          if !results.isEmpty { self.framesWithHands += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveHands(results, at: player.currentItem?.currentTime())
@@ -563,7 +568,7 @@ struct MainVideoView: View {
       if let results = request.results as? [VNHumanBodyPoseObservation] {
         DispatchQueue.main.async {
           self.detectedBodyPoses = results
-          if !results.isEmpty { self.framesWithBodyPoses += 1 }
+          //          if !results.isEmpty { self.framesWithBodyPoses += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveBodyPoses(results, at: player.currentItem?.currentTime())
@@ -578,16 +583,27 @@ struct MainVideoView: View {
   }
   
   private func runCustomModel(on pixelBuffer: CVPixelBuffer) {
-    let confCPUGPU = MLModelConfiguration()
-    confCPUGPU.computeUnits = .cpuAndGPU
-    let cpugpuModel = try? hyper_190(configuration: confCPUGPU)
-    let model = try! VNCoreMLModel(for: cpugpuModel!.model) //(for: hyper_190().model)
-    let request = VNCoreMLRequest(model: model) { request, error in
-      let start = CFAbsoluteTimeGetCurrent()
-      if let results = request.results as? [VNRecognizedObjectObservation] {
-        DispatchQueue.main.async {
+    DispatchQueue.global().async {
+        guard let compiledModelURL = self.compiledModelURL else {
+          DispatchQueue.main.async {
+            self.customModelEnabled = false
+            self.showTemporaryTooltip()
+          }
+          
+          return
+        }
+      let mainModel = try! MLModel(contentsOf: compiledModelURL)
+      let model = try! VNCoreMLModel(for: mainModel) //(for: hyper_190().model)
+      
+      let request = VNCoreMLRequest(model: model) { request, error in
+        if let results = request.results as? [VNRecognizedObjectObservation] {
+          let start = CFAbsoluteTimeGetCurrent()
+          //          DispatchQueue.main.async {
           self.detectedCustomObjects = results
-          if !results.isEmpty { self.framesWithObjects += 1 }
+          let end = CFAbsoluteTimeGetCurrent()
+          self.detection2RPS = 1.0 / (end - start)
+          
+          //          if !results.isEmpty { self.framesWithObjects += 1 }
           if saveLabels || saveFrames {
             Task {
               await processAndSaveDetections(results, at: player.currentItem?.currentTime())
@@ -596,16 +612,14 @@ struct MainVideoView: View {
           if autoPauseOnNewDetection && !results.isEmpty {
             player.pause()
           }
-          let end = CFAbsoluteTimeGetCurrent()
-          self.d2etectionFPS = 1.0 / (end - start)
         }
+        //        }
       }
+      request.imageCropAndScaleOption = .scaleFit
+      let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+      try? handler.perform([request])
     }
-    request.imageCropAndScaleOption = .scaleFill
-    let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
-    try? handler.perform([request])
   }
-
   private func processAndSaveDetections(_ detections: [VNRecognizedObjectObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
     
@@ -633,7 +647,7 @@ struct MainVideoView: View {
       let confidence = detection.confidence
       detectionLog.append(Detection(boundingBox: boundingBox, identifier: identifier, confidence: confidence))
       
-      cropAndSaveDetection(detection: detection, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_fff.jpg",  boundingBox: boundingBox)
+//      cropAndSaveDetection(detection: detection, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_fff.jpg",  boundingBox: boundingBox)
     }
     
     if !labelText.isEmpty {
@@ -679,8 +693,8 @@ struct MainVideoView: View {
       faceLog.append(Detection(boundingBox: boundingBox, identifier: "face", confidence: face.confidence))
       
       // Crop and save the face
-        cropAndSaveFace(face: face, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_ffface.jpg",  boundingBox: face.boundingBox)
-      }
+      cropAndSaveFace(face: face, fileName: "\(imagesFolderURL.path)/\(videoFilename)_\(frameNumber)_ffface.jpg",  boundingBox: face.boundingBox)
+    }
     
     
     if !labelText.isEmpty {
@@ -699,7 +713,7 @@ struct MainVideoView: View {
       logDetections(detections: faceLog, frameNumber: frameNumber, folderURL: folderURL)
     }
   }
-
+  
   
   private func processAndSaveHumans(_ humans: [VNHumanObservation], at time: CMTime?) async {
     guard let time = time, let savePath = savePath else { return }
@@ -836,41 +850,41 @@ struct MainVideoView: View {
     }
   }
   private func cropAndSaveFace(face: VNFaceObservation, fileName: String, boundingBox: CGRect? = nil) {
-      guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
-      
-      let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-      let context = CIContext()
-      
-      let targetImage: CIImage
-      
-      if let boundingBox = boundingBox {
-        // Calculate the cropped area based on the bounding box
-        let cropRect = CGRect(
-          x: boundingBox.origin.x * ciImage.extent.width,
-          y: (1 - boundingBox.origin.y - boundingBox.height) * ciImage.extent.height,
-          width: boundingBox.width * ciImage.extent.width,
-          height: boundingBox.height * ciImage.extent.height
-        )
-        // Crop the CIImage to the bounding box
-        targetImage = ciImage.cropped(to: cropRect)
-      } else {
-        // Use the complete frame
-        targetImage = ciImage
-      }
-      
-      guard let cgImage = context.createCGImage(targetImage, from: targetImage.extent) else { return }
-      let nsImage = NSImage(cgImage: cgImage, size: .zero)
-      
-      guard let tiffData = nsImage.tiffRepresentation,
-            let bitmap = NSBitmapImageRep(data: tiffData),
-            let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
-      
-      do {
-        try jpegData.write(to: URL(fileURLWithPath: fileName))
-      } catch {
-        print("Error saving frame: \(error)")
-      }
+    guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
+    
+    let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
+    let context = CIContext()
+    
+    let targetImage: CIImage
+    
+    if let boundingBox = boundingBox {
+      // Calculate the cropped area based on the bounding box
+      let cropRect = CGRect(
+        x: boundingBox.origin.x * ciImage.extent.width,
+        y: (1 - boundingBox.origin.y - boundingBox.height) * ciImage.extent.height,
+        width: boundingBox.width * ciImage.extent.width,
+        height: boundingBox.height * ciImage.extent.height
+      )
+      // Crop the CIImage to the bounding box
+      targetImage = ciImage.cropped(to: cropRect)
+    } else {
+      // Use the complete frame
+      targetImage = ciImage
     }
+    
+    guard let cgImage = context.createCGImage(targetImage, from: targetImage.extent) else { return }
+    let nsImage = NSImage(cgImage: cgImage, size: .zero)
+    
+    guard let tiffData = nsImage.tiffRepresentation,
+          let bitmap = NSBitmapImageRep(data: tiffData),
+          let jpegData = bitmap.representation(using: .jpeg, properties: [:]) else { return }
+    
+    do {
+      try jpegData.write(to: URL(fileURLWithPath: fileName))
+    } catch {
+      print("Error saving frame: \(error)")
+    }
+  }
   private func cropAndSaveDetection(detection: VNRecognizedObjectObservation, fileName: String, boundingBox: CGRect? = nil) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
@@ -907,7 +921,7 @@ struct MainVideoView: View {
       print("Error saving frame: \(error)")
     }
   }
-
+  
   private func saveCurrentFrame(fileName: String) {
     guard let pixelBuffer = mediaModel.currentPixelBuffer else { return }
     
@@ -932,7 +946,7 @@ struct MainVideoView: View {
     ]
     let videoOutput = AVPlayerItemVideoOutput(pixelBufferAttributes: pixelBufferAttributes)
     playerItem.add(videoOutput)
-  
+    
     
     self.videoOutput = videoOutput
   }
@@ -997,7 +1011,7 @@ struct MainVideoView: View {
       }
     }
   }
-
+  
   
   private func createFolderIfNotExists(at url: URL) {
     let fileManager = FileManager.default
@@ -1216,6 +1230,55 @@ struct MainVideoView: View {
     mainVideoView.playerView.player = mainVideoView.player
     mainVideoView.startFrameExtraction()
   }
+  func selectCustomMLModel() {
+    let panel = NSOpenPanel()
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    panel.begin { response in
+      if response == .OK, let url = panel.url {
+        self.customModelURL = url
+        
+        DispatchQueue.global().async {
+          let tempDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+          let compiledModelURL = tempDirectoryURL.appendingPathComponent(url.deletingPathExtension().lastPathComponent).appendingPathExtension("mlmodelc")
+          
+          let fileManager = FileManager.default
+          
+          if !fileManager.fileExists(atPath: compiledModelURL.path) {
+            do {
+              let confCPUGPU = MLModelConfiguration()
+              confCPUGPU.computeUnits = .all
+              let compiledURL = try MLModel.compileModel(at: url)
+              try fileManager.moveItem(at: compiledURL, to: compiledModelURL)
+              print("compiled and moved to temp directory")
+              self.compiledModelURL = compiledModelURL
+            } catch {
+              DispatchQueue.main.async {
+                self.customModelEnabled = false
+                self.showTemporaryTooltip()
+              }
+              print("Failed to compile or move model: \(error)")
+              return
+            }
+          } else {
+            print("Model already compiled and stored in temp directory.")
+            self.compiledModelURL = compiledModelURL
+          }
+          
+          DispatchQueue.main.async {
+            self.customModelEnabled = true
+          }
+        }
+      }
+    }
+  }
+  private func showTemporaryTooltip() {
+    self.showTooltip = true
+    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+      self.showTooltip = false
+    }
+  }
+  
 }
 
 

@@ -71,6 +71,9 @@ struct CoreVideoPlayer: View {
       }
       Toggle("Apply Filter", isOn: $applyFilter)
       Toggle("Apply CoreML Model", isOn: $applyMLModel)
+      let mlName = MLModelConfiguration().modelDisplayName
+     // mlModel.mlName.
+      Text("Model: \(mlName)")
       Picker("View Size", selection: $selectedSize) {
         ForEach(sizes, id: \.self) { size in
           Text(size).tag(size)

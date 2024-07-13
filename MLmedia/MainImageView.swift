@@ -106,10 +106,10 @@ struct ImageGalleryView: View {
         let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
         try handler.perform([request])
       } else {
-        let input = try yolovFloat10nNNInput(imageWith: cgImage)
-        let nonVisionModel = try yolovFloat10nNN(configuration: MLModelConfiguration())
+        let input = try terminal2p_nmslessInput(imageWith: cgImage)
+        let nonVisionModel = try terminal2p_nmsless(configuration: MLModelConfiguration())
         let output = try nonVisionModel.prediction(input: input)
-        parseNonVisionPredictionOutput(output.var_1200, imageSize: CGSize(width: cgImage.width, height: cgImage.height), imageModel: imageModel, imageName: "image_\(imageModel.images.firstIndex(of: image) ?? 0).json")
+        parseNonVisionPredictionOutput(output.var_914, imageSize: CGSize(width: cgImage.width, height: cgImage.height), imageModel: imageModel, imageName: "image_\(imageModel.images.firstIndex(of: image) ?? 0).json")
       }
     } catch {
       print("Failed to perform prediction: \(error)")
@@ -117,7 +117,7 @@ struct ImageGalleryView: View {
   }
   
   private func isVisionModel(model: MLModel) -> Bool {
-    return !(model is yolovFloat10nNN)
+    return !(model is terminal2p_nmsless)
   }
   
   private func parseNonVisionPredictionOutput(_ output: MLMultiArray, imageSize: CGSize, imageModel: ImageModel, imageName: String) {

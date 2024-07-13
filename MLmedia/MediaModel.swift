@@ -6,6 +6,9 @@ class MediaModel: ObservableObject {
   @Published var currentFrame: CVPixelBuffer?
   @Published var currentPixelBuffer: CVPixelBuffer?
   
+
+  
+
   func addVideos() {
     let panel = NSOpenPanel()
     panel.allowsMultipleSelection = true

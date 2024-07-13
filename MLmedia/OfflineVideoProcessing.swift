@@ -74,15 +74,22 @@ class VideoProcessor: ObservableObject {
     isProcessing = true
     self.frameCount = 0
     self.startTime = CFAbsoluteTimeGetCurrent()
-    self.bufferedFrames = []
     
     dispatchQueue.async { [weak self] in
       guard let self = self else { return }
-      for imageURL in imageFiles {
+      for (index, imageURL) in imageFiles.enumerated() {
         if let ciImage = CIImage(contentsOf: imageURL) {
-          let context = CIContext()
-          if let pixelBuffer = self.createPixelBuffer(from: ciImage, context: context) {
-            self.handleFrame(pixelBuffer: pixelBuffer, requests: requests, videoURL: imageURL, saveFrames: saveFrames, saveLabels: saveLabels)
+          let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
+          do {
+            try self.sequenceRequestHandler.perform(requests, on: ciImage)
+            let elapsedTime = CFAbsoluteTimeGetCurrent() - (self.startTime ?? 0)
+            for request in requests {
+              guard let results = request.results else { continue }
+              let detectionType = request is VNCoreMLRequest ? "coreml" : "vision"
+              self.logDetection(videoURL: imageURL, detections: results , detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: nil)
+            }
+          } catch {
+            print("Error performing request: \(error.localizedDescription)")
           }
         }
       }
@@ -94,10 +101,6 @@ class VideoProcessor: ObservableObject {
         let processingSpeedLog = "Processing completed: \(self.frameCount) frames in \(totalTime) seconds (\(String(format: "%.2f", frameRate)) frames per second)"
         self.logs.append((id: UUID(), message: processingSpeedLog, timestamp: Date()))
         print(processingSpeedLog)
-        
-        if saveFrames {
-          self.saveBufferedFrames(videoURL: folderURL)
-        }
       }
     }
   }
@@ -108,7 +111,6 @@ class VideoProcessor: ObservableObject {
   
   func selectCoreMLModel() {
     let panel = NSOpenPanel()
-    panel.allowedFileTypes = ["mlmodelc"]
     panel.allowsMultipleSelection = false
     panel.canChooseDirectories = false
     panel.begin { response in
@@ -207,6 +209,12 @@ class VideoProcessor: ObservableObject {
         let topLabel = objectObservation.labels.first?.identifier ?? "unknown"
         let confidence = objectObservation.confidence
         labelContent += "\(topLabel) \(confidence)\n"
+      } else if let faceObservation = observation as? VNFaceObservation {
+        labelContent += "Face\n"
+      } else if let handObservation = observation as? VNHumanHandPoseObservation {
+        labelContent += "Hand\n"
+      } else if let bodyPoseObservation = observation as? VNHumanBodyPoseObservation {
+        labelContent += "Body Pose\n"
       }
     }
     
@@ -221,7 +229,7 @@ class VideoProcessor: ObservableObject {
       for request in requests {
         guard let results = request.results else { continue }
         let detectionType = request is VNCoreMLRequest ? "coreml" : "vision"
-        logDetection(videoURL: videoURL, detections: results as! [VNObservation], detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: pixelBuffer)
+        logDetection(videoURL: videoURL, detections: results , detectionType: detectionType, elapsedTime: elapsedTime, saveFrames: saveFrames, saveLabels: saveLabels, pixelBuffer: pixelBuffer)
       }
     } catch {
       print("Error performing request: \(error.localizedDescription)")
