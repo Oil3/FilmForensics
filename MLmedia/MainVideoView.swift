@@ -36,6 +36,7 @@ struct MainVideoView: View {
   @State private var totalFrames = 1
   @State private var droppedFrames = 0
   @State private var corruptedFrames = 0
+  @State private var detectionTime: Duration = .milliseconds(1000)
   @State private var detectionRPS: Double = 0.0
   @State private var detection2RPS: Double = 0.0
   @State private var selectedSize: CGSize = CGSize(width: 1024, height: 576)
@@ -52,30 +53,32 @@ struct MainVideoView: View {
     .tabItem {
       Label("MainVideoView", systemImage: "video")
     }
-    .onAppear {
-      if let bookmarkData = UserDefaults.standard.data(forKey: "savePathBookmark") {
-        do {
-          var isStale = false
-          let resolvedURL = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
-          if isStale {
-            print("Bookmark data is stale.")
-          } else {
-            savePath = resolvedURL
-            if savePath?.startAccessingSecurityScopedResource() == false {
-              print("Couldn't access the security-scoped resource.")
-              
-            }
-          }
-        } catch {
-          print("Error resolving bookmark: \(error)")
-        }
-      }
-    }
-    
-    .onDisappear {
-      savePath?.stopAccessingSecurityScopedResource()
-    }
+//    
+//    .onAppear {
+//      if let bookmarkData = UserDefaults.standard.data(forKey: "savePathBookmark") {
+//        do {
+//          var isStale = false
+//          let resolvedURL = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+//          if isStale {
+//            print("Bookmark data is stale.")
+//          } else {
+//            savePath = resolvedURL
+//            if savePath?.startAccessingSecurityScopedResource() == false {
+//              print("Couldn't access the security-scoped resource.")
+//              
+//            }
+//          }
+//        } catch {
+//          print("Error resolving bookmark: \(error)")
+//        }
+//      }
+//    }
+//    
+//    .onDisappear {
+//      savePath?.stopAccessingSecurityScopedResource()
+//    }
   }
+  
   
   private var videoGallery: some View {
     VStack {
@@ -191,9 +194,18 @@ struct MainVideoView: View {
         Text("Total Frames: \(player.currentItem?.asset.totalNumberOfFrames ?? 0)")
       }
       HStack {
+//        var detectionRPS = (detectionTime?.formatted(.time(pattern: .minuteSecond(padMinuteToLength: 1, fractionalSecondsLength: 2))))
         Text("Video Resolution: \(videoSize.width, specifier: "%.0f")x\(videoSize.height, specifier: "%.0f")")
         Text("Video FPS: \((getVideoFrameRate() * player.rate) , specifier: "%.2f")")
-        Text("Main model RPS: \(detectionRPS, specifier: "%.2f")")
+        if detectionTime > .milliseconds(1) {
+          let detectionRPS = (.milliseconds(1000) / detectionTime)
+          Text("Detection RPS: \((detectionRPS),  specifier: "%.2f")")
+        } else {
+          Text("Detection RPS: off")
+        }
+
+
+//        Text("Main model RPS: \((detectionTime?.components.self.seconds ?? 0), specifier: "%.2f")")
         Text("Custom model RPS: \(detection2RPS, specifier: "%.2f")")
       }
       if mediaModel.selectedVideoURL != nil {
@@ -322,6 +334,8 @@ struct MainVideoView: View {
         }
       }
     }
+    .textSelection(.enabled)
+
   }
   
   private func getVideoFrameRate() -> Float {
@@ -476,13 +490,13 @@ struct MainVideoView: View {
     //    confCPUANE.allowLowPrecisionAccumulationOnGPU = true
     let model = try! VNCoreMLModel(for: terminal2p960half(configuration: confCPUANE).model)
     let request = VNCoreMLRequest(model: model) { request, error in
-      let start = CFAbsoluteTimeGetCurrent()
+    //  let start = CFAbsoluteTimeGetCurrent()
       
       if let results = request.results as? [VNRecognizedObjectObservation] {
         DispatchQueue.global().async {
           self.detectedObjects = results
-          let end = CFAbsoluteTimeGetCurrent()
-          self.detectionRPS = (end - start) // 1.0 / (end - start)
+        //  let end = CFAbsoluteTimeGetCurrent()
+          //self.detectionRPS = (end - start) // 1.0 / (end - start)
           
           //          if !results.isEmpty { self.framesWithObjects += 1 }
           if saveLabels || saveFrames {
@@ -498,8 +512,11 @@ struct MainVideoView: View {
     }
     request.imageCropAndScaleOption = .scaleFit//Rotate90CCW
     let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+   
+    self.detectionTime = ContinuousClock().measure {
     try? handler.perform([request])
   }
+    }
   
   private func runFaceDetection(on pixelBuffer: CVPixelBuffer) {
     let faceRequest = VNDetectFaceRectanglesRequest { request, error in
